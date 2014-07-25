@@ -15,7 +15,7 @@ public class ConsulRule implements TestRule {
         }
 
         try {
-            ConsulClient.newClient().getAgent();
+            Consul.newClient().agentClient().getAgent();
 
             return statement;
         } catch (Exception ex) {

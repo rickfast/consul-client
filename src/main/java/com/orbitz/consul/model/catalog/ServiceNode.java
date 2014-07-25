@@ -1,4 +1,4 @@
-package com.orbitz.consul.model;
+package com.orbitz.consul.model.catalog;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
