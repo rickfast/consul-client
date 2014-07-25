@@ -8,7 +8,6 @@ import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.util.Optional;
 
 /**
  * HTTP Client for /v1/agent/ endpoints.
@@ -18,7 +17,6 @@ class AgentClient {
     private WebTarget webTarget;
     private String checkId;
     private Registration.Check check;
-    private Registration registration;
     private boolean registered;
 
     /**
@@ -49,8 +47,6 @@ class AgentClient {
      * @param ttl Time to live for the Consul dead man's switch.
      * @param name Service name to register.
      * @param id Service id to register.
-     *
-     * @see #check(java.util.Optional, com.orbitz.consul.model.State, String)
      */
     public void register(int port, long ttl, String name, String id) {
         check = new Registration.Check();
@@ -70,8 +66,6 @@ class AgentClient {
      * @param interval Health script run interval in seconds.
      * @param name Service name to register.
      * @param id Service id to register.
-     *
-     * @see #check(java.util.Optional, com.orbitz.consul.model.State, String)
      */
     public void register(int port, String script, long interval, String name, String id) {
         check = new Registration.Check();
@@ -91,8 +85,6 @@ class AgentClient {
      * @param check The health check to run periodically.  Can be null.
      * @param name Service name to register.
      * @param id Service id to register.
-     *
-     * @see #check(java.util.Optional, com.orbitz.consul.model.State, String)
      */
     public void register(int port, Registration.Check check, String name, String id) {
         Registration registration = new Registration();
@@ -103,8 +95,6 @@ class AgentClient {
         registration.setId(id);
 
         register(registration);
-
-        this.registration = registration;
     }
 
     /**
@@ -143,15 +133,15 @@ class AgentClient {
      * @param state The current state of the Check.
      * @param note Any note to associate with the Check.
      */
-    public void check(Optional<String> checkId, State state, String note) {
+    public void check(String checkId, State state, String note) {
         if(isRegistered()) {
             WebTarget resource = webTarget.path("check").path(state.getPath());
 
             if(note != null) {
-                resource.queryParam("note", note);
+                resource = resource.queryParam("note", note);
             }
 
-            resource.path(checkId.orElse(this.checkId)).request().get();
+            resource.path(checkId == null ? this.checkId : checkId).request().get();
         }
     }
 
@@ -162,27 +152,27 @@ class AgentClient {
      * @param note Any note to associate with the Check.
      */
     public void check(State state, String note) {
-        check(Optional.<String>empty(), state, note);
+        check(null, state, note);
     }
 
     /**
      * Checks in with Consul for the default Check and "pass" state.
      */
     public void pass() {
-        check(Optional.<String>empty(), State.PASS, null);
+        check(null, State.PASS, null);
     }
 
     /**
      * Checks in with Consul for the default Check and "warn" state.
      */
     public void warn(String note) {
-        check(Optional.<String>empty(), State.WARN, note);
+        check(null, State.WARN, note);
     }
 
     /**
      * Checks in with Consul for the default Check and "fail" state.
      */
     public void fail(String note) {
-        check(Optional.<String>empty(), State.FAIL, note);
+        check(null, State.FAIL, note);
     }
 }

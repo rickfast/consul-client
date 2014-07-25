@@ -4,6 +4,8 @@ import com.orbitz.consul.model.health.ServiceHealth;
 
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.MediaType;
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * HTTP Client for /v1/health/ endpoints.
@@ -29,9 +31,9 @@ public class HealthClient {
      * @param service The name of the service to retrieve.
      * @return An array of {@link com.orbitz.consul.model.health.ServiceHealth} objects.
      */
-    public ServiceHealth[] getPassingNodes(String service) {
-        return webTarget.path("service").path(service).queryParam("passing", "true").request()
-                .accept(MediaType.APPLICATION_JSON_TYPE).get(ServiceHealth[].class);
+    public List<ServiceHealth> getPassingNodes(String service) {
+        return Arrays.asList(webTarget.path("service").path(service).queryParam("passing", "true").request()
+                .accept(MediaType.APPLICATION_JSON_TYPE).get(ServiceHealth[].class));
     }
 
     /**
@@ -42,8 +44,8 @@ public class HealthClient {
      * @param service The name of the service to retrieve.
      * @return An array of {@link com.orbitz.consul.model.health.ServiceHealth} objects.
      */
-    public ServiceHealth[] getServiceHealth(String service) {
-        return webTarget.path("service").path(service).request()
-                .accept(MediaType.APPLICATION_JSON_TYPE).get(ServiceHealth[].class);
+    public List<ServiceHealth> getServiceHealth(String service) {
+        return Arrays.asList(webTarget.path("service").path(service).request()
+                .accept(MediaType.APPLICATION_JSON_TYPE).get(ServiceHealth[].class));
     }
 }

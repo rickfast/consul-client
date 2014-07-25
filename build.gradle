@@ -19,6 +19,8 @@ dependencies {
     compile 'org.glassfish.jersey.bundles.repackaged:jersey-guava:2.6'
     compile group: 'com.fasterxml.jackson.jaxrs', name: 'jackson-jaxrs-base', version: '2.3.0'
     testCompile 'junit:junit:4.11'
+    compile 'com.google.guava:guava:17.0'
+    compile 'commons-codec:commons-codec:1.9'
 }
 
 task wrapper(type: Wrapper) {

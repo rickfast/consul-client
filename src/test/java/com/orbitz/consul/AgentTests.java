@@ -1,11 +1,11 @@
 package com.orbitz.consul;
 
 import com.orbitz.consul.model.agent.Agent;
+import com.orbitz.consul.model.health.ServiceHealth;
 import org.junit.Rule;
 import org.junit.Test;
 
 import java.net.UnknownHostException;
-import java.util.Arrays;
 import java.util.UUID;
 
 import static org.junit.Assert.assertEquals;
@@ -36,8 +36,15 @@ public class AgentTests {
 
         client.agentClient().register(8080, 10000L, serviceName, serviceId);
 
-        assertTrue(Arrays.asList(client.healthClient().getServiceHealth(serviceName)).stream()
-                .anyMatch((health) -> health.getService().getId().equals(serviceId)));
+        boolean found = false;
+
+        for(ServiceHealth health : client.healthClient().getServiceHealth(serviceName)) {
+            if(health.getService().getId().equals(serviceId)) {
+                found = true;
+            }
+        }
+
+        assertTrue(found);
     }
 
     @Test(expected = ConsulException.class)
@@ -48,7 +55,6 @@ public class AgentTests {
         String serviceId = UUID.randomUUID().toString();
 
         client.agentClient().register(8080, 10000L, serviceName, serviceId);
-
         client.agentClient().register(8080, 10000L, serviceName, serviceId);
     }
 }

@@ -24,6 +24,7 @@ public class Consul {
      */
     private Consul(String url) {
         Client client = ClientBuilder.newClient();
+
         this.agentClient = new AgentClient(client.target(url).path("v1").path("agent"));
         this.healthClient = new HealthClient(client.target(url).path("v1").path("health"));
         this.keyValueClient = new KeyValueClient(client.target(url).path("v1").path("kv"));

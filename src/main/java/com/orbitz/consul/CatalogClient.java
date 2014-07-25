@@ -5,10 +5,18 @@ import com.orbitz.consul.model.catalog.ServiceNode;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.MediaType;
 
+/**
+ * HTTP Client for /v1/catalog/ endpoints.
+ */
 public class CatalogClient {
     
     private WebTarget webTarget;
-    
+
+    /**
+     * Constructs an instance of this class.
+     *
+     * @param webTarget The {@link javax.ws.rs.client.WebTarget} to base requests from.
+     */
     CatalogClient(WebTarget webTarget) {
         this.webTarget = webTarget;        
     }
