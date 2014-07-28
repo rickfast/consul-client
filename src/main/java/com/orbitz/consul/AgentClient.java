@@ -2,9 +2,10 @@ package com.orbitz.consul;
 
 import com.orbitz.consul.model.State;
 import com.orbitz.consul.model.agent.Agent;
+import com.orbitz.consul.model.agent.Check;
 import com.orbitz.consul.model.agent.Member;
 import com.orbitz.consul.model.agent.Registration;
-import com.orbitz.consul.model.health.Check;
+import com.orbitz.consul.model.health.HealthCheck;
 import com.orbitz.consul.model.health.Service;
 
 import javax.ws.rs.client.Entity;
@@ -21,9 +22,9 @@ import java.util.Map;
 class AgentClient {
     
     private WebTarget webTarget;
-    private String checkId;
-    private Registration.Check check;
     private boolean registered;
+    private Registration registration;
+    private String checkId;
 
     /**
      * Constructs an instance of this class.
@@ -54,7 +55,8 @@ class AgentClient {
                     .getStatusInfo();
 
             if(status.getStatusCode() != Response.Status.OK.getStatusCode()) {
-                throw new ConsulException(String.format("Error pinging Consul: %s", status.getReasonPhrase()));
+                throw new ConsulException(String.format("Error pinging Consul: %s",
+                        status.getReasonPhrase()));
             }
         } catch (Exception ex) {
             throw new ConsulException("Error connecting to Consul", ex);
@@ -71,7 +73,7 @@ class AgentClient {
      * @param id Service id to register.
      */
     public void register(int port, long ttl, String name, String id) {
-        check = new Registration.Check();
+        Registration.Check check = new Registration.Check();
         checkId = String.format("service:%s", id);
 
         check.setTtl(String.format("%ss", ttl));
@@ -90,7 +92,7 @@ class AgentClient {
      * @param id Service id to register.
      */
     public void register(int port, String script, long interval, String name, String id) {
-        check = new Registration.Check();
+        Registration.Check check = new Registration.Check();
         checkId = String.format("service:%s", id);
 
         check.setScript(script);
@@ -129,10 +131,104 @@ class AgentClient {
         Response response = webTarget.path("service").path("register").request()
                 .put(Entity.entity(registration, MediaType.APPLICATION_JSON_TYPE));
 
-        if(response.getStatus() != 200) {
+        if(response.getStatus() != Response.Status.OK.getStatusCode()) {
             throw new ConsulException(response.readEntity(String.class));
         } else {
             registered = true;
+            this.registration = registration;
+        }
+    }
+
+    /**
+     * De-register the client as a service with Consul.
+     */
+    public void deregister() {
+        Response response = webTarget.path("service").path("deregister").path(registration.getId())
+                .request().get();
+
+        if(response.getStatus() != Response.Status.OK.getStatusCode()) {
+            throw new ConsulException(response.readEntity(String.class));
+        } else {
+            registered = false;
+            registration = null;
+            checkId = null;
+        }
+    }
+
+    /**
+     * Registers a Health Check with the Agent.
+     *
+     * @param checkId The Check ID to use.  Must be unique for the Agent.
+     * @param name The Check Name.
+     * @param script Health script for Consul to use.
+     * @param interval Health script run interval in seconds.
+     */
+    public void registerCheck(String checkId, String name, String script, long interval) {
+        registerCheck(checkId, name, script, interval, null);
+    }
+
+    /**
+     * Registers a Health Check with the Agent.
+     *
+     * @param checkId The Check ID to use.  Must be unique for the Agent.
+     * @param name The Check Name.
+     * @param script Health script for Consul to use.
+     * @param interval Health script run interval in seconds.
+     * @param notes Human readable notes.  Not used by Consul.
+     */
+    public void registerCheck(String checkId, String name, String script, long interval, String notes) {
+        Check check = new Check();
+
+        check.setId(checkId);
+        check.setName(name);
+        check.setScript(script);
+        check.setInterval(String.format("%ss", interval));
+        check.setNotes(notes);
+
+        registerCheck(check);
+    }
+
+    /**
+     * Registers a Health Check with the Agent.
+     *
+     * @param checkId The Check ID to use.  Must be unique for the Agent.
+     * @param name The Check Name.
+     * @param ttl Time to live for the Consul dead man's switch.
+     */
+    public void registerCheck(String checkId, String name, long ttl) {
+        registerCheck(checkId, name, ttl, null);
+    }
+
+    /**
+     * Registers a Health Check with the Agent.
+     *
+     * @param checkId The Check ID to use.  Must be unique for the Agent.
+     * @param name The Check Name.
+     * @param ttl Time to live for the Consul dead man's switch.
+     * @param notes Human readable notes.  Not used by Consul.
+     */
+    public void registerCheck(String checkId, String name, long ttl, String notes) {
+        Check check = new Check();
+
+        check.setId(checkId);
+        check.setName(name);
+        check.setTtl(String.format("%ss", ttl));
+        check.setNotes(notes);
+
+        registerCheck(check);
+    }
+
+    /**
+     * Registers a Health Check with the Agent.
+     *
+     * @param check The Check to register.
+     */
+    public void registerCheck(Check check) {
+        Response response = webTarget.path("check").path("register").request()
+                .put(Entity.entity(check, MediaType.APPLICATION_JSON_TYPE));
+
+        if(response.getStatus() != Response.Status.OK.getStatusCode()) {
+            throw new ConsulException(response.readEntity(String.class));
         }
     }
 
@@ -155,9 +251,9 @@ class AgentClient {
      *
      * @return Map of Check ID to Checks.
      */
-    public Map<String, Check> getChecks() {
+    public Map<String, HealthCheck> getChecks() {
         return webTarget.path("checks").request().accept(MediaType.APPLICATION_JSON_TYPE)
-                .get(new GenericType<Map<String, Check>>() {});
+                .get(new GenericType<Map<String, HealthCheck>>() {});
     }
 
     /**
@@ -234,14 +330,28 @@ class AgentClient {
     /**
      * Checks in with Consul for the default Check and "warn" state.
      */
+    public void warn() {
+        check(State.WARN, null);
+    }
+
+    /**
+     * Checks in with Consul for the default Check and "warn" state.
+     */
     public void warn(String note) {
-        check(null, State.WARN, note);
+        check(State.WARN, note);
+    }
+
+    /**
+     * Checks in with Consul for the default Check and "fail" state.
+     */
+    public void fail() {
+        check(State.FAIL, null);
     }
 
     /**
      * Checks in with Consul for the default Check and "fail" state.
      */
     public void fail(String note) {
-        check(null, State.FAIL, note);
+        check(State.FAIL, note);
     }
 }

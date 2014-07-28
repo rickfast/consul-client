@@ -15,8 +15,8 @@ public class ServiceHealth {
     private Service service;
 
     @JsonProperty("Checks")
-    @JsonDeserialize(as = ArrayList.class, contentAs = Check.class)
-    private List<Check> checks;
+    @JsonDeserialize(as = ArrayList.class, contentAs = HealthCheck.class)
+    private List<HealthCheck> checks;
 
     public Node getNode() {
         return node;
@@ -34,11 +34,11 @@ public class ServiceHealth {
         this.service = service;
     }
 
-    public List<Check> getChecks() {
+    public List<HealthCheck> getChecks() {
         return checks;
     }
 
-    public void setChecks(List<Check> checks) {
+    public void setChecks(List<HealthCheck> checks) {
         this.checks = checks;
     }
 }
