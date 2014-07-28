@@ -31,7 +31,7 @@ public class HealthClient {
      * @param service The name of the service to retrieve.
      * @return An array of {@link com.orbitz.consul.model.health.ServiceHealth} objects.
      */
-    public List<ServiceHealth> getPassingNodes(String service) {
+    public List<ServiceHealth> getHealthyNodes(String service) {
         return Arrays.asList(webTarget.path("service").path(service).queryParam("passing", "true").request()
                 .accept(MediaType.APPLICATION_JSON_TYPE).get(ServiceHealth[].class));
     }

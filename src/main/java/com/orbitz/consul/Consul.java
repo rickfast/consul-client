@@ -29,6 +29,8 @@ public class Consul {
         this.healthClient = new HealthClient(client.target(url).path("v1").path("health"));
         this.keyValueClient = new KeyValueClient(client.target(url).path("v1").path("kv"));
         this.catalogClient = new CatalogClient(client.target(url).path("v1").path("catalog"));
+
+        agentClient.ping();
     }
 
     /**
@@ -55,18 +57,46 @@ public class Consul {
         return newClient("localhost", 8500);
     }
 
+    /**
+     * Get the Agent HTTP client.
+     *
+     * /v1/agent
+     *
+     * @return The Agent HTTP client.
+     */
     public AgentClient agentClient() {
         return agentClient;
     }
 
+    /**
+     * Get the Catalog HTTP client.
+     *
+     * /v1/catalog
+     *
+     * @return The Catalog HTTP client.
+     */
     public CatalogClient catalogClient() {
         return catalogClient;
     }
 
+    /**
+     * Get the Health HTTP client.
+     *
+     * /v1/health
+     *
+     * @return The Health HTTP client.
+     */
     public HealthClient healthClient() {
         return healthClient;
     }
 
+    /**
+     * Get the Key/Value HTTP client.
+     *
+     * /v1/kv
+     *
+     * @return The Key/Value HTTP client.
+     */
     public KeyValueClient keyValueClient() {
         return keyValueClient;
     }

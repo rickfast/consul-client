@@ -1,11 +1,14 @@
 package com.orbitz.consul;
 
 import com.orbitz.consul.model.agent.Agent;
+import com.orbitz.consul.model.health.Check;
+import com.orbitz.consul.model.health.Service;
 import com.orbitz.consul.model.health.ServiceHealth;
 import org.junit.Rule;
 import org.junit.Test;
 
 import java.net.UnknownHostException;
+import java.util.Map;
 import java.util.UUID;
 
 import static org.junit.Assert.assertEquals;
@@ -56,5 +59,41 @@ public class AgentTests {
 
         client.agentClient().register(8080, 10000L, serviceName, serviceId);
         client.agentClient().register(8080, 10000L, serviceName, serviceId);
+    }
+
+    @Test
+    @ConsulRunning
+    public void shouldGetChecks() {
+        Consul client = Consul.newClient();
+        String id = UUID.randomUUID().toString();
+        client.agentClient().register(8080, 20L, UUID.randomUUID().toString(), id);
+
+        boolean found = false;
+
+        for(Map.Entry<String, Check> check : client.agentClient().getChecks().entrySet()) {
+            if(check.getValue().getCheckId().equals("service:" + id)) {
+                found = true;
+            };
+        }
+
+        assertTrue(found);
+    }
+
+    @Test
+    @ConsulRunning
+    public void shouldGetServices() {
+        Consul client = Consul.newClient();
+        String id = UUID.randomUUID().toString();
+        client.agentClient().register(8080, 20L, UUID.randomUUID().toString(), id);
+
+        boolean found = false;
+
+        for(Map.Entry<String, Service> service : client.agentClient().getServices().entrySet()) {
+            if(service.getValue().getId().equals(id)) {
+                found = true;
+            };
+        }
+
+        assertTrue(found);
     }
 }

@@ -13,10 +13,24 @@ TBD.
 Basic Usage
 -----------
 
+Example 1: Register and check your service in with Consul.  Note that you need to continually check in before the TTL expires, otherwise your service's state will be marked as "critical".
+
 ```
-ConsulClient client = ConsulClient.newClient(); // connect to Consul on localhost
+Consul consul = Consul.newClient(); // connect to Consul on localhost
+AgentClient agentClient = consul.agentClient();
+
 String serviceName = "MyService";
 String serviceId = "1";
 
-client.register(8080, 3L, serviceName, serviceId); // registers with a TTL of 3 seconds
+agentClient.register(8080, 3L, serviceName, serviceId); // registers with a TTL of 3 seconds
+agentClient.pass(); // check in with Consul
+```
+
+Example 2: Find available (healthy) services.
+
+```
+Consul consul = Consul.newClient(); // connect to Consul on localhost
+HealthClient healthClient = consul.healthClient();
+
+List<ServiceHealth> nodes = healthClient.getHealthyNodes("DataService"); // discover only "passing" nodes
 ```

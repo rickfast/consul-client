@@ -1,6 +1,10 @@
 package com.orbitz.consul.model.health;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class ServiceHealth {
 
@@ -11,7 +15,8 @@ public class ServiceHealth {
     private Service service;
 
     @JsonProperty("Checks")
-    private Check[] checks;
+    @JsonDeserialize(as = ArrayList.class, contentAs = Check.class)
+    private List<Check> checks;
 
     public Node getNode() {
         return node;
@@ -29,11 +34,11 @@ public class ServiceHealth {
         this.service = service;
     }
 
-    public Check[] getChecks() {
+    public List<Check> getChecks() {
         return checks;
     }
 
-    public void setChecks(Check[] checks) {
+    public void setChecks(List<Check> checks) {
         this.checks = checks;
     }
 }

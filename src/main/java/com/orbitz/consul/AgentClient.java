@@ -1,13 +1,19 @@
 package com.orbitz.consul;
 
-import com.orbitz.consul.model.agent.Registration;
 import com.orbitz.consul.model.State;
 import com.orbitz.consul.model.agent.Agent;
+import com.orbitz.consul.model.agent.Member;
+import com.orbitz.consul.model.agent.Registration;
+import com.orbitz.consul.model.health.Check;
+import com.orbitz.consul.model.health.Service;
 
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.WebTarget;
+import javax.ws.rs.core.GenericType;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import java.util.List;
+import java.util.Map;
 
 /**
  * HTTP Client for /v1/agent/ endpoints.
@@ -37,6 +43,22 @@ class AgentClient {
      */
     public boolean isRegistered() {
         return registered;
+    }
+
+    /**
+     * Pings the Consul Agent.
+     */
+    public void ping() {
+        try {
+            Response.StatusType status = webTarget.path("self").request().get()
+                    .getStatusInfo();
+
+            if(status.getStatusCode() != Response.Status.OK.getStatusCode()) {
+                throw new ConsulException(String.format("Error pinging Consul: %s", status.getReasonPhrase()));
+            }
+        } catch (Exception ex) {
+            throw new ConsulException("Error connecting to Consul", ex);
+        }
     }
 
     /**
@@ -124,6 +146,53 @@ class AgentClient {
     public Agent getAgent() {
         return webTarget.path("self").request().accept(MediaType.APPLICATION_JSON_TYPE)
                 .get(Agent.class);
+    }
+
+    /**
+     * Retrieves all checks registered with the Agent.
+     *
+     * GET /v1/agent/checks
+     *
+     * @return Map of Check ID to Checks.
+     */
+    public Map<String, Check> getChecks() {
+        return webTarget.path("checks").request().accept(MediaType.APPLICATION_JSON_TYPE)
+                .get(new GenericType<Map<String, Check>>() {});
+    }
+
+    /**
+     * Retrieves all services registered with the Agent.
+     *
+     * GET /v1/agent/services
+     *
+     * @return Map of Service ID to Services.
+     */
+    public Map<String, Service> getServices() {
+        return webTarget.path("services").request().accept(MediaType.APPLICATION_JSON_TYPE)
+                .get(new GenericType<Map<String, Service>>() {});
+    }
+
+    /**
+     * Retrieves all members that the Agent can see in the gossip pool.
+     *
+     * GET /v1/agent/members
+     *
+     * @return List of Members.
+     */
+    public List<Member> getMembers() {
+        return webTarget.path("members").request().accept(MediaType.APPLICATION_JSON_TYPE)
+                .get(new GenericType<List<Member>>() {});
+    }
+
+    /**
+     * GET /v1/agent/force-leave/{node}
+     *
+     * Instructs the agent to force a node into the "left" state.
+     *
+     * @param node
+     */
+    public void forceLeave(String node) {
+        webTarget.path("force-leave").path(node).request().get();
     }
 
     /**
