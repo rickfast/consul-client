@@ -1,5 +1,7 @@
 package com.orbitz.consul;
 
+import com.fasterxml.jackson.jaxrs.json.JacksonJaxbJsonProvider;
+
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 import java.net.MalformedURLException;
@@ -23,7 +25,7 @@ public class Consul {
      * @param url The full URL of a running Consul instance.
      */
     private Consul(String url) {
-        Client client = ClientBuilder.newClient();
+        Client client = ClientBuilder.newBuilder().register(JacksonJaxbJsonProvider.class).build();
 
         this.agentClient = new AgentClient(client.target(url).path("v1").path("agent"));
         this.healthClient = new HealthClient(client.target(url).path("v1").path("health"));
