@@ -2,7 +2,6 @@ package com.orbitz.consul;
 
 import com.orbitz.consul.model.ConsulResponse;
 import com.orbitz.consul.model.health.ServiceHealth;
-import org.junit.Rule;
 import org.junit.Test;
 
 import java.net.UnknownHostException;
@@ -13,9 +12,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 public class HealthTests {
-
-    @Rule
-    public ConsulRule consulRule = new ConsulRule();
 
     @Test
     public void shouldFetchPassingNode() throws UnknownHostException {

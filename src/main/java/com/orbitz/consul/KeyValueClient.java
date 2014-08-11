@@ -2,9 +2,12 @@ package com.orbitz.consul;
 
 import com.google.common.base.Optional;
 import com.orbitz.consul.model.kv.Value;
+import com.orbitz.consul.query.QueryOptions;
+import com.orbitz.consul.util.ClientUtil;
 
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.WebTarget;
+import javax.ws.rs.core.GenericType;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.util.ArrayList;
@@ -42,10 +45,26 @@ public class KeyValueClient {
      * @return An {@link Optional} containing the value or {@link Optional#absent()}
      */
     public Optional<Value> getValue(String key) {
-        Value[] values = webTarget.path(key).request().accept(MediaType.APPLICATION_JSON_TYPE)
-                .get(Value[].class);
+        return getValue(key, QueryOptions.BLANK);
+    }
 
-        return values != null && values.length != 0 ? Optional.of(values[0]) : Optional.<Value>absent();
+    /**
+     * Retrieves a {@link com.orbitz.consul.model.kv.Value} for a specific key
+     * from the key/value store.
+     *
+     * GET /v1/keyValue/{key}
+     *
+     * @param key The key to retrieve.
+     * @param queryOptions The query options.
+     * @return An {@link Optional} containing the value or {@link Optional#absent()}
+     */
+    public Optional<Value> getValue(String key, QueryOptions queryOptions) {
+        WebTarget target = ClientUtil.queryConfig(webTarget.path(key), queryOptions);
+
+        List<Value> values = target.request().accept(MediaType.APPLICATION_JSON_TYPE)
+                .get(new GenericType<List<Value>>() {});
+
+        return values != null && values.size() != 0 ? Optional.of(values.get(0)) : Optional.<Value>absent();
     }
 
     /**
