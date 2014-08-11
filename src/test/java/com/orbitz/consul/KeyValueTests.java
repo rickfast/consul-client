@@ -1,6 +1,5 @@
 package com.orbitz.consul;
 
-import org.junit.Rule;
 import org.junit.Test;
 
 import java.net.UnknownHostException;
@@ -13,11 +12,7 @@ import static org.junit.Assert.assertTrue;
 
 public class KeyValueTests {
 
-    @Rule
-    public ConsulRule consulRule = new ConsulRule();
-
     @Test
-    @ConsulRunning
     public void shouldPutAndReceiveString() throws UnknownHostException {
         Consul client = Consul.newClient();
         KeyValueClient keyValueClient = client.keyValueClient();
@@ -29,7 +24,6 @@ public class KeyValueTests {
     }
 
     @Test
-    @ConsulRunning
     public void shouldPutAndReceiveValue() throws UnknownHostException {
         Consul client = Consul.newClient();
         KeyValueClient keyValueClient = client.keyValueClient();
@@ -41,7 +35,6 @@ public class KeyValueTests {
     }
 
     @Test
-    @ConsulRunning
     public void shouldPutAndReceiveStrings() throws UnknownHostException {
         Consul client = Consul.newClient();
         KeyValueClient keyValueClient = client.keyValueClient();

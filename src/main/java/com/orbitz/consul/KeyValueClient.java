@@ -42,7 +42,8 @@ public class KeyValueClient {
      * @return An {@link Optional} containing the value or {@link Optional#absent()}
      */
     public Optional<Value> getValue(String key) {
-        Value[] values = webTarget.path(key).request().accept(MediaType.APPLICATION_JSON_TYPE).get(Value[].class);
+        Value[] values = webTarget.path(key).request().accept(MediaType.APPLICATION_JSON_TYPE)
+                .get(Value[].class);
 
         return values != null && values.length != 0 ? Optional.of(values[0]) : Optional.<Value>absent();
     }
@@ -58,6 +59,7 @@ public class KeyValueClient {
      */
     public List<Value> getValues(String key) {
         WebTarget target = webTarget.path(key).queryParam("recurse", "true");
+
         return Arrays.asList(target
                 .request().accept(MediaType.APPLICATION_JSON_TYPE).get(Value[].class));
     }

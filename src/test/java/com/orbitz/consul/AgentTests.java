@@ -4,7 +4,6 @@ import com.orbitz.consul.model.agent.Agent;
 import com.orbitz.consul.model.health.HealthCheck;
 import com.orbitz.consul.model.health.Service;
 import com.orbitz.consul.model.health.ServiceHealth;
-import org.junit.Rule;
 import org.junit.Test;
 
 import java.net.UnknownHostException;
@@ -19,11 +18,7 @@ import static org.junit.Assert.assertTrue;
 
 public class AgentTests {
 
-    @Rule
-    public ConsulRule consulRule = new ConsulRule();
-
     @Test
-    @ConsulRunning
     public void shouldRetrieveAgentInformation() throws UnknownHostException {
         Consul client = Consul.newClient();
         Agent agent = client.agentClient().getAgent();
@@ -33,7 +28,6 @@ public class AgentTests {
     }
 
     @Test
-    @ConsulRunning
     public void shouldRegister() throws UnknownHostException {
         Consul client = Consul.newClient();
         String serviceName = UUID.randomUUID().toString();
@@ -43,7 +37,7 @@ public class AgentTests {
 
         boolean found = false;
 
-        for(ServiceHealth health : client.healthClient().getServiceHealth(serviceName)) {
+        for(ServiceHealth health : client.healthClient().getAllNodes(serviceName).getResponse()) {
             if(health.getService().getId().equals(serviceId)) {
                 found = true;
             }
@@ -53,7 +47,6 @@ public class AgentTests {
     }
 
     @Test
-    @ConsulRunning
     public void shouldDeregister() throws UnknownHostException {
         Consul client = Consul.newClient();
         String serviceName = UUID.randomUUID().toString();
@@ -64,7 +57,7 @@ public class AgentTests {
 
         boolean found = false;
 
-        for(ServiceHealth health : client.healthClient().getServiceHealth(serviceName)) {
+        for(ServiceHealth health : client.healthClient().getAllNodes(serviceName).getResponse()) {
             if(health.getService().getId().equals(serviceId)) {
                 found = true;
             }
@@ -74,7 +67,6 @@ public class AgentTests {
     }
 
     @Test(expected = ConsulException.class)
-    @ConsulRunning
     public void shouldFailOnDuplicateRegistration() throws UnknownHostException {
         Consul client = Consul.newClient();
         String serviceName = UUID.randomUUID().toString();
@@ -85,7 +77,6 @@ public class AgentTests {
     }
 
     @Test
-    @ConsulRunning
     public void shouldGetChecks() {
         Consul client = Consul.newClient();
         String id = UUID.randomUUID().toString();
@@ -103,7 +94,6 @@ public class AgentTests {
     }
 
     @Test
-    @ConsulRunning
     public void shouldGetServices() {
         Consul client = Consul.newClient();
         String id = UUID.randomUUID().toString();
@@ -121,7 +111,6 @@ public class AgentTests {
     }
 
     @Test
-    @ConsulRunning
     public void shouldSetWarning() throws UnknownHostException {
         Consul client = Consul.newClient();
         String serviceName = UUID.randomUUID().toString();
@@ -135,7 +124,6 @@ public class AgentTests {
     }
 
     @Test
-    @ConsulRunning
     public void shouldSetFailing() throws UnknownHostException {
         Consul client = Consul.newClient();
         String serviceName = UUID.randomUUID().toString();
@@ -150,7 +138,7 @@ public class AgentTests {
 
     private void verifyState(String state, Consul client, String serviceId,
                              String serviceName, String note) throws UnknownHostException {
-        List<ServiceHealth> nodes = client.healthClient().getServiceHealth(serviceName);
+        List<ServiceHealth> nodes = client.healthClient().getAllNodes(serviceName).getResponse();
         boolean found = false;
 
         for(ServiceHealth health : nodes) {

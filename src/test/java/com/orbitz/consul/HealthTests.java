@@ -1,5 +1,6 @@
 package com.orbitz.consul;
 
+import com.orbitz.consul.model.ConsulResponse;
 import com.orbitz.consul.model.health.ServiceHealth;
 import org.junit.Rule;
 import org.junit.Test;
@@ -17,7 +18,6 @@ public class HealthTests {
     public ConsulRule consulRule = new ConsulRule();
 
     @Test
-    @ConsulRunning
     public void shouldFetchPassingNode() throws UnknownHostException {
         Consul client = Consul.newClient();
         String serviceName = UUID.randomUUID().toString();
@@ -33,9 +33,9 @@ public class HealthTests {
         client2.agentClient().fail();
 
         boolean found = false;
-        List<ServiceHealth> nodes = client2.healthClient().getHealthyNodes(serviceName);
+        ConsulResponse<List<ServiceHealth>> response = client2.healthClient().getHealthyNodes(serviceName);
+        List<ServiceHealth> nodes = response.getResponse();
 
-        System.out.println(nodes.size());
         assertEquals(1, nodes.size());
 
         for(ServiceHealth health : nodes) {
