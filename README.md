@@ -1,9 +1,7 @@
-![Consul](https://d13yacurqjgara.cloudfront.net/users/42318/screenshots/1514846/consul-logo-grad_teaser.png)
-
 Consul Client for Java
 ======================
 
-Simple client for the Consul HTTP API.  For more information about the Consul HTTP API, go here.
+Simple client for the Consul HTTP API.  For more information about the Consul HTTP API, go [here](http://www.consul.io/docs/agent/http.html).
 
 Installation
 -----------
