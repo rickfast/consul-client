@@ -15,7 +15,7 @@ Basic Usage
 
 Example 1: Register and check your service in with Consul.  Note that you need to continually check in before the TTL expires, otherwise your service's state will be marked as "critical".
 
-```
+```java
 Consul consul = Consul.newClient(); // connect to Consul on localhost
 AgentClient agentClient = consul.agentClient();
 
@@ -28,7 +28,7 @@ agentClient.pass(); // check in with Consul
 
 Example 2: Find available (healthy) services.
 
-```
+```java
 Consul consul = Consul.newClient(); // connect to Consul on localhost
 HealthClient healthClient = consul.healthClient();
 
@@ -37,7 +37,7 @@ HealthClient healthClient = consul.healthClient();
 
 Example 3: Store key/values.
 
-```
+```java
 Consul consul = Consul.newClient(); // connect to Consul on localhost
 KeyValueClient kvClient = consul.keyValueClient();
 
@@ -48,7 +48,7 @@ String value = keyValueClient.getValueAsString("foo").get(); // bar
 
 Example 4: Blocking call for value.
 
-```
+```java
 import static com.orbitz.consul.option.QueryOptionsBuilder;
 
 Consul consul = Consul.newClient();
