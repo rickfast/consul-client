@@ -14,11 +14,20 @@ import java.util.Map;
 
 public class ClientUtil {
 
+    /**
+     * Applies all key/values from the params map to query string parameters.
+     *
+     * @param webTarget The JAX-RS target to apply the query parameters.
+     * @param params Map of parameters.
+     * @return The new target with the parameters applied.
+     */
     public static WebTarget queryParams(WebTarget webTarget, Map<String, String> params) {
         WebTarget target = webTarget;
 
-        for(Map.Entry<String, String> entry : params.entrySet()) {
-            target = target.queryParam(entry.getKey(), entry.getValue());
+        if(params != null) {
+            for(Map.Entry<String, String> entry : params.entrySet()) {
+                target = target.queryParam(entry.getKey(), entry.getValue());
+            }
         }
 
         return target;

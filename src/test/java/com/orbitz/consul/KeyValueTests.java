@@ -8,6 +8,7 @@ import java.util.UUID;
 
 import static com.orbitz.consul.util.ClientUtil.decodeBase64;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 public class KeyValueTests {
@@ -51,5 +52,21 @@ public class KeyValueTests {
                 add(value2);
             }
         }, new HashSet<String>(keyValueClient.getValuesAsString(key)));
+    }
+
+    @Test
+    public void shouldDelete() throws Exception {
+        Consul client = Consul.newClient();
+        KeyValueClient keyValueClient = client.keyValueClient();
+        String key = UUID.randomUUID().toString();
+        final String value = UUID.randomUUID().toString();
+
+        keyValueClient.putValue(key, value);
+
+        assertTrue(keyValueClient.getValueAsString(key).isPresent());
+
+        keyValueClient.deleteKey(key);
+
+        assertFalse(keyValueClient.getValueAsString(key).isPresent());
     }
 }

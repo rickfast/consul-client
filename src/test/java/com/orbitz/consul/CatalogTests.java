@@ -12,6 +12,7 @@ import java.util.Map;
 
 import static com.orbitz.consul.option.QueryOptionsBuilder.builder;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
@@ -22,7 +23,7 @@ public class CatalogTests {
         Consul client = Consul.newClient();
         CatalogClient catalogClient = client.catalogClient();
 
-        assertEquals(1, catalogClient.getNodes().getResponse().size());
+        assertFalse(catalogClient.getNodes().getResponse().isEmpty());
     }
 
     @Test
@@ -30,7 +31,7 @@ public class CatalogTests {
         Consul client = Consul.newClient();
         CatalogClient catalogClient = client.catalogClient();
 
-        assertEquals(1, catalogClient.getNodes("dc1").getResponse().size());
+        assertFalse(catalogClient.getNodes("dc1").getResponse().isEmpty());
     }
 
     @Test
@@ -44,7 +45,7 @@ public class CatalogTests {
         long time = System.currentTimeMillis() - start;
 
         assertTrue(time >= 2000);
-        assertEquals(1, response.getResponse().size());
+        assertFalse(response.getResponse().isEmpty());
     }
 
     @Test

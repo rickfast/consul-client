@@ -13,10 +13,12 @@ dependencies {
     compile 'com.fasterxml.jackson.core:jackson-annotations:2.3.0'
     compile 'com.fasterxml.jackson.jaxrs:jackson-jaxrs-json-provider:2.3.0'
     compile 'org.apache.cxf:cxf-rt-rs-client:3.0.1'
-    compile group: 'com.fasterxml.jackson.jaxrs', name: 'jackson-jaxrs-base', version: '2.3.0'
-    testCompile 'junit:junit:4.11'
+    compile 'com.fasterxml.jackson.jaxrs:jackson-jaxrs-base:2.3.0'
     compile 'com.google.guava:guava:17.0'
     compile 'commons-codec:commons-codec:1.9'
+
+    testCompile 'junit:junit:4.11'
+    testCompile 'org.mockito:mockito-all:1.9.5'
 }
 
 task wrapper(type: Wrapper) {

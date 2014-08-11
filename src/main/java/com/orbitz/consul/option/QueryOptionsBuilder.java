@@ -1,5 +1,8 @@
 package com.orbitz.consul.option;
 
+/**
+ * Builder for generating Query Options for Consul API calls.
+ */
 public class QueryOptionsBuilder {
 
     private String wait;
