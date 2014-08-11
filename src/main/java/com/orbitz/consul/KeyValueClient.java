@@ -2,8 +2,10 @@ package com.orbitz.consul;
 
 import com.google.common.base.Optional;
 import com.orbitz.consul.model.kv.Value;
-import com.orbitz.consul.query.QueryOptions;
+import com.orbitz.consul.option.PutOptions;
+import com.orbitz.consul.option.QueryOptions;
 import com.orbitz.consul.util.ClientUtil;
+import org.apache.cxf.common.util.StringUtils;
 
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.WebTarget;
@@ -17,7 +19,6 @@ import java.util.List;
 import java.util.Map;
 
 import static com.orbitz.consul.util.ClientUtil.decodeBase64;
-import static com.orbitz.consul.util.ClientUtil.queryParams;
 
 /**
  * HTTP Client for /v1/kv/ endpoints.
@@ -118,8 +119,15 @@ public class KeyValueClient {
         return result;
     }
 
+    /**
+     * Puts a value into the key/value store.
+     *
+     * @param key The key to use as index.
+     * @param value The value to index.
+     * @return <code>true</code> if the value was successfully indexed.
+     */
     public boolean putValue(String key, String value) {
-        return putValue(key, value, Collections.EMPTY_MAP);
+        return putValue(key, value, PutOptions.BLANK);
     }
 
     /**
@@ -127,11 +135,28 @@ public class KeyValueClient {
      *
      * @param key The key to use as index.
      * @param value The value to index.
-     * @param params
+     * @param putOptions PUT options (e.g. wait, acquire).
      * @return <code>true</code> if the value was successfully indexed.
      */
-    private boolean putValue(String key, String value, Map<String, String> params) {
-        return queryParams(webTarget, params).path(key).request().put(Entity.entity(value,
+    private boolean putValue(String key, String value, PutOptions putOptions) {
+        Integer cas = putOptions.getCas();
+        String release = putOptions.getRelease();
+        String acquire = putOptions.getAcquire();
+        WebTarget target = webTarget;
+
+        if(cas != null) {
+            webTarget.queryParam("cas", cas);
+        }
+
+        if(!StringUtils.isEmpty(release)) {
+            webTarget.queryParam("release", release);
+        }
+
+        if(!StringUtils.isEmpty(acquire)) {
+            webTarget.queryParam("acquire", acquire);
+        }
+
+        return target.path(key).request().put(Entity.entity(value,
                 MediaType.TEXT_PLAIN_TYPE), Boolean.class);
     }
 

@@ -10,7 +10,7 @@ import java.net.UnknownHostException;
 import java.util.List;
 import java.util.Map;
 
-import static com.orbitz.consul.query.QueryOptionsBuilder.builder;
+import static com.orbitz.consul.option.QueryOptionsBuilder.builder;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;

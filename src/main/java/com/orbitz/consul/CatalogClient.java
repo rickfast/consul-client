@@ -4,7 +4,7 @@ import com.orbitz.consul.model.ConsulResponse;
 import com.orbitz.consul.model.catalog.CatalogNode;
 import com.orbitz.consul.model.catalog.CatalogService;
 import com.orbitz.consul.model.health.Node;
-import com.orbitz.consul.query.QueryOptions;
+import com.orbitz.consul.option.QueryOptions;
 
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.GenericType;
@@ -69,7 +69,7 @@ public class CatalogClient {
     }
 
     /**
-     * Retrieves all nodes with {@link com.orbitz.consul.query.QueryOptions}.
+     * Retrieves all nodes with {@link com.orbitz.consul.option.QueryOptions}.
      *
      * GET /v1/catalog/nodes
      *
@@ -82,7 +82,7 @@ public class CatalogClient {
     }
 
     /**
-     * Retrieves all nodes for a given datacenter with {@link com.orbitz.consul.query.QueryOptions}.
+     * Retrieves all nodes for a given datacenter with {@link com.orbitz.consul.option.QueryOptions}.
      *
      * GET /v1/catalog/nodes?dc={datacenter}
      *
@@ -120,7 +120,7 @@ public class CatalogClient {
     }
 
     /**
-     * Retrieves all services for a given datacenter with {@link com.orbitz.consul.query.QueryOptions}.
+     * Retrieves all services for a given datacenter with {@link com.orbitz.consul.option.QueryOptions}.
      *
      * GET /v1/catalog/services?dc={datacenter}
      *
@@ -132,7 +132,7 @@ public class CatalogClient {
     }
 
     /**
-     * Retrieves all services for a given datacenter with {@link com.orbitz.consul.query.QueryOptions}.
+     * Retrieves all services for a given datacenter with {@link com.orbitz.consul.option.QueryOptions}.
      *
      * GET /v1/catalog/services?dc={datacenter}
      *
@@ -172,7 +172,7 @@ public class CatalogClient {
     }
 
     /**
-     * Retrieves a single service with {@link com.orbitz.consul.query.QueryOptions}.
+     * Retrieves a single service with {@link com.orbitz.consul.option.QueryOptions}.
      *
      * GET /v1/catalog/service/{service}
      *
@@ -185,7 +185,7 @@ public class CatalogClient {
     }
 
     /**
-     * Retrieves a single service for a given datacenter with {@link com.orbitz.consul.query.QueryOptions}.
+     * Retrieves a single service for a given datacenter with {@link com.orbitz.consul.option.QueryOptions}.
      *
      * GET /v1/catalog/service/{service}?dc={datacenter}
      *
@@ -224,7 +224,7 @@ public class CatalogClient {
     }
 
     /**
-     * Retrieves a single node with {@link com.orbitz.consul.query.QueryOptions}.
+     * Retrieves a single node with {@link com.orbitz.consul.option.QueryOptions}.
      *
      * GET /v1/catalog/node/{node}
      *
@@ -236,7 +236,7 @@ public class CatalogClient {
     }
 
     /**
-     * Retrieves a single node for a given datacenter with {@link com.orbitz.consul.query.QueryOptions}.
+     * Retrieves a single node for a given datacenter with {@link com.orbitz.consul.option.QueryOptions}.
      *
      * GET /v1/catalog/node/{node}?dc={datacenter}
      *

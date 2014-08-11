@@ -1,8 +1,8 @@
 package com.orbitz.consul.util;
 
 import com.orbitz.consul.model.ConsulResponse;
-import com.orbitz.consul.query.ConsistencyMode;
-import com.orbitz.consul.query.QueryOptions;
+import com.orbitz.consul.option.ConsistencyMode;
+import com.orbitz.consul.option.QueryOptions;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.cxf.common.util.StringUtils;
 
@@ -43,7 +43,7 @@ public class ClientUtil {
 
     /**
      * Generates a {@link com.orbitz.consul.model.ConsulResponse} for a specific datacenter,
-     * set of {@link com.orbitz.consul.query.QueryOptions}, and a result type.
+     * set of {@link com.orbitz.consul.option.QueryOptions}, and a result type.
      *
      * @param target The base {@link javax.ws.rs.client.WebTarget}.
      * @param datacenter The datacenter to query.

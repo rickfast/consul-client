@@ -4,7 +4,7 @@ import com.orbitz.consul.model.ConsulResponse;
 import com.orbitz.consul.model.State;
 import com.orbitz.consul.model.health.HealthCheck;
 import com.orbitz.consul.model.health.ServiceHealth;
-import com.orbitz.consul.query.QueryOptions;
+import com.orbitz.consul.option.QueryOptions;
 import com.orbitz.consul.util.ClientUtil;
 
 import javax.ws.rs.client.WebTarget;
@@ -53,7 +53,7 @@ public class HealthClient {
     }
 
     /**
-     * Retrieves the healthchecks for a node with {@link com.orbitz.consul.query.QueryOptions}.
+     * Retrieves the healthchecks for a node with {@link com.orbitz.consul.option.QueryOptions}.
      *
      * GET /v1/health/node/{node}
      *
@@ -66,7 +66,7 @@ public class HealthClient {
     }
 
     /**
-     * Retrieves the healthchecks for a node in a given datacenter with {@link com.orbitz.consul.query.QueryOptions}.
+     * Retrieves the healthchecks for a node in a given datacenter with {@link com.orbitz.consul.option.QueryOptions}.
      *
      * GET /v1/health/node/{node}?dc={datacenter}
      *
@@ -106,7 +106,7 @@ public class HealthClient {
     }
 
     /**
-     * Retrieves the healthchecks for a service with {@link com.orbitz.consul.query.QueryOptions}.
+     * Retrieves the healthchecks for a service with {@link com.orbitz.consul.option.QueryOptions}.
      *
      * GET /v1/health/service/{service}
      *
@@ -119,7 +119,7 @@ public class HealthClient {
     }
 
     /**
-     * Retrieves the healthchecks for a service in a given datacenter with {@link com.orbitz.consul.query.QueryOptions}.
+     * Retrieves the healthchecks for a service in a given datacenter with {@link com.orbitz.consul.option.QueryOptions}.
      *
      * GET /v1/health/service/{service}?dc={datacenter}
      *
@@ -162,7 +162,7 @@ public class HealthClient {
     }
 
     /**
-     * Retrieves the healthchecks for a state with {@link com.orbitz.consul.query.QueryOptions}.
+     * Retrieves the healthchecks for a state with {@link com.orbitz.consul.option.QueryOptions}.
      *
      * GET /v1/health/state/{state}
      *
@@ -176,7 +176,7 @@ public class HealthClient {
     }
 
     /**
-     * Retrieves the healthchecks for a state in a given datacenter with {@link com.orbitz.consul.query.QueryOptions}.
+     * Retrieves the healthchecks for a state in a given datacenter with {@link com.orbitz.consul.option.QueryOptions}.
      *
      * GET /v1/health/state/{state}?dc={datacenter}
      *
@@ -220,7 +220,7 @@ public class HealthClient {
     }
 
     /**
-     * Retrieves the healthchecks for all healthy nodes with {@link com.orbitz.consul.query.QueryOptions}.
+     * Retrieves the healthchecks for all healthy nodes with {@link com.orbitz.consul.option.QueryOptions}.
      *
      * GET /v1/health/service/{service}?passing
      *
@@ -235,7 +235,7 @@ public class HealthClient {
 
     /**
      * Retrieves the healthchecks for all healthy nodes in a given datacenter with
-     * {@link com.orbitz.consul.query.QueryOptions}.
+     * {@link com.orbitz.consul.option.QueryOptions}.
      *
      * GET /v1/health/service/{service}?dc={datacenter}&passing
      *
@@ -279,7 +279,7 @@ public class HealthClient {
     }
 
     /**
-     * Retrieves the healthchecks for all nodes with {@link com.orbitz.consul.query.QueryOptions}.
+     * Retrieves the healthchecks for all nodes with {@link com.orbitz.consul.option.QueryOptions}.
      *
      * GET /v1/health/service/{service}
      *
@@ -294,7 +294,7 @@ public class HealthClient {
 
     /**
      * Retrieves the healthchecks for all nodes in a given datacenter with
-     * {@link com.orbitz.consul.query.QueryOptions}.
+     * {@link com.orbitz.consul.option.QueryOptions}.
      *
      * GET /v1/health/service/{service}?dc={datacenter}
      *
