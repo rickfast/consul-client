@@ -5,17 +5,20 @@ package com.orbitz.consul.model;
  */
 public enum State {
 
-    PASS("pass"), WARN("warn"), FAIL("fail");
+    PASS("pass", "passing"), WARN("warn", "warning"), FAIL("fail", "critical"), ANY("any", "any"),
+    UNKNOWN("unknown", "unknown");
 
     private String path;
+    private String name;
 
     /**
      * Private constructor.
      *
      * @param path Consul API path value.
      */
-    private State(String path) {
+    private State(String path, String name) {
         this.path = path;
+        this.name = name;
     }
 
     /**
@@ -25,5 +28,15 @@ public enum State {
      */
     public String getPath() {
         return path;
+    }
+
+    /**
+     * Retrieve the name value for the Consul check API endpoints.  This is the value
+     * to use for querying services by health state.
+     *
+     * @return The name, e.g. "passing" for PASS.
+     */
+    public String getName() {
+        return name;
     }
 }

@@ -18,7 +18,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-import static com.orbitz.consul.util.ClientUtil.decodeBase64;
+import static com.orbitz.consul.util.ClientUtil.*;
 
 /**
  * HTTP Client for /v1/kv/ endpoints.

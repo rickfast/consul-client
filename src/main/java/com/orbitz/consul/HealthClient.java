@@ -5,11 +5,12 @@ import com.orbitz.consul.model.State;
 import com.orbitz.consul.model.health.HealthCheck;
 import com.orbitz.consul.model.health.ServiceHealth;
 import com.orbitz.consul.option.QueryOptions;
-import com.orbitz.consul.util.ClientUtil;
 
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.GenericType;
 import java.util.List;
+
+import static com.orbitz.consul.util.ClientUtil.response;
 
 /**
  * HTTP Client for /v1/health/ endpoints.
@@ -76,8 +77,9 @@ public class HealthClient {
      * {@link com.orbitz.consul.model.health.HealthCheck} objects.
      */
     public ConsulResponse<List<HealthCheck>> getNodeChecks(String node, String datacenter, QueryOptions queryOptions) {
-        return ClientUtil.response(webTarget.path("node").path(node), datacenter, queryOptions,
-                new GenericType<List<HealthCheck>>() {});
+        return response(webTarget.path("node").path(node), datacenter, queryOptions,
+                new GenericType<List<HealthCheck>>() {
+                });
     }
 
     /**
@@ -130,7 +132,7 @@ public class HealthClient {
      */
     public ConsulResponse<List<HealthCheck>> getServiceChecks(String service, String datacenter,
                                                               QueryOptions queryOptions) {
-        return ClientUtil.response(webTarget.path("checks").path(service), datacenter, queryOptions,
+        return response(webTarget.path("checks").path(service), datacenter, queryOptions,
                 new GenericType<List<HealthCheck>>() {});
     }
 
@@ -188,7 +190,7 @@ public class HealthClient {
      */
     public ConsulResponse<List<HealthCheck>> getChecksByState(State state, String datacenter,
                                                               QueryOptions queryOptions) {
-        return ClientUtil.response(webTarget.path("state").path(state.getPath()), datacenter, queryOptions,
+        return response(webTarget.path("state").path(state.getName()), datacenter, queryOptions,
                 new GenericType<List<HealthCheck>>() {});
     }
 
@@ -247,7 +249,7 @@ public class HealthClient {
      */
     public ConsulResponse<List<ServiceHealth>> getHealthyNodes(String service, String datacenter,
                                                                QueryOptions queryOptions) {
-        return ClientUtil.response(webTarget.path("service").path(service).queryParam("passing", "true"),
+        return response(webTarget.path("service").path(service).queryParam("passing", "true"),
                 datacenter, queryOptions, new GenericType<List<ServiceHealth>>() {});
     }
 
@@ -306,7 +308,7 @@ public class HealthClient {
      */
     public ConsulResponse<List<ServiceHealth>> getAllNodes(String service, String datacenter,
                                                                QueryOptions queryOptions) {
-        return ClientUtil.response(webTarget.path("service").path(service), datacenter, queryOptions,
+        return response(webTarget.path("service").path(service), datacenter, queryOptions,
                 new GenericType<List<ServiceHealth>>() {});
     }
 }

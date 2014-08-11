@@ -1,7 +1,10 @@
 package com.orbitz.consul;
 
 import com.orbitz.consul.model.ConsulResponse;
+import com.orbitz.consul.model.State;
+import com.orbitz.consul.model.health.HealthCheck;
 import com.orbitz.consul.model.health.ServiceHealth;
+import com.orbitz.consul.option.QueryOptionsBuilder;
 import org.junit.Test;
 
 import java.net.UnknownHostException;
@@ -30,6 +33,74 @@ public class HealthTests {
 
         boolean found = false;
         ConsulResponse<List<ServiceHealth>> response = client2.healthClient().getHealthyNodes(serviceName);
+        assertHealth(serviceId, found, response);
+    }
+
+    @Test
+    public void shouldFetchNode() throws UnknownHostException {
+        Consul client = Consul.newClient();
+        String serviceName = UUID.randomUUID().toString();
+        String serviceId = UUID.randomUUID().toString();
+
+        client.agentClient().register(8080, 20L, serviceName, serviceId);
+        client.agentClient().pass();
+
+        boolean found = false;
+        ConsulResponse<List<ServiceHealth>> response = client.healthClient().getAllNodes(serviceName);
+        assertHealth(serviceId, found, response);
+    }
+
+    @Test
+    public void shouldFetchNodeDatacenter() throws UnknownHostException {
+        Consul client = Consul.newClient();
+        String serviceName = UUID.randomUUID().toString();
+        String serviceId = UUID.randomUUID().toString();
+
+        client.agentClient().register(8080, 20L, serviceName, serviceId);
+        client.agentClient().pass();
+
+        boolean found = false;
+        ConsulResponse<List<ServiceHealth>> response = client.healthClient().getAllNodes(serviceName, "dc1");
+        assertHealth(serviceId, found, response);
+    }
+
+    @Test
+    public void shouldFetchNodeBlock() throws UnknownHostException {
+        Consul client = Consul.newClient();
+        String serviceName = UUID.randomUUID().toString();
+        String serviceId = UUID.randomUUID().toString();
+
+        client.agentClient().register(8080, 20L, serviceName, serviceId);
+        client.agentClient().pass();
+
+        boolean found = false;
+        ConsulResponse<List<ServiceHealth>> response = client.healthClient().getAllNodes(serviceName, "dc1",
+                QueryOptionsBuilder.builder().blockSeconds(2, 0).build());
+        assertHealth(serviceId, found, response);
+    }
+
+    @Test
+    public void shouldFetchByState() throws UnknownHostException {
+        Consul client = Consul.newClient();
+        String serviceName = UUID.randomUUID().toString();
+        String serviceId = UUID.randomUUID().toString();
+
+        client.agentClient().register(8080, 20L, serviceName, serviceId);
+        client.agentClient().warn();
+
+        boolean found = false;
+        ConsulResponse<List<HealthCheck>> response = client.healthClient().getChecksByState(State.WARN);
+
+        for(HealthCheck healthCheck : response.getResponse()) {
+            if(healthCheck.getServiceId().equals(serviceId)) {
+                found = true;
+            }
+        }
+
+        assertTrue(found);
+    }
+
+    private void assertHealth(String serviceId, boolean found, ConsulResponse<List<ServiceHealth>> response) {
         List<ServiceHealth> nodes = response.getResponse();
 
         assertEquals(1, nodes.size());
