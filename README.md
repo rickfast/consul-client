@@ -14,7 +14,7 @@ Grab the latest binary (0.1) [here](http://dl.bintray.com/orbitz/consul-client/c
 
 **Note:** Maven Central inclusion pending.  Should be available soon.
 
-```
+```groovy
 repositories {
     jcenter() // or mavenCentral()
 }
@@ -26,7 +26,7 @@ dependencies {
 
 ###Maven:
 
-```
+```xml
 <dependencies>
     <dependency>
         <groupId>com.orbitz.consul</groupId>
@@ -82,5 +82,5 @@ KeyValueClient kvClient = consul.keyValueClient();
 
 keyValueClient.putValue("foo", "bar");
 
-String value = keyValueClient.getValue("foo", builder().blockMinutes(10, 120).build()).get(); // will block (long poll) for 10 minutes or until "foo"'s value changes.
+Value value = keyValueClient.getValue("foo", builder().blockMinutes(10, 120).build()).get(); // will block (long poll) for 10 minutes or until "foo"'s value changes.
 ```
