@@ -12,7 +12,7 @@ Grab the latest binary (0.1) [here](http://dl.bintray.com/orbitz/consul-client/c
 
 ###Gradle:
 
-**Note:** JCenter/Central inclusion pending.  Should be available soon.
+**Note:** Maven Central inclusion pending.  Should be available soon.
 
 ```
 repositories {
