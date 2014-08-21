@@ -6,7 +6,35 @@ Simple client for the Consul HTTP API.  For more information about the Consul HT
 Installation
 -----------
 
-TBD.
+###Bintray:
+
+Grab the latest binary (0.1) [here](http://dl.bintray.com/orbitz/consul-client/com/orbitz/consul/consul-client/0.1/#consul-client-0.1.jar).
+
+###Gradle:
+
+**Note:** JCenter/Central inclusion pending.  Should be available soon.
+
+```
+repositories {
+    jcenter() // or mavenCentral()
+}
+
+dependencies {
+    compile 'com.orbitz.consul:consul-client:0.1'
+}
+```
+
+###Maven:
+
+```
+<dependencies>
+    <dependency>
+        <groupId>com.orbitz.consul</groupId>
+        <artifactId>consul-client</artifactId>
+        <version>0.1</version>
+    <dependency>
+<dependencies>
+```
 
 Basic Usage
 -----------
