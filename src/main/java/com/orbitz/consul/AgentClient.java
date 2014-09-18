@@ -71,14 +71,15 @@ class AgentClient {
      * @param ttl Time to live for the Consul dead man's switch.
      * @param name Service name to register.
      * @param id Service id to register.
+     * @param tags Tags to register with.
      */
-    public void register(int port, long ttl, String name, String id) {
+    public void register(int port, long ttl, String name, String id, String... tags) {
         Registration.Check check = new Registration.Check();
         checkId = String.format("service:%s", id);
 
         check.setTtl(String.format("%ss", ttl));
 
-        register(port, check, name, id);
+        register(port, check, name, id, tags);
     }
 
     /**
@@ -90,15 +91,16 @@ class AgentClient {
      * @param interval Health script run interval in seconds.
      * @param name Service name to register.
      * @param id Service id to register.
+     * @param tags Tags to register with.
      */
-    public void register(int port, String script, long interval, String name, String id) {
+    public void register(int port, String script, long interval, String name, String id, String... tags) {
         Registration.Check check = new Registration.Check();
         checkId = String.format("service:%s", id);
 
         check.setScript(script);
         check.setInterval(String.format("%ss", interval));
 
-        register(port, check, name, id);
+        register(port, check, name, id, tags);
     }
 
     /**
@@ -109,14 +111,16 @@ class AgentClient {
      * @param check The health check to run periodically.  Can be null.
      * @param name Service name to register.
      * @param id Service id to register.
+     * @param tags Tags to register with.
      */
-    public void register(int port, Registration.Check check, String name, String id) {
+    public void register(int port, Registration.Check check, String name, String id, String... tags) {
         Registration registration = new Registration();
 
         registration.setPort(port);
         registration.setCheck(check);
         registration.setName(name);
         registration.setId(id);
+        registration.setTags(tags);
 
         register(registration);
     }

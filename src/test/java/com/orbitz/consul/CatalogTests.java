@@ -4,6 +4,7 @@ import com.orbitz.consul.model.ConsulResponse;
 import com.orbitz.consul.model.catalog.CatalogNode;
 import com.orbitz.consul.model.catalog.CatalogService;
 import com.orbitz.consul.model.health.Node;
+import com.orbitz.consul.option.CatalogOptionsBuilder;
 import org.junit.Test;
 
 import java.net.UnknownHostException;
@@ -31,7 +32,7 @@ public class CatalogTests {
         Consul client = Consul.newClient();
         CatalogClient catalogClient = client.catalogClient();
 
-        assertFalse(catalogClient.getNodes("dc1").getResponse().isEmpty());
+        assertFalse(catalogClient.getNodes(CatalogOptionsBuilder.builder().datacenter("dc1").build()).getResponse().isEmpty());
     }
 
     @Test
@@ -40,7 +41,7 @@ public class CatalogTests {
         CatalogClient catalogClient = client.catalogClient();
 
         long start = System.currentTimeMillis();
-        ConsulResponse<List<Node>> response = catalogClient.getNodes("dc1",
+        ConsulResponse<List<Node>> response = catalogClient.getNodes(CatalogOptionsBuilder.builder().datacenter("dc1").build(),
                 builder().blockSeconds(2, Integer.MAX_VALUE).build());
         long time = System.currentTimeMillis() - start;
 

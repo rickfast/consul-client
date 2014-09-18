@@ -1,6 +1,7 @@
 package com.orbitz.consul.util;
 
 import com.orbitz.consul.model.ConsulResponse;
+import com.orbitz.consul.option.CatalogOptions;
 import com.orbitz.consul.option.ConsistencyMode;
 import com.orbitz.consul.option.QueryOptions;
 import org.apache.commons.codec.binary.Base64;
@@ -55,16 +56,23 @@ public class ClientUtil {
      * set of {@link com.orbitz.consul.option.QueryOptions}, and a result type.
      *
      * @param target The base {@link javax.ws.rs.client.WebTarget}.
-     * @param datacenter The datacenter to query.
+     * @param catalogOptions Catalog specific options to use.
      * @param queryOptions The Query Options to use.
      * @param type The generic type to marshall the resulting data to.
      * @param <T> The result type.
      * @return A {@link com.orbitz.consul.model.ConsulResponse}.
      */
-    public static <T> ConsulResponse<T> response(WebTarget target, String datacenter, QueryOptions queryOptions,
-                                           GenericType<T> type) {
-        if(!StringUtils.isEmpty(datacenter)) {
-            target = target.queryParam("dc", datacenter);
+    public static <T> ConsulResponse<T> response(WebTarget target, CatalogOptions catalogOptions,
+                                                 QueryOptions queryOptions,
+                                                 GenericType<T> type) {
+        if(catalogOptions != null) {
+            if (!StringUtils.isEmpty(catalogOptions.getDatacenter())) {
+                target = target.queryParam("dc", catalogOptions.getDatacenter());
+            }
+
+            if (!StringUtils.isEmpty(catalogOptions.getTag())) {
+                target = target.queryParam("tag", catalogOptions.getTag());
+            }
         }
 
         target = queryConfig(target, queryOptions);

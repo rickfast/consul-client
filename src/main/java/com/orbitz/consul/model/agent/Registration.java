@@ -16,6 +16,9 @@ public class Registration {
     @JsonProperty("Check")
     private Check check;
 
+    @JsonProperty("Tags")
+    private String[] tags;
+
     public String getName() {
         return name;
     }
@@ -46,6 +49,14 @@ public class Registration {
 
     public void setCheck(Check check) {
         this.check = check;
+    }
+
+    public String[] getTags() {
+        return tags;
+    }
+
+    public void setTags(String... tags) {
+        this.tags = tags;
     }
 
     public static class Check {

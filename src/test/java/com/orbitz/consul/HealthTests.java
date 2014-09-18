@@ -4,6 +4,7 @@ import com.orbitz.consul.model.ConsulResponse;
 import com.orbitz.consul.model.State;
 import com.orbitz.consul.model.health.HealthCheck;
 import com.orbitz.consul.model.health.ServiceHealth;
+import com.orbitz.consul.option.CatalogOptionsBuilder;
 import com.orbitz.consul.option.QueryOptionsBuilder;
 import org.junit.Test;
 
@@ -60,7 +61,8 @@ public class HealthTests {
         client.agentClient().pass();
 
         boolean found = false;
-        ConsulResponse<List<ServiceHealth>> response = client.healthClient().getAllNodes(serviceName, "dc1");
+        ConsulResponse<List<ServiceHealth>> response = client.healthClient().getAllNodes(serviceName,
+                CatalogOptionsBuilder.builder().datacenter("dc1").build());
         assertHealth(serviceId, found, response);
     }
 
@@ -74,7 +76,8 @@ public class HealthTests {
         client.agentClient().pass();
 
         boolean found = false;
-        ConsulResponse<List<ServiceHealth>> response = client.healthClient().getAllNodes(serviceName, "dc1",
+        ConsulResponse<List<ServiceHealth>> response = client.healthClient().getAllNodes(serviceName,
+                CatalogOptionsBuilder.builder().datacenter("dc1").build(),
                 QueryOptionsBuilder.builder().blockSeconds(2, 0).build());
         assertHealth(serviceId, found, response);
     }

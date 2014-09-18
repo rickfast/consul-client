@@ -4,6 +4,7 @@ import com.orbitz.consul.model.ConsulResponse;
 import com.orbitz.consul.model.catalog.CatalogNode;
 import com.orbitz.consul.model.catalog.CatalogService;
 import com.orbitz.consul.model.health.Node;
+import com.orbitz.consul.option.CatalogOptions;
 import com.orbitz.consul.option.QueryOptions;
 
 import javax.ws.rs.client.WebTarget;
@@ -60,12 +61,12 @@ public class CatalogClient {
      *
      * GET /v1/catalog/nodes?dc={datacenter}
      *
-     * @param datacenter The datacenter to query.
+     * @param catalogOptions Catalog specific options to use.      
      * @return A {@link com.orbitz.consul.model.ConsulResponse} containing a list of
      * {@link com.orbitz.consul.model.health.Node} objects.
      */
-    public ConsulResponse<List<Node>> getNodes(String datacenter) {
-        return getNodes(datacenter, QueryOptions.BLANK);
+    public ConsulResponse<List<Node>> getNodes(CatalogOptions catalogOptions) {
+        return getNodes(catalogOptions, QueryOptions.BLANK);
     }
 
     /**
@@ -86,13 +87,13 @@ public class CatalogClient {
      *
      * GET /v1/catalog/nodes?dc={datacenter}
      *
-     * @param datacenter The datacenter to query.
+     * @param catalogOptions Catalog specific options to use.      
      * @param queryOptions The Query Options to use.
      * @return A {@link com.orbitz.consul.model.ConsulResponse} containing a list of
      * {@link com.orbitz.consul.model.health.Node} objects.
      */
-    public ConsulResponse<List<Node>> getNodes(String datacenter, QueryOptions queryOptions) {
-        return response(webTarget.path("nodes"), datacenter, queryOptions,
+    public ConsulResponse<List<Node>> getNodes(CatalogOptions catalogOptions, QueryOptions queryOptions) {
+        return response(webTarget.path("nodes"), catalogOptions, queryOptions,
                 new GenericType<List<Node>>() {});
     }
 
@@ -112,11 +113,11 @@ public class CatalogClient {
      *
      * GET /v1/catalog/services?dc={datacenter}
      *
-     * @param datacenter The datacenter to query.
+     * @param catalogOptions Catalog specific options to use.      
      * @return A {@link com.orbitz.consul.model.ConsulResponse} containing a map of service name to list of tags.
      */
-    public ConsulResponse<Map<String, List<String>>> getServices(String datacenter) {
-        return getServices(datacenter, QueryOptions.BLANK);
+    public ConsulResponse<Map<String, List<String>>> getServices(CatalogOptions catalogOptions) {
+        return getServices(catalogOptions, QueryOptions.BLANK);
     }
 
     /**
@@ -136,12 +137,12 @@ public class CatalogClient {
      *
      * GET /v1/catalog/services?dc={datacenter}
      *
-     * @param datacenter The datacenter to query.
+     * @param catalogOptions Catalog specific options to use.      
      * @param queryOptions The Query Options to use.
      * @return A {@link com.orbitz.consul.model.ConsulResponse} containing a map of service name to list of tags.
      */
-    public ConsulResponse<Map<String, List<String>>> getServices(String datacenter, QueryOptions queryOptions) {
-        return response(webTarget.path("services"), datacenter, queryOptions,
+    public ConsulResponse<Map<String, List<String>>> getServices(CatalogOptions catalogOptions, QueryOptions queryOptions) {
+        return response(webTarget.path("services"), catalogOptions, queryOptions,
                 new GenericType<Map<String, List<String>>>() {
                 });
     }
@@ -163,12 +164,12 @@ public class CatalogClient {
      *
      * GET /v1/catalog/service/{service}?dc={datacenter}
      *
-     * @param datacenter The datacenter to query.
+     * @param catalogOptions Catalog specific options to use.      
      * @return A {@link com.orbitz.consul.model.ConsulResponse} containing
      * {@link com.orbitz.consul.model.catalog.CatalogService} objects.
      */
-    public ConsulResponse<List<CatalogService>> getService(String service, String datacenter) {
-        return getService(service, datacenter, QueryOptions.BLANK);
+    public ConsulResponse<List<CatalogService>> getService(String service, CatalogOptions catalogOptions) {
+        return getService(service, catalogOptions, QueryOptions.BLANK);
     }
 
     /**
@@ -189,14 +190,14 @@ public class CatalogClient {
      *
      * GET /v1/catalog/service/{service}?dc={datacenter}
      *
-     * @param datacenter The datacenter to query.
+     * @param catalogOptions Catalog specific options to use.      
      * @param queryOptions The Query Options to use.
      * @return A {@link com.orbitz.consul.model.ConsulResponse} containing
      * {@link com.orbitz.consul.model.catalog.CatalogService} objects.
      */
-    public ConsulResponse<List<CatalogService>> getService(String service, String datacenter,
+    public ConsulResponse<List<CatalogService>> getService(String service, CatalogOptions catalogOptions,
                                                            QueryOptions queryOptions) {
-        return response(webTarget.path("service").path(service), datacenter, queryOptions,
+        return response(webTarget.path("service").path(service), catalogOptions, queryOptions,
                 new GenericType<List<CatalogService>>() {});
     }
 
@@ -216,11 +217,11 @@ public class CatalogClient {
      *
      * GET /v1/catalog/node/{node}?dc={datacenter}
      *
-     * @param datacenter The datacenter to query.
+     * @param catalogOptions Catalog specific options to use.      
      * @return A list of matching {@link com.orbitz.consul.model.catalog.CatalogService} objects.
      */
-    public ConsulResponse<CatalogNode> getNode(String node, String datacenter) {
-        return getNode(node, datacenter, QueryOptions.BLANK);
+    public ConsulResponse<CatalogNode> getNode(String node, CatalogOptions catalogOptions) {
+        return getNode(node, catalogOptions, QueryOptions.BLANK);
     }
 
     /**
@@ -240,12 +241,12 @@ public class CatalogClient {
      *
      * GET /v1/catalog/node/{node}?dc={datacenter}
      *
-     * @param datacenter The datacenter to query.
+     * @param catalogOptions Catalog specific options to use.      
      * @param queryOptions The Query Options to use.
      * @return A list of matching {@link com.orbitz.consul.model.catalog.CatalogService} objects.
      */
-    public ConsulResponse<CatalogNode> getNode(String node, String datacenter, QueryOptions queryOptions) {
-        return response(webTarget.path("node").path(node), datacenter, queryOptions,
+    public ConsulResponse<CatalogNode> getNode(String node, CatalogOptions catalogOptions, QueryOptions queryOptions) {
+        return response(webTarget.path("node").path(node), catalogOptions, queryOptions,
                 new GenericType<CatalogNode>() {});
     }
 }
