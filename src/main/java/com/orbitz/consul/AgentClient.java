@@ -19,7 +19,7 @@ import java.util.Map;
 /**
  * HTTP Client for /v1/agent/ endpoints.
  */
-class AgentClient {
+public class AgentClient {
     
     private WebTarget webTarget;
     private boolean registered;
