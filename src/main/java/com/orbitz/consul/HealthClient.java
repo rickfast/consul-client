@@ -260,8 +260,8 @@ public class HealthClient {
     }
 
     /**
-     * Retrieves the healthchecks for all healthy nodes in a given datacenter with
-     * {@link com.orbitz.consul.option.QueryOptions}.
+     * Asynchronously retrieves the healthchecks for all healthy nodes in a given
+     * datacenter with {@link com.orbitz.consul.option.QueryOptions}.
      *
      * GET /v1/health/service/{service}?dc={datacenter}&passing
      *
@@ -281,8 +281,8 @@ public class HealthClient {
     }
 
     /**
-     * Retrieves the healthchecks for all healthy nodes in a given datacenter with
-     * {@link com.orbitz.consul.option.QueryOptions}.
+     * Asynchronously retrieves the healthchecks for all healthy nodes in a given
+     * datacenter with {@link com.orbitz.consul.option.QueryOptions}.
      *
      * GET /v1/health/service/{service}?dc={datacenter}&passing
      *
