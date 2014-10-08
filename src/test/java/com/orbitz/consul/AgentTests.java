@@ -66,16 +66,6 @@ public class AgentTests {
         assertFalse(found);
     }
 
-    @Test(expected = ConsulException.class)
-    public void shouldFailOnDuplicateRegistration() throws UnknownHostException {
-        Consul client = Consul.newClient();
-        String serviceName = UUID.randomUUID().toString();
-        String serviceId = UUID.randomUUID().toString();
-
-        client.agentClient().register(8080, 10000L, serviceName, serviceId);
-        client.agentClient().register(8080, 10000L, serviceName, serviceId);
-    }
-
     @Test
     public void shouldGetChecks() {
         Consul client = Consul.newClient();
