@@ -6,6 +6,7 @@ install:
 before_script:
     - mkdir data
     - unzip 0.4.0_linux_386.zip
+    - ls -l
     - ./consul agent -server -bootstrap -data-dir data
 script:
     - ./gradlew clean build
