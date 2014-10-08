@@ -37,6 +37,14 @@ public class QueryOptionsBuilder {
         return this;
     }
 
+    public QueryOptionsBuilder queryOptions(QueryOptions queryOptions) {
+        this.wait = queryOptions.getWait();
+        this.index = queryOptions.getIndex();
+        this.consistencyMode = queryOptions.getConsistencyMode();
+
+        return this;
+    }
+
     public QueryOptions build() {
         return new QueryOptions(wait, index, consistencyMode);
     }

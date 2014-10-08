@@ -1,10 +1,12 @@
 package com.orbitz.consul;
 
+import com.orbitz.consul.async.ConsulResponseCallback;
 import com.orbitz.consul.model.ConsulResponse;
 import com.orbitz.consul.model.State;
 import com.orbitz.consul.model.health.HealthCheck;
 import com.orbitz.consul.model.health.ServiceHealth;
 import com.orbitz.consul.option.CatalogOptions;
+import com.orbitz.consul.option.CatalogOptionsBuilder;
 import com.orbitz.consul.option.QueryOptions;
 
 import javax.ws.rs.client.WebTarget;
@@ -134,7 +136,8 @@ public class HealthClient {
     public ConsulResponse<List<HealthCheck>> getServiceChecks(String service, CatalogOptions catalogOptions,
                                                               QueryOptions queryOptions) {
         return response(webTarget.path("checks").path(service), catalogOptions, queryOptions,
-                new GenericType<List<HealthCheck>>() {});
+                new GenericType<List<HealthCheck>>() {
+                });
     }
 
     /**
@@ -192,7 +195,8 @@ public class HealthClient {
     public ConsulResponse<List<HealthCheck>> getChecksByState(State state, CatalogOptions catalogOptions,
                                                               QueryOptions queryOptions) {
         return response(webTarget.path("state").path(state.getName()), catalogOptions, queryOptions,
-                new GenericType<List<HealthCheck>>() {});
+                new GenericType<List<HealthCheck>>() {
+                });
     }
 
     /**
@@ -251,7 +255,48 @@ public class HealthClient {
     public ConsulResponse<List<ServiceHealth>> getHealthyNodes(String service, CatalogOptions catalogOptions,
                                                                QueryOptions queryOptions) {
         return response(webTarget.path("service").path(service).queryParam("passing", "true"),
-                catalogOptions, queryOptions, new GenericType<List<ServiceHealth>>() {});
+                catalogOptions, queryOptions, new GenericType<List<ServiceHealth>>() {
+        });
+    }
+
+    /**
+     * Retrieves the healthchecks for all healthy nodes in a given datacenter with
+     * {@link com.orbitz.consul.option.QueryOptions}.
+     *
+     * GET /v1/health/service/{service}?dc={datacenter}&passing
+     *
+     * Experimental.
+     *
+     * @param service The service to query.
+     * @param catalogOptions The catalog specific options to use.
+     * @param queryOptions The Query Options to use.
+     * @param callback Callback implemented by callee to handle results.
+     */
+    public void getHealthyNodesAsync(String service, CatalogOptions catalogOptions,
+                                     QueryOptions queryOptions,
+                                     ConsulResponseCallback<List<ServiceHealth>> callback) {
+        response(webTarget.path("service").path(service).queryParam("passing", "true"),
+                catalogOptions, queryOptions, new GenericType<List<ServiceHealth>>() {
+                }, callback);
+    }
+
+    /**
+     * Retrieves the healthchecks for all healthy nodes in a given datacenter with
+     * {@link com.orbitz.consul.option.QueryOptions}.
+     *
+     * GET /v1/health/service/{service}?dc={datacenter}&passing
+     *
+     * Experimental.
+     *
+     * @param service The service to query.
+     * @param queryOptions The Query Options to use.
+     * @param callback Callback implemented by callee to handle results.
+     */
+    public void getHealthyNodesAsync(String service, QueryOptions queryOptions,
+                                     ConsulResponseCallback<List<ServiceHealth>> callback) {
+        response(webTarget.path("service").path(service).queryParam("passing", "true"),
+                CatalogOptionsBuilder.builder().build(), queryOptions, new GenericType<List<ServiceHealth>>() {
+                }, callback);
     }
 
     /**
