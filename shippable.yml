@@ -1,13 +1,12 @@
 language: java
 jdk:
     - oraclejdk6
-install:
-    - sudo wget https://dl.bintray.com/mitchellh/consul/0.4.0_linux_386.zip --no-check-certificate
-before_script:
+before_install:
+    - wget https://dl.bintray.com/mitchellh/consul/0.4.0_linux_386.zip --no-check-certificate
     - mkdir data
     - unzip 0.4.0_linux_386.zip
     - ls -l
     - pwd
-    - /home/shippable/workspace/src/github.com/OrbitzWorldwide/consul-client/consul agent -server -bootstrap -data-dir data
+    - ./consul agent -server -bootstrap -data-dir data
 script:
     - ./gradlew clean build
