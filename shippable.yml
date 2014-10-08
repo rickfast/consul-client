@@ -2,7 +2,7 @@ language: java
 jdk:
     - oraclejdk6
 before_install:
-    - wget https://dl.bintray.com/mitchellh/consul/0.4.0_linux_386.zip --no-check-certificate
+    - wget https://dl.bintray.com/mitchellh/consul/0.4.0_linux_amd64.zip --no-check-certificate
     - mkdir data
     - unzip 0.4.0_linux_386.zip
     - ls -l
