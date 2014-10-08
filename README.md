@@ -1,3 +1,5 @@
+[![Build Status](https://api.shippable.com/projects/543452637a7fb11eaa64a5c8/badge?branchName=master)](https://app.shippable.com/projects/543452637a7fb11eaa64a5c8/builds/latest)
+
 Consul Client for Java
 ======================
 
