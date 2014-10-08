@@ -8,6 +8,6 @@ before_script:
     - unzip 0.4.0_linux_386.zip
     - ls -l
     - pwd
-    - ./consul agent -server -bootstrap -data-dir data
+    - /home/shippable/workspace/src/github.com/OrbitzWorldwide/consul-client/consul agent -server -bootstrap -data-dir data
 script:
     - ./gradlew clean build
