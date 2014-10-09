@@ -88,10 +88,6 @@ public class ClientUtil {
                                                  QueryOptions queryOptions,
                                                  GenericType<T> type,
                                                  ConsulResponseCallback<T> callback) {
-        if(queryOptions.isBlocking()) {
-            queryOptions = QueryOptionsBuilder.builder().queryOptions(queryOptions)
-                    .blockMinutes(5, queryOptions.getIndex()).build();
-        }
 
         target = catalogConfig(target, catalogOptions);
         target = queryConfig(target, queryOptions);
