@@ -69,9 +69,9 @@ Example 3: Store key/values.
 Consul consul = Consul.newClient(); // connect to Consul on localhost
 KeyValueClient kvClient = consul.keyValueClient();
 
-keyValueClient.putValue("foo", "bar");
+kvClient.putValue("foo", "bar");
 
-String value = keyValueClient.getValueAsString("foo").get(); // bar
+String value = kvClient.getValueAsString("foo").get(); // bar
 ```
 
 Example 4: Blocking call for value.
@@ -82,7 +82,7 @@ import static com.orbitz.consul.option.QueryOptionsBuilder;
 Consul consul = Consul.newClient();
 KeyValueClient kvClient = consul.keyValueClient();
 
-keyValueClient.putValue("foo", "bar");
+kvClient.putValue("foo", "bar");
 
-Value value = keyValueClient.getValue("foo", builder().blockMinutes(10, 120).build()).get(); // will block (long poll) for 10 minutes or until "foo"'s value changes.
+Value value = kvClient.getValue("foo", builder().blockMinutes(10, 120).build()).get(); // will block (long poll) for 10 minutes or until "foo"'s value changes.
 ```
