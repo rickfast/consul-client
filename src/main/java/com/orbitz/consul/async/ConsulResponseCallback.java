@@ -8,19 +8,19 @@ import com.orbitz.consul.model.ConsulResponse;
  *
  * @param <T> The Response type.
  */
-public abstract class ConsulResponseCallback<T> {
+public interface ConsulResponseCallback<T> {
 
     /**
      * Callback for a successful {@link com.orbitz.consul.model.ConsulResponse}.
      *
      * @param consulResponse The Consul response.
      */
-    public abstract void onComplete(ConsulResponse<T> consulResponse);
+    public void onComplete(ConsulResponse<T> consulResponse);
 
     /**
      * Callback for an unsuccessful request.
      *
      * @param throwable The exception thrown.
      */
-    public abstract void onFailure(Throwable throwable);
+    public void onFailure(Throwable throwable);
 }

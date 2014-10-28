@@ -358,4 +358,44 @@ public class HealthClient {
                 new GenericType<List<ServiceHealth>>() {
                 });
     }
+
+    /**
+     * Asynchronously retrieves the healthchecks for all nodes in a given
+     * datacenter with {@link com.orbitz.consul.option.QueryOptions}.
+     * <p/>
+     * GET /v1/health/service/{service}?dc={datacenter}
+     * <p/>
+     * Experimental.
+     *
+     * @param service        The service to query.
+     * @param catalogOptions The catalog specific options to use.
+     * @param queryOptions   The Query Options to use.
+     * @param callback       Callback implemented by callee to handle results.
+     */
+    public void getAllNodes(String service, CatalogOptions catalogOptions,
+                            QueryOptions queryOptions,
+                            ConsulResponseCallback<List<ServiceHealth>> callback) {
+        response(webTarget.path("service").path(service), catalogOptions, queryOptions,
+                new GenericType<List<ServiceHealth>>() {
+                }, callback);
+    }
+
+    /**
+     * Asynchronously retrieves the healthchecks for all nodes in a given
+     * datacenter with {@link com.orbitz.consul.option.QueryOptions}.
+     * <p/>
+     * GET /v1/health/service/{service}?dc={datacenter}
+     * <p/>
+     * Experimental.
+     *
+     * @param service      The service to query.
+     * @param queryOptions The Query Options to use.
+     * @param callback     Callback implemented by callee to handle results.
+     */
+    public void getAllNodes(String service, QueryOptions queryOptions,
+                            ConsulResponseCallback<List<ServiceHealth>> callback) {
+        response(webTarget.path("service").path(service), CatalogOptionsBuilder.builder().build(),
+                queryOptions, new GenericType<List<ServiceHealth>>() {
+        }, callback);
+    }
 }
