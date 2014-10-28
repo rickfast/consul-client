@@ -2,7 +2,7 @@ apply plugin: 'java'
 apply plugin: 'com.jfrog.bintray'
 apply plugin: 'maven'
 
-version = '0.4.1'
+version = '0.4.3'
 group = 'com.orbitz.consul'
 
 repositories {
@@ -37,14 +37,8 @@ task sourcesJar(type: Jar, dependsOn: classes) {
     from sourceSets.main.allSource
 }
 
-task javadocJar(type: Jar, dependsOn: javadoc) {
-    classifier = 'javadoc'
-    from javadoc.destinationDir
-}
-
 artifacts {
     archives sourcesJar
-    archives javadocJar
 }
 
 task wrapper(type: Wrapper) {
