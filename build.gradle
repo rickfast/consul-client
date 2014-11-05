@@ -2,7 +2,7 @@ apply plugin: 'java'
 apply plugin: 'com.jfrog.bintray'
 apply plugin: 'maven'
 
-version = '0.4.3'
+version = '0.4.4'
 group = 'com.orbitz.consul'
 
 repositories {
@@ -24,6 +24,7 @@ dependencies {
     compile 'com.fasterxml.jackson.core:jackson-annotations:2.3.0'
     compile 'com.fasterxml.jackson.jaxrs:jackson-jaxrs-json-provider:2.3.0'
     compile 'org.apache.cxf:cxf-rt-rs-client:3.0.1'
+    compile 'org.apache.cxf:cxf-rt-transports-http-hc:3.0.1'
     compile 'com.fasterxml.jackson.jaxrs:jackson-jaxrs-base:2.3.0'
     compile 'com.google.guava:guava:17.0'
     compile 'commons-codec:commons-codec:1.9'
