@@ -5,6 +5,8 @@ Consul Client for Java
 
 Simple client for the Consul HTTP API.  For more information about the Consul HTTP API, go [here](http://www.consul.io/docs/agent/http.html).
 
+***Warning***: Versions prior to 0.5 use Apache CXF's JAX-RS client, which has a memory leak.  0.5 and beyond use Jersey, which does not.  See [https://git-wip-us.apache.org/repos/asf?p=cxf.git;a=commitdiff;h=c9e85e76](https://git-wip-us.apache.org/repos/asf?p=cxf.git;a=commitdiff;h=c9e85e76)
+
 Installation
 -----------
 
