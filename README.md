@@ -24,7 +24,7 @@ repositories {
 }
 
 dependencies {
-    compile 'com.orbitz.consul:consul-client:0.4'
+    compile 'com.orbitz.consul:consul-client:0.5'
 }
 ```
 
@@ -35,7 +35,7 @@ dependencies {
     <dependency>
         <groupId>com.orbitz.consul</groupId>
         <artifactId>consul-client</artifactId>
-        <version>0.4</version>
+        <version>0.5</version>
     <dependency>
 <dependencies>
 ```
