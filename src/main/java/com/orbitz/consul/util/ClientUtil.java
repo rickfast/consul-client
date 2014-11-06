@@ -5,9 +5,8 @@ import com.orbitz.consul.model.ConsulResponse;
 import com.orbitz.consul.option.CatalogOptions;
 import com.orbitz.consul.option.ConsistencyMode;
 import com.orbitz.consul.option.QueryOptions;
-import com.orbitz.consul.option.QueryOptionsBuilder;
 import org.apache.commons.codec.binary.Base64;
-import org.apache.cxf.common.util.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import javax.ws.rs.client.InvocationCallback;
 import javax.ws.rs.client.WebTarget;
@@ -136,8 +135,11 @@ public class ClientUtil {
         int index = Integer.valueOf(response.getHeaderString("X-Consul-Index"));
         long lastContact = Long.valueOf(response.getHeaderString("X-Consul-Lastcontact"));
         boolean knownLeader = Boolean.valueOf(response.getHeaderString("X-Consul-Knownleader"));
+        ConsulResponse<T> consulResponse = new ConsulResponse<T>(response.readEntity(responseType), lastContact, knownLeader, index);
 
-        return new ConsulResponse<T>(response.readEntity(responseType), lastContact, knownLeader, index);
+        response.close();
+
+        return consulResponse;
     }
 
     public static String decodeBase64(String value) {

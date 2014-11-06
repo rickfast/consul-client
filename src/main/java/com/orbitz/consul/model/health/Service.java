@@ -1,7 +1,9 @@
 package com.orbitz.consul.model.health;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class Service {
 
     @JsonProperty("ID")

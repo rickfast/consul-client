@@ -5,7 +5,7 @@ import com.orbitz.consul.model.kv.Value;
 import com.orbitz.consul.option.PutOptions;
 import com.orbitz.consul.option.QueryOptions;
 import com.orbitz.consul.util.ClientUtil;
-import org.apache.cxf.common.util.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.client.Entity;
@@ -19,7 +19,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-import static com.orbitz.consul.util.ClientUtil.*;
+import static com.orbitz.consul.util.ClientUtil.decodeBase64;
 
 /**
  * HTTP Client for /v1/kv/ endpoints.
