@@ -12,7 +12,7 @@ Installation
 
 ###Bintray:
 
-Grab the latest binary (0.4) [here](http://dl.bintray.com/orbitz/consul-client/com/orbitz/consul/consul-client/0.3/#consul-client-0.3.jar).
+Grab the latest binary (0.5) [here](http://dl.bintray.com/orbitz/consul-client/com/orbitz/consul/consul-client/0.5/#consul-client-0.5.jar).
 
 ###Gradle:
 
@@ -132,4 +132,12 @@ StatusClient statusClient = Consul.newClient().statusClient();
 for(String peer : statusClient.getPeers()) {
 	System.out.println(peer); // 127.0.0.1:8300
 }
-````
+```
+
+Example 7: Find Raft leader.
+
+```java
+StatusClient statusClient = Consul.newClient().statusClient();
+
+System.out.println(statusClient.getLeader()); // 127.0.0.1:8300
+```
