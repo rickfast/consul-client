@@ -88,3 +88,48 @@ kvClient.putValue("foo", "bar");
 
 Value value = kvClient.getValue("foo", builder().blockMinutes(10, 120).build()).get(); // will block (long poll) for 10 minutes or until "foo"'s value changes.
 ```
+
+Example 5: Blocking call for healthy services using callback.
+
+```java
+Consul consul = Consul.newClient();
+final HealthClient healthClient = consul.healthClient();
+
+ConsulResponseCallback<List<ServiceHealth>> callback = new ConsulResponseCallback<List<ServiceHealth>>() {
+
+    int index;
+
+    @Override
+    public void onComplete(ConsulResponse<List<ServiceHealth>> consulResponse) {
+        for(ServiceHealth health : consulResponse.getResponse()) {
+            String host = health.getNode().getAddress();
+            int port = health.getService().getPort();
+
+            // do something with this service information
+        }
+
+        index = consulResponse.getIndex();
+
+        // blocking request with new index
+        healthClient.getHealthyNodes("my-service", builder().blockMinutes(5, index).build(), this);
+    }
+
+    @Override
+    public void onFailure(Throwable throwable) {
+        throwable.printStackTrace();
+        healthClient.getHealthyNodes("my-service", builder().blockMinutes(5, index).build(), this);
+    }
+};
+
+healthClient.getHealthyNodes("my-service", builder().blockMinutes(1, 0).build());
+```         
+
+Example 6: Find Raft peers.
+
+```java
+StatusClient statusClient = Consul.newClient().statusClient();
+
+for(String peer : statusClient.getPeers()) {
+	System.out.println(peer); // 127.0.0.1:8300
+}
+````

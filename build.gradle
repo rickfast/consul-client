@@ -47,8 +47,20 @@ task sourcesJar(type: Jar, dependsOn: classes) {
     from sourceSets.main.allSource
 }
 
+task clientJavadoc(type: Javadoc) {
+    source = sourceSets.main.allJava
+    failOnError = false
+    classpath = project.configurations.compile
+}
+
+task javadocJar(type: Jar, dependsOn: clientJavadoc) {
+    classifier = 'javadoc'
+    from javadoc.destinationDir
+}
+
 artifacts {
     archives sourcesJar
+    archives javadocJar
 }
 
 task wrapper(type: Wrapper) {
