@@ -13,6 +13,7 @@ import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.GenericType;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import java.net.ConnectException;
 import java.util.List;
 import java.util.Map;
 
@@ -302,7 +303,7 @@ public class AgentClient {
      * @param state The current state of the Check.
      * @param note Any note to associate with the Check.
      */
-    public void check(String checkId, State state, String note) {
+    public void check(String checkId, State state, String note) throws ConnectException {
         if(isRegistered()) {
             WebTarget resource = webTarget.path("check").path(state.getPath());
 
@@ -320,42 +321,42 @@ public class AgentClient {
      * @param state The current state of the Check.
      * @param note Any note to associate with the Check.
      */
-    public void check(State state, String note) {
+    public void check(State state, String note) throws ConnectException {
         check(null, state, note);
     }
 
     /**
      * Checks in with Consul for the default Check and "pass" state.
      */
-    public void pass() {
+    public void pass() throws ConnectException {
         check(null, State.PASS, null);
     }
 
     /**
      * Checks in with Consul for the default Check and "warn" state.
      */
-    public void warn() {
+    public void warn() throws ConnectException {
         check(State.WARN, null);
     }
 
     /**
      * Checks in with Consul for the default Check and "warn" state.
      */
-    public void warn(String note) {
+    public void warn(String note) throws ConnectException {
         check(State.WARN, note);
     }
 
     /**
      * Checks in with Consul for the default Check and "fail" state.
      */
-    public void fail() {
+    public void fail() throws ConnectException {
         check(State.FAIL, null);
     }
 
     /**
      * Checks in with Consul for the default Check and "fail" state.
      */
-    public void fail(String note) {
+    public void fail(String note) throws ConnectException {
         check(State.FAIL, note);
     }
 }

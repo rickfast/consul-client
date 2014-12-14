@@ -6,6 +6,7 @@ import com.orbitz.consul.model.health.Service;
 import com.orbitz.consul.model.health.ServiceHealth;
 import org.junit.Test;
 
+import java.net.ConnectException;
 import java.net.UnknownHostException;
 import java.util.List;
 import java.util.Map;
@@ -101,7 +102,7 @@ public class AgentTests {
     }
 
     @Test
-    public void shouldSetWarning() throws UnknownHostException {
+    public void shouldSetWarning() throws UnknownHostException, ConnectException {
         Consul client = Consul.newClient();
         String serviceName = UUID.randomUUID().toString();
         String serviceId = UUID.randomUUID().toString();
@@ -114,7 +115,7 @@ public class AgentTests {
     }
 
     @Test
-    public void shouldSetFailing() throws UnknownHostException {
+    public void shouldSetFailing() throws UnknownHostException, ConnectException {
         Consul client = Consul.newClient();
         String serviceName = UUID.randomUUID().toString();
         String serviceId = UUID.randomUUID().toString();
