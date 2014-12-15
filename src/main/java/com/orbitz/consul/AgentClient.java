@@ -8,12 +8,12 @@ import com.orbitz.consul.model.agent.Registration;
 import com.orbitz.consul.model.health.HealthCheck;
 import com.orbitz.consul.model.health.Service;
 
+import javax.ws.rs.InternalServerErrorException;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.GenericType;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.net.ConnectException;
 import java.util.List;
 import java.util.Map;
 
@@ -303,7 +303,7 @@ public class AgentClient {
      * @param state The current state of the Check.
      * @param note Any note to associate with the Check.
      */
-    public void check(String checkId, State state, String note) throws ConnectException {
+    public void check(String checkId, State state, String note) throws NotRegisteredException {
         if(isRegistered()) {
             WebTarget resource = webTarget.path("check").path(state.getPath());
 
@@ -311,7 +311,12 @@ public class AgentClient {
                 resource = resource.queryParam("note", note);
             }
 
-            resource.path(checkId == null ? this.checkId : checkId).request().get();
+            try {
+                resource.path(checkId == null ? this.checkId : checkId).request()
+                        .get(String.class);
+            } catch (InternalServerErrorException ex) {
+                throw new NotRegisteredException();
+            }
         }
     }
 
@@ -321,42 +326,42 @@ public class AgentClient {
      * @param state The current state of the Check.
      * @param note Any note to associate with the Check.
      */
-    public void check(State state, String note) throws ConnectException {
+    public void check(State state, String note) throws NotRegisteredException {
         check(null, state, note);
     }
 
     /**
      * Checks in with Consul for the default Check and "pass" state.
      */
-    public void pass() throws ConnectException {
+    public void pass() throws NotRegisteredException {
         check(null, State.PASS, null);
     }
 
     /**
      * Checks in with Consul for the default Check and "warn" state.
      */
-    public void warn() throws ConnectException {
+    public void warn() throws NotRegisteredException {
         check(State.WARN, null);
     }
 
     /**
      * Checks in with Consul for the default Check and "warn" state.
      */
-    public void warn(String note) throws ConnectException {
+    public void warn(String note) throws NotRegisteredException {
         check(State.WARN, note);
     }
 
     /**
      * Checks in with Consul for the default Check and "fail" state.
      */
-    public void fail() throws ConnectException {
+    public void fail() throws NotRegisteredException {
         check(State.FAIL, null);
     }
 
     /**
      * Checks in with Consul for the default Check and "fail" state.
      */
-    public void fail(String note) throws ConnectException {
+    public void fail(String note) throws NotRegisteredException {
         check(State.FAIL, note);
     }
 }
