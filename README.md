@@ -34,8 +34,8 @@ dependencies {
         <groupId>com.orbitz.consul</groupId>
         <artifactId>consul-client</artifactId>
         <version>0.6</version>
-    <dependency>
-<dependencies>
+    </dependency>
+</dependencies>
 ```
 
 Basic Usage
