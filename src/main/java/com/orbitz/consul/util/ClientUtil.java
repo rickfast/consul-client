@@ -1,5 +1,6 @@
 package com.orbitz.consul.util;
 
+import com.orbitz.consul.ConsulException;
 import com.orbitz.consul.async.ConsulResponseCallback;
 import com.orbitz.consul.model.ConsulResponse;
 import com.orbitz.consul.option.CatalogOptions;
@@ -8,6 +9,7 @@ import com.orbitz.consul.option.QueryOptions;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang3.StringUtils;
 
+import javax.ws.rs.ServerErrorException;
 import javax.ws.rs.client.InvocationCallback;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.GenericType;
@@ -132,6 +134,13 @@ public class ClientUtil {
     }
 
     private static <T> ConsulResponse<T> consulResponse(GenericType<T> responseType, Response response) {
+
+        if (response.getStatusInfo().getFamily() != Response.Status.Family.SUCCESSFUL) {
+            ServerErrorException see = new ServerErrorException(response);
+            response.close();
+            throw new ConsulException(see.getLocalizedMessage(), see);
+        }
+
         int index = Integer.valueOf(response.getHeaderString("X-Consul-Index"));
         long lastContact = Long.valueOf(response.getHeaderString("X-Consul-Lastcontact"));
         boolean knownLeader = Boolean.valueOf(response.getHeaderString("X-Consul-Knownleader"));
