@@ -141,9 +141,9 @@ public class ClientUtil {
             if (response.hasEntity()) {
                 // Consul sends back error information in the response body
                 String message = response.readEntity(String.class);
-                sse = new ServerErrorException(message, response);
+                see = new ServerErrorException(message, response);
             } else {
-                sse = new ServerErrorException(response);
+                see = new ServerErrorException(response);
             }
             response.close();
             throw new ConsulException(see.getLocalizedMessage(), see);
