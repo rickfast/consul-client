@@ -136,7 +136,15 @@ public class ClientUtil {
     private static <T> ConsulResponse<T> consulResponse(GenericType<T> responseType, Response response) {
 
         if (response.getStatusInfo().getFamily() != Response.Status.Family.SUCCESSFUL) {
-            ServerErrorException see = new ServerErrorException(response);
+            ServerErrorException see = null;
+
+            if (response.hasEntity()) {
+                // Consul sends back error information in the response body
+                String message = response.readEntity(String.class);
+                see = new ServerErrorException(message, response);
+            } else {
+                see = new ServerErrorException(response);
+            }
             response.close();
             throw new ConsulException(see.getLocalizedMessage(), see);
         }
