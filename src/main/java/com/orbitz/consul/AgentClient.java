@@ -23,9 +23,6 @@ import java.util.Map;
 public class AgentClient {
     
     private WebTarget webTarget;
-    private boolean registered;
-    private Registration registration;
-    private String checkId;
 
     /**
      * Constructs an instance of this class.
@@ -37,16 +34,16 @@ public class AgentClient {
     }
 
     /**
-     * Indicates whether or not this client instance is registered with
-     * Consul.
+     * Indicates whether or not a particular service is registered with
+     * the local Consul agent.
      *
-     * @return <code>true</code> if this client instance is registered with
-     * Consul, otherwise <code>false</code>.
+     * @return <code>true</code> if a particular service is registered with
+     * the local Consul agent, otherwise <code>false</code>.
      */
-    public boolean isRegistered() {
-        return registered;
+    public boolean isRegistered(String serviceId){
+	Map<String, Service> serviceIdToService = getServices();
+	return serviceIdToService.containsKey(serviceId);
     }
-
     /**
      * Pings the Consul Agent.
      */
@@ -76,7 +73,6 @@ public class AgentClient {
      */
     public void register(int port, long ttl, String name, String id, String... tags) {
         Registration.Check check = new Registration.Check();
-        checkId = String.format("service:%s", id);
 
         check.setTtl(String.format("%ss", ttl));
 
@@ -96,7 +92,6 @@ public class AgentClient {
      */
     public void register(int port, String script, long interval, String name, String id, String... tags) {
         Registration.Check check = new Registration.Check();
-        checkId = String.format("service:%s", id);
 
         check.setScript(script);
         check.setInterval(String.format("%ss", interval));
@@ -138,25 +133,18 @@ public class AgentClient {
 
         if(response.getStatus() != Response.Status.OK.getStatusCode()) {
             throw new ConsulException(response.readEntity(String.class));
-        } else {
-            registered = true;
-            this.registration = registration;
-        }
+        } 
     }
-
+    
     /**
-     * De-register the client as a service with Consul.
+     * De-register a particular service from the Consul Agent.
      */
-    public void deregister() {
-        Response response = webTarget.path("service").path("deregister").path(registration.getId())
+    public void deregister(String serviceId) {
+        Response response = webTarget.path("service").path("deregister").path(serviceId)
                 .request().get();
 
         if(response.getStatus() != Response.Status.OK.getStatusCode()) {
             throw new ConsulException(response.readEntity(String.class));
-        } else {
-            registered = false;
-            registration = null;
-            checkId = null;
         }
     }
 
@@ -304,7 +292,6 @@ public class AgentClient {
      * @param note Any note to associate with the Check.
      */
     public void check(String checkId, State state, String note) throws NotRegisteredException {
-        if(isRegistered()) {
             WebTarget resource = webTarget.path("check").path(state.getPath());
 
             if(note != null) {
@@ -312,12 +299,11 @@ public class AgentClient {
             }
 
             try {
-                resource.path(checkId == null ? this.checkId : checkId).request()
+                resource.path(checkId).request()
                         .get(String.class);
             } catch (InternalServerErrorException ex) {
                 throw new NotRegisteredException();
             }
-        }
     }
 
     /**
