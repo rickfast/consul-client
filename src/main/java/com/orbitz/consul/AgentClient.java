@@ -226,6 +226,20 @@ public class AgentClient {
     }
 
     /**
+     * De-registers a Health Check with the Agent
+     * 
+     * @param checkId the id of the Check to deregister
+     */
+    public void deregisterCheck(String checkId){
+	Response response = webTarget.path("check").path("deregister").path(checkId)
+		.request().get();
+
+	if (response.getStatus() != Response.Status.OK.getStatusCode()) {
+	    throw new ConsulException(response.readEntity(String.class));
+	}
+    }
+    
+    /**
      * Retrieves the Agent's configuration and member information.
      *
      * GET /v1/agent/self
