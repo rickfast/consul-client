@@ -15,6 +15,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 public class AgentTests {
 
@@ -47,14 +48,14 @@ public class AgentTests {
     }
 
     @Test
-    public void shouldDeregister() throws UnknownHostException {
+    public void shouldDeregister() throws UnknownHostException, InterruptedException {
         Consul client = Consul.newClient();
         String serviceName = UUID.randomUUID().toString();
         String serviceId = UUID.randomUUID().toString();
 
         client.agentClient().register(8080, 10000L, serviceName, serviceId);
         client.agentClient().deregister();
-
+	Thread.sleep(1000L);
         boolean found = false;
 
         for(ServiceHealth health : client.healthClient().getAllNodes(serviceName).getResponse()) {
