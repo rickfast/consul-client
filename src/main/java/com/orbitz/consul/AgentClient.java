@@ -19,6 +19,7 @@ import java.util.Map;
 
 /**
  * HTTP Client for /v1/agent/ endpoints.
+ * @see http://www.consul.io/docs/agent/http.html#agent
  */
 public class AgentClient {
     
@@ -319,49 +320,59 @@ public class AgentClient {
                 throw new NotRegisteredException();
             }
     }
-
     /**
-     * Checks in with Consul for the default Check.
-     *
-     * @param state The current state of the Check.
-     * @param note Any note to associate with the Check.
+     * Prepends the default TTL prefix to the serviceId to produce a check id,
+     * then delegates to check(String checkId, State state, String note)
+     * This method only works with TTL checks that have not been given a custom
+     * name.
+     * 
+     * @param serviceId
+     * @param state
+     * @param note
+     * @throws NotRegisteredException 
      */
-    public void check(State state, String note) throws NotRegisteredException {
-        check(null, state, note);
+    public void checkTtl(String serviceId, State state, String note) throws NotRegisteredException{
+	check("service:"+serviceId, state, note);
+    }
+    /**
+     * Sets a TTL check to "passing" state
+     */
+    public void pass(String checkId) throws NotRegisteredException {
+        checkTtl(checkId, State.PASS, null);
     }
 
     /**
-     * Checks in with Consul for the default Check and "pass" state.
+     * Sets a TTL check to "passing" state with a note
      */
-    public void pass() throws NotRegisteredException {
-        check(null, State.PASS, null);
+    public void pass(String checkId, String note) throws NotRegisteredException {
+        checkTtl(checkId, State.PASS, note);
+    }
+    
+    /**
+     * Sets a TTL check to "warning" state.
+     */
+    public void warn(String checkId) throws NotRegisteredException {
+        checkTtl(checkId, State.WARN, null);
     }
 
     /**
-     * Checks in with Consul for the default Check and "warn" state.
+     * Sets a TTL check to "warning" state with a note.
      */
-    public void warn() throws NotRegisteredException {
-        check(State.WARN, null);
+    public void warn(String checkId, String note) throws NotRegisteredException {
+        checkTtl(checkId, State.WARN, note);
     }
 
     /**
-     * Checks in with Consul for the default Check and "warn" state.
+     * Sets a TTL check to "critical" state.
      */
-    public void warn(String note) throws NotRegisteredException {
-        check(State.WARN, note);
+    public void fail(String checkId) throws NotRegisteredException {
+        checkTtl(checkId, State.FAIL, null);
     }
 
     /**
-     * Checks in with Consul for the default Check and "fail" state.
+     * Sets a TTL check to "critical" state with a note.
      */
-    public void fail() throws NotRegisteredException {
-        check(State.FAIL, null);
-    }
-
-    /**
-     * Checks in with Consul for the default Check and "fail" state.
-     */
-    public void fail(String note) throws NotRegisteredException {
-        check(State.FAIL, note);
+    public void fail(String checkId, String note) throws NotRegisteredException {
+        checkTtl(checkId, State.FAIL, note);
     }
 }
