@@ -16,7 +16,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 public class HealthTests {
-
     @Test
     public void shouldFetchPassingNode() throws UnknownHostException, NotRegisteredException {
         Consul client = Consul.newClient();
@@ -24,13 +23,13 @@ public class HealthTests {
         String serviceId = UUID.randomUUID().toString();
 
         client.agentClient().register(8080, 20L, serviceName, serviceId);
-        client.agentClient().pass();
+        client.agentClient().pass(serviceId);
 
         Consul client2 = Consul.newClient();
         String serviceId2 = UUID.randomUUID().toString();
 
         client2.agentClient().register(8080, 20L, serviceName, serviceId2);
-        client2.agentClient().fail();
+        client2.agentClient().fail(serviceId2);
 
         boolean found = false;
         ConsulResponse<List<ServiceHealth>> response = client2.healthClient().getHealthyNodes(serviceName);
@@ -44,7 +43,7 @@ public class HealthTests {
         String serviceId = UUID.randomUUID().toString();
 
         client.agentClient().register(8080, 20L, serviceName, serviceId);
-        client.agentClient().pass();
+        client.agentClient().pass(serviceId);
 
         boolean found = false;
         ConsulResponse<List<ServiceHealth>> response = client.healthClient().getAllNodes(serviceName);
@@ -58,7 +57,7 @@ public class HealthTests {
         String serviceId = UUID.randomUUID().toString();
 
         client.agentClient().register(8080, 20L, serviceName, serviceId);
-        client.agentClient().pass();
+        client.agentClient().pass(serviceId);
 
         boolean found = false;
         ConsulResponse<List<ServiceHealth>> response = client.healthClient().getAllNodes(serviceName,
@@ -73,7 +72,7 @@ public class HealthTests {
         String serviceId = UUID.randomUUID().toString();
 
         client.agentClient().register(8080, 20L, serviceName, serviceId);
-        client.agentClient().pass();
+        client.agentClient().pass(serviceId);
 
         boolean found = false;
         ConsulResponse<List<ServiceHealth>> response = client.healthClient().getAllNodes(serviceName,
@@ -89,7 +88,7 @@ public class HealthTests {
         String serviceId = UUID.randomUUID().toString();
 
         client.agentClient().register(8080, 20L, serviceName, serviceId);
-        client.agentClient().warn();
+        client.agentClient().warn(serviceId);
 
         boolean found = false;
         ConsulResponse<List<HealthCheck>> response = client.healthClient().getChecksByState(State.WARN);

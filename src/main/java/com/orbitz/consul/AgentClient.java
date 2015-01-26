@@ -19,13 +19,11 @@ import java.util.Map;
 
 /**
  * HTTP Client for /v1/agent/ endpoints.
+ * @see <a href="http://www.consul.io/docs/agent/http.html#agent">The Consul API Docs</a>
  */
 public class AgentClient {
     
     private WebTarget webTarget;
-    private boolean registered;
-    private Registration registration;
-    private String checkId;
 
     /**
      * Constructs an instance of this class.
@@ -37,16 +35,16 @@ public class AgentClient {
     }
 
     /**
-     * Indicates whether or not this client instance is registered with
-     * Consul.
+     * Indicates whether or not a particular service is registered with
+     * the local Consul agent.
      *
-     * @return <code>true</code> if this client instance is registered with
-     * Consul, otherwise <code>false</code>.
+     * @return <code>true</code> if a particular service is registered with
+     * the local Consul agent, otherwise <code>false</code>.
      */
-    public boolean isRegistered() {
-        return registered;
+    public boolean isRegistered(String serviceId){
+	Map<String, Service> serviceIdToService = getServices();
+	return serviceIdToService.containsKey(serviceId);
     }
-
     /**
      * Pings the Consul Agent.
      */
@@ -76,7 +74,6 @@ public class AgentClient {
      */
     public void register(int port, long ttl, String name, String id, String... tags) {
         Registration.Check check = new Registration.Check();
-        checkId = String.format("service:%s", id);
 
         check.setTtl(String.format("%ss", ttl));
 
@@ -96,7 +93,6 @@ public class AgentClient {
      */
     public void register(int port, String script, long interval, String name, String id, String... tags) {
         Registration.Check check = new Registration.Check();
-        checkId = String.format("service:%s", id);
 
         check.setScript(script);
         check.setInterval(String.format("%ss", interval));
@@ -138,25 +134,18 @@ public class AgentClient {
 
         if(response.getStatus() != Response.Status.OK.getStatusCode()) {
             throw new ConsulException(response.readEntity(String.class));
-        } else {
-            registered = true;
-            this.registration = registration;
-        }
+        } 
     }
-
+    
     /**
-     * De-register the client as a service with Consul.
+     * De-register a particular service from the Consul Agent.
      */
-    public void deregister() {
-        Response response = webTarget.path("service").path("deregister").path(registration.getId())
+    public void deregister(String serviceId) {
+        Response response = webTarget.path("service").path("deregister").path(serviceId)
                 .request().get();
 
         if(response.getStatus() != Response.Status.OK.getStatusCode()) {
             throw new ConsulException(response.readEntity(String.class));
-        } else {
-            registered = false;
-            registration = null;
-            checkId = null;
         }
     }
 
@@ -238,6 +227,20 @@ public class AgentClient {
     }
 
     /**
+     * De-registers a Health Check with the Agent
+     * 
+     * @param checkId the id of the Check to deregister
+     */
+    public void deregisterCheck(String checkId){
+	Response response = webTarget.path("check").path("deregister").path(checkId)
+		.request().get();
+
+	if (response.getStatus() != Response.Status.OK.getStatusCode()) {
+	    throw new ConsulException(response.readEntity(String.class));
+	}
+    }
+    
+    /**
      * Retrieves the Agent's configuration and member information.
      *
      * GET /v1/agent/self
@@ -304,7 +307,6 @@ public class AgentClient {
      * @param note Any note to associate with the Check.
      */
     public void check(String checkId, State state, String note) throws NotRegisteredException {
-        if(isRegistered()) {
             WebTarget resource = webTarget.path("check").path(state.getPath());
 
             if(note != null) {
@@ -312,56 +314,65 @@ public class AgentClient {
             }
 
             try {
-                resource.path(checkId == null ? this.checkId : checkId).request()
+                resource.path(checkId).request()
                         .get(String.class);
             } catch (InternalServerErrorException ex) {
                 throw new NotRegisteredException();
             }
-        }
+    }
+    /**
+     * Prepends the default TTL prefix to the serviceId to produce a check id,
+     * then delegates to check(String checkId, State state, String note)
+     * This method only works with TTL checks that have not been given a custom
+     * name.
+     * 
+     * @param serviceId
+     * @param state
+     * @param note
+     * @throws NotRegisteredException 
+     */
+    public void checkTtl(String serviceId, State state, String note) throws NotRegisteredException{
+	check("service:"+serviceId, state, note);
+    }
+    /**
+     * Sets a TTL check to "passing" state
+     */
+    public void pass(String checkId) throws NotRegisteredException {
+        checkTtl(checkId, State.PASS, null);
     }
 
     /**
-     * Checks in with Consul for the default Check.
-     *
-     * @param state The current state of the Check.
-     * @param note Any note to associate with the Check.
+     * Sets a TTL check to "passing" state with a note
      */
-    public void check(State state, String note) throws NotRegisteredException {
-        check(null, state, note);
+    public void pass(String checkId, String note) throws NotRegisteredException {
+        checkTtl(checkId, State.PASS, note);
+    }
+    
+    /**
+     * Sets a TTL check to "warning" state.
+     */
+    public void warn(String checkId) throws NotRegisteredException {
+        checkTtl(checkId, State.WARN, null);
     }
 
     /**
-     * Checks in with Consul for the default Check and "pass" state.
+     * Sets a TTL check to "warning" state with a note.
      */
-    public void pass() throws NotRegisteredException {
-        check(null, State.PASS, null);
+    public void warn(String checkId, String note) throws NotRegisteredException {
+        checkTtl(checkId, State.WARN, note);
     }
 
     /**
-     * Checks in with Consul for the default Check and "warn" state.
+     * Sets a TTL check to "critical" state.
      */
-    public void warn() throws NotRegisteredException {
-        check(State.WARN, null);
+    public void fail(String checkId) throws NotRegisteredException {
+        checkTtl(checkId, State.FAIL, null);
     }
 
     /**
-     * Checks in with Consul for the default Check and "warn" state.
+     * Sets a TTL check to "critical" state with a note.
      */
-    public void warn(String note) throws NotRegisteredException {
-        check(State.WARN, note);
-    }
-
-    /**
-     * Checks in with Consul for the default Check and "fail" state.
-     */
-    public void fail() throws NotRegisteredException {
-        check(State.FAIL, null);
-    }
-
-    /**
-     * Checks in with Consul for the default Check and "fail" state.
-     */
-    public void fail(String note) throws NotRegisteredException {
-        check(State.FAIL, note);
+    public void fail(String checkId, String note) throws NotRegisteredException {
+        checkTtl(checkId, State.FAIL, note);
     }
 }
