@@ -19,7 +19,7 @@ import java.util.Map;
 
 /**
  * HTTP Client for /v1/agent/ endpoints.
- * @see http://www.consul.io/docs/agent/http.html#agent
+ * @see <a href="http://www.consul.io/docs/agent/http.html#agent">The Consul API Docs</a>
  */
 public class AgentClient {
     
