@@ -15,7 +15,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 public class AgentTests {
 
@@ -38,8 +37,8 @@ public class AgentTests {
 
         boolean found = false;
 
-        for(ServiceHealth health : client.healthClient().getAllNodes(serviceName).getResponse()) {
-            if(health.getService().getId().equals(serviceId)) {
+        for (ServiceHealth health : client.healthClient().getAllNodes(serviceName).getResponse()) {
+            if (health.getService().getId().equals(serviceId)) {
                 found = true;
             }
         }
@@ -55,11 +54,11 @@ public class AgentTests {
 
         client.agentClient().register(8080, 10000L, serviceName, serviceId);
         client.agentClient().deregister(serviceId);
-	Thread.sleep(1000L);
+        Thread.sleep(1000L);
         boolean found = false;
 
-        for(ServiceHealth health : client.healthClient().getAllNodes(serviceName).getResponse()) {
-            if(health.getService().getId().equals(serviceId)) {
+        for (ServiceHealth health : client.healthClient().getAllNodes(serviceName).getResponse()) {
+            if (health.getService().getId().equals(serviceId)) {
                 found = true;
             }
         }
@@ -75,10 +74,11 @@ public class AgentTests {
 
         boolean found = false;
 
-        for(Map.Entry<String, HealthCheck> check : client.agentClient().getChecks().entrySet()) {
-            if(check.getValue().getCheckId().equals("service:" + id)) {
+        for (Map.Entry<String, HealthCheck> check : client.agentClient().getChecks().entrySet()) {
+            if (check.getValue().getCheckId().equals("service:" + id)) {
                 found = true;
-            };
+            }
+            ;
         }
 
         assertTrue(found);
@@ -92,10 +92,11 @@ public class AgentTests {
 
         boolean found = false;
 
-        for(Map.Entry<String, Service> service : client.agentClient().getServices().entrySet()) {
-            if(service.getValue().getId().equals(id)) {
+        for (Map.Entry<String, Service> service : client.agentClient().getServices().entrySet()) {
+            if (service.getValue().getId().equals(id)) {
                 found = true;
-            };
+            }
+            ;
         }
 
         assertTrue(found);
@@ -132,8 +133,8 @@ public class AgentTests {
         List<ServiceHealth> nodes = client.healthClient().getAllNodes(serviceName).getResponse();
         boolean found = false;
 
-        for(ServiceHealth health : nodes) {
-            if(health.getService().getId().equals(serviceId)) {
+        for (ServiceHealth health : nodes) {
+            if (health.getService().getId().equals(serviceId)) {
                 List<HealthCheck> checks = health.getChecks();
 
                 found = true;

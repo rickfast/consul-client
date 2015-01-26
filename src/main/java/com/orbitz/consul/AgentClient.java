@@ -19,10 +19,11 @@ import java.util.Map;
 
 /**
  * HTTP Client for /v1/agent/ endpoints.
+ *
  * @see <a href="http://www.consul.io/docs/agent/http.html#agent">The Consul API Docs</a>
  */
 public class AgentClient {
-    
+
     private WebTarget webTarget;
 
     /**
@@ -41,10 +42,11 @@ public class AgentClient {
      * @return <code>true</code> if a particular service is registered with
      * the local Consul agent, otherwise <code>false</code>.
      */
-    public boolean isRegistered(String serviceId){
-	Map<String, Service> serviceIdToService = getServices();
-	return serviceIdToService.containsKey(serviceId);
+    public boolean isRegistered(String serviceId) {
+        Map<String, Service> serviceIdToService = getServices();
+        return serviceIdToService.containsKey(serviceId);
     }
+
     /**
      * Pings the Consul Agent.
      */
@@ -53,7 +55,7 @@ public class AgentClient {
             Response.StatusType status = webTarget.path("self").request().get()
                     .getStatusInfo();
 
-            if(status.getStatusCode() != Response.Status.OK.getStatusCode()) {
+            if (status.getStatusCode() != Response.Status.OK.getStatusCode()) {
                 throw new ConsulException(String.format("Error pinging Consul: %s",
                         status.getReasonPhrase()));
             }
@@ -67,9 +69,9 @@ public class AgentClient {
      * the use of checks.
      *
      * @param port The public facing port of the service to register with Consul.
-     * @param ttl Time to live for the Consul dead man's switch.
+     * @param ttl  Time to live for the Consul dead man's switch.
      * @param name Service name to register.
-     * @param id Service id to register.
+     * @param id   Service id to register.
      * @param tags Tags to register with.
      */
     public void register(int port, long ttl, String name, String id, String... tags) {
@@ -84,12 +86,12 @@ public class AgentClient {
      * Registers the client as a service with Consul.  Registration enables
      * the use of checks.
      *
-     * @param port The public facing port of the service to register with Consul.
-     * @param script Health script for Consul to use.
+     * @param port     The public facing port of the service to register with Consul.
+     * @param script   Health script for Consul to use.
      * @param interval Health script run interval in seconds.
-     * @param name Service name to register.
-     * @param id Service id to register.
-     * @param tags Tags to register with.
+     * @param name     Service name to register.
+     * @param id       Service id to register.
+     * @param tags     Tags to register with.
      */
     public void register(int port, String script, long interval, String name, String id, String... tags) {
         Registration.Check check = new Registration.Check();
@@ -104,11 +106,11 @@ public class AgentClient {
      * Registers the client as a service with Consul.  Registration enables
      * the use of checks.
      *
-     * @param port The public facing port of the service to register with Consul.
+     * @param port  The public facing port of the service to register with Consul.
      * @param check The health check to run periodically.  Can be null.
-     * @param name Service name to register.
-     * @param id Service id to register.
-     * @param tags Tags to register with.
+     * @param name  Service name to register.
+     * @param id    Service id to register.
+     * @param tags  Tags to register with.
      */
     public void register(int port, Registration.Check check, String name, String id, String... tags) {
         Registration registration = new Registration();
@@ -132,11 +134,11 @@ public class AgentClient {
         Response response = webTarget.path("service").path("register").request()
                 .put(Entity.entity(registration, MediaType.APPLICATION_JSON_TYPE));
 
-        if(response.getStatus() != Response.Status.OK.getStatusCode()) {
+        if (response.getStatus() != Response.Status.OK.getStatusCode()) {
             throw new ConsulException(response.readEntity(String.class));
-        } 
+        }
     }
-    
+
     /**
      * De-register a particular service from the Consul Agent.
      */
@@ -144,7 +146,7 @@ public class AgentClient {
         Response response = webTarget.path("service").path("deregister").path(serviceId)
                 .request().get();
 
-        if(response.getStatus() != Response.Status.OK.getStatusCode()) {
+        if (response.getStatus() != Response.Status.OK.getStatusCode()) {
             throw new ConsulException(response.readEntity(String.class));
         }
     }
@@ -152,9 +154,9 @@ public class AgentClient {
     /**
      * Registers a Health Check with the Agent.
      *
-     * @param checkId The Check ID to use.  Must be unique for the Agent.
-     * @param name The Check Name.
-     * @param script Health script for Consul to use.
+     * @param checkId  The Check ID to use.  Must be unique for the Agent.
+     * @param name     The Check Name.
+     * @param script   Health script for Consul to use.
      * @param interval Health script run interval in seconds.
      */
     public void registerCheck(String checkId, String name, String script, long interval) {
@@ -164,11 +166,11 @@ public class AgentClient {
     /**
      * Registers a Health Check with the Agent.
      *
-     * @param checkId The Check ID to use.  Must be unique for the Agent.
-     * @param name The Check Name.
-     * @param script Health script for Consul to use.
+     * @param checkId  The Check ID to use.  Must be unique for the Agent.
+     * @param name     The Check Name.
+     * @param script   Health script for Consul to use.
      * @param interval Health script run interval in seconds.
-     * @param notes Human readable notes.  Not used by Consul.
+     * @param notes    Human readable notes.  Not used by Consul.
      */
     public void registerCheck(String checkId, String name, String script, long interval, String notes) {
         Check check = new Check();
@@ -186,8 +188,8 @@ public class AgentClient {
      * Registers a Health Check with the Agent.
      *
      * @param checkId The Check ID to use.  Must be unique for the Agent.
-     * @param name The Check Name.
-     * @param ttl Time to live for the Consul dead man's switch.
+     * @param name    The Check Name.
+     * @param ttl     Time to live for the Consul dead man's switch.
      */
     public void registerCheck(String checkId, String name, long ttl) {
         registerCheck(checkId, name, ttl, null);
@@ -197,9 +199,9 @@ public class AgentClient {
      * Registers a Health Check with the Agent.
      *
      * @param checkId The Check ID to use.  Must be unique for the Agent.
-     * @param name The Check Name.
-     * @param ttl Time to live for the Consul dead man's switch.
-     * @param notes Human readable notes.  Not used by Consul.
+     * @param name    The Check Name.
+     * @param ttl     Time to live for the Consul dead man's switch.
+     * @param notes   Human readable notes.  Not used by Consul.
      */
     public void registerCheck(String checkId, String name, long ttl, String notes) {
         Check check = new Check();
@@ -221,28 +223,28 @@ public class AgentClient {
         Response response = webTarget.path("check").path("register").request()
                 .put(Entity.entity(check, MediaType.APPLICATION_JSON_TYPE));
 
-        if(response.getStatus() != Response.Status.OK.getStatusCode()) {
+        if (response.getStatus() != Response.Status.OK.getStatusCode()) {
             throw new ConsulException(response.readEntity(String.class));
         }
     }
 
     /**
      * De-registers a Health Check with the Agent
-     * 
+     *
      * @param checkId the id of the Check to deregister
      */
-    public void deregisterCheck(String checkId){
-	Response response = webTarget.path("check").path("deregister").path(checkId)
-		.request().get();
+    public void deregisterCheck(String checkId) {
+        Response response = webTarget.path("check").path("deregister").path(checkId)
+                .request().get();
 
-	if (response.getStatus() != Response.Status.OK.getStatusCode()) {
-	    throw new ConsulException(response.readEntity(String.class));
-	}
+        if (response.getStatus() != Response.Status.OK.getStatusCode()) {
+            throw new ConsulException(response.readEntity(String.class));
+        }
     }
-    
+
     /**
      * Retrieves the Agent's configuration and member information.
-     *
+     * <p/>
      * GET /v1/agent/self
      *
      * @return The Agent information.
@@ -254,43 +256,46 @@ public class AgentClient {
 
     /**
      * Retrieves all checks registered with the Agent.
-     *
+     * <p/>
      * GET /v1/agent/checks
      *
      * @return Map of Check ID to Checks.
      */
     public Map<String, HealthCheck> getChecks() {
         return webTarget.path("checks").request().accept(MediaType.APPLICATION_JSON_TYPE)
-                .get(new GenericType<Map<String, HealthCheck>>() {});
+                .get(new GenericType<Map<String, HealthCheck>>() {
+                });
     }
 
     /**
      * Retrieves all services registered with the Agent.
-     *
+     * <p/>
      * GET /v1/agent/services
      *
      * @return Map of Service ID to Services.
      */
     public Map<String, Service> getServices() {
         return webTarget.path("services").request().accept(MediaType.APPLICATION_JSON_TYPE)
-                .get(new GenericType<Map<String, Service>>() {});
+                .get(new GenericType<Map<String, Service>>() {
+                });
     }
 
     /**
      * Retrieves all members that the Agent can see in the gossip pool.
-     *
+     * <p/>
      * GET /v1/agent/members
      *
      * @return List of Members.
      */
     public List<Member> getMembers() {
         return webTarget.path("members").request().accept(MediaType.APPLICATION_JSON_TYPE)
-                .get(new GenericType<List<Member>>() {});
+                .get(new GenericType<List<Member>>() {
+                });
     }
 
     /**
      * GET /v1/agent/force-leave/{node}
-     *
+     * <p/>
      * Instructs the agent to force a node into the "left" state.
      *
      * @param node
@@ -303,37 +308,39 @@ public class AgentClient {
      * Checks in with Consul.
      *
      * @param checkId The Check ID to check in.
-     * @param state The current state of the Check.
-     * @param note Any note to associate with the Check.
+     * @param state   The current state of the Check.
+     * @param note    Any note to associate with the Check.
      */
     public void check(String checkId, State state, String note) throws NotRegisteredException {
-            WebTarget resource = webTarget.path("check").path(state.getPath());
+        WebTarget resource = webTarget.path("check").path(state.getPath());
 
-            if(note != null) {
-                resource = resource.queryParam("note", note);
-            }
+        if (note != null) {
+            resource = resource.queryParam("note", note);
+        }
 
-            try {
-                resource.path(checkId).request()
-                        .get(String.class);
-            } catch (InternalServerErrorException ex) {
-                throw new NotRegisteredException();
-            }
+        try {
+            resource.path(checkId).request()
+                    .get(String.class);
+        } catch (InternalServerErrorException ex) {
+            throw new NotRegisteredException();
+        }
     }
+
     /**
      * Prepends the default TTL prefix to the serviceId to produce a check id,
      * then delegates to check(String checkId, State state, String note)
      * This method only works with TTL checks that have not been given a custom
      * name.
-     * 
+     *
      * @param serviceId
      * @param state
      * @param note
-     * @throws NotRegisteredException 
+     * @throws NotRegisteredException
      */
-    public void checkTtl(String serviceId, State state, String note) throws NotRegisteredException{
-	check("service:"+serviceId, state, note);
+    public void checkTtl(String serviceId, State state, String note) throws NotRegisteredException {
+        check("service:" + serviceId, state, note);
     }
+
     /**
      * Sets a TTL check to "passing" state
      */
@@ -347,7 +354,7 @@ public class AgentClient {
     public void pass(String checkId, String note) throws NotRegisteredException {
         checkTtl(checkId, State.PASS, note);
     }
-    
+
     /**
      * Sets a TTL check to "warning" state.
      */
