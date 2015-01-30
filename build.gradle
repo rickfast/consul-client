@@ -41,6 +41,9 @@ dependencies {
 task sourcesJar(type: Jar, dependsOn: classes) {
     classifier = 'sources'
     from sourceSets.main.allSource
+    metaInf {
+        from "LICENSE"
+    }
 }
 
 task clientJavadoc(type: Javadoc) {
@@ -52,6 +55,12 @@ task clientJavadoc(type: Javadoc) {
 task javadocJar(type: Jar, dependsOn: clientJavadoc) {
     classifier = 'javadoc'
     from javadoc.destinationDir
+}
+
+jar {
+    metaInf {
+        from "LICENSE"
+    }
 }
 
 artifacts {
