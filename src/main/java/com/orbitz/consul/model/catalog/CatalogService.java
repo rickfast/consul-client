@@ -20,6 +20,9 @@ public class CatalogService {
     @JsonProperty("ServiceID")
     private String serviceId;
 
+	@JsonProperty("ServiceAddress")
+    private String serviceAddress;
+
     @JsonProperty("ServicePort")
     private int servicePort;
 
@@ -57,6 +60,14 @@ public class CatalogService {
     public void setServiceId(String serviceId) {
         this.serviceId = serviceId;
     }
+
+    public String getServiceAddress() {
+		return serviceAddress;
+	}
+
+	public void setServiceAddress(String serviceAddress) {
+		this.serviceAddress = serviceAddress;
+	}
 
     public int getServicePort() {
         return servicePort;
