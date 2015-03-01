@@ -1,5 +1,6 @@
 package com.orbitz.consul;
 
+import com.orbitz.consul.model.kv.Value;
 import org.junit.Test;
 
 import java.net.UnknownHostException;
@@ -32,7 +33,23 @@ public class KeyValueTests {
         String value = UUID.randomUUID().toString();
 
         assertTrue(keyValueClient.putValue(key, value));
-        assertEquals(value, decodeBase64(keyValueClient.getValue(key).get().getValue()));
+        Value received = keyValueClient.getValue(key).get();
+        assertEquals(value, decodeBase64(received.getValue()));
+        assertEquals(0L, received.getFlags());
+    }
+
+    @Test
+    public void shouldPutAndReceiveWithFlags() throws UnknownHostException {
+        Consul client = Consul.newClient();
+        KeyValueClient keyValueClient = client.keyValueClient();
+        String key = UUID.randomUUID().toString();
+        String value = UUID.randomUUID().toString();
+        long flags = UUID.randomUUID().getMostSignificantBits();
+
+        assertTrue(keyValueClient.putValue(key, value, flags));
+        Value received = keyValueClient.getValue(key).get();
+        assertEquals(value, decodeBase64(received.getValue()));
+        assertEquals(flags, received.getFlags());
     }
 
     @Test
