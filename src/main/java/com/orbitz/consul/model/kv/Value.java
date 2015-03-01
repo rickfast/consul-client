@@ -2,6 +2,8 @@ package com.orbitz.consul.model.kv;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.orbitz.consul.util.UnsignedLongDeserializer;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class Value {
@@ -19,7 +21,8 @@ public class Value {
     private String key;
 
     @JsonProperty("Flags")
-    private int flags;
+    @JsonDeserialize(using=UnsignedLongDeserializer.class)
+    private long flags;
 
     @JsonProperty("Value")
     private String value;
@@ -59,11 +62,11 @@ public class Value {
         this.key = key;
     }
 
-    public int getFlags() {
+    public long getFlags() {
         return flags;
     }
 
-    public void setFlags(int flags) {
+    public void setFlags(long flags) {
         this.flags = flags;
     }
 

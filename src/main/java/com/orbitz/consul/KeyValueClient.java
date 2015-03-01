@@ -1,6 +1,7 @@
 package com.orbitz.consul;
 
 import com.google.common.base.Optional;
+import com.google.common.primitives.UnsignedLongs;
 import com.orbitz.consul.model.kv.Value;
 import com.orbitz.consul.option.PutOptions;
 import com.orbitz.consul.option.QueryOptions;
@@ -133,7 +134,19 @@ public class KeyValueClient {
      * @return <code>true</code> if the value was successfully indexed.
      */
     public boolean putValue(String key, String value) {
-        return putValue(key, value, PutOptions.BLANK);
+        return putValue(key, value, 0L, PutOptions.BLANK);
+    }
+
+    /**
+     * Puts a value into the key/value store.
+     *
+     * @param key The key to use as index.
+     * @param value The value to index.
+     * @param flags The flags for this key.
+     * @return <code>true</code> if the value was successfully indexed.
+     */
+    public boolean putValue(String key, String value, long flags) {
+        return putValue(key, value, flags, PutOptions.BLANK);
     }
 
     /**
@@ -144,7 +157,7 @@ public class KeyValueClient {
      * @param putOptions PUT options (e.g. wait, acquire).
      * @return <code>true</code> if the value was successfully indexed.
      */
-    private boolean putValue(String key, String value, PutOptions putOptions) {
+    private boolean putValue(String key, String value, long flags, PutOptions putOptions) {
         Integer cas = putOptions.getCas();
         String release = putOptions.getRelease();
         String acquire = putOptions.getAcquire();
@@ -160,6 +173,10 @@ public class KeyValueClient {
 
         if(!StringUtils.isEmpty(acquire)) {
             webTarget.queryParam("acquire", acquire);
+        }
+
+        if (flags != 0) {
+            target = webTarget.queryParam("flags", UnsignedLongs.toString(flags));
         }
 
         return target.path(key).request().put(Entity.entity(value,
