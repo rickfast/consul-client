@@ -123,7 +123,11 @@ public class ClientUtil {
 
             @Override
             public void completed(Response response) {
-                callback.onComplete(consulResponse(responseType, response));
+                try {
+                    callback.onComplete(consulResponse(responseType, response));
+                } catch (Exception ex) {
+                    callback.onFailure(ex);
+                }
             }
 
             @Override
