@@ -37,6 +37,7 @@ public class QueryOptionsBuilder {
         return this;
     }
 
+
     public QueryOptionsBuilder queryOptions(QueryOptions queryOptions) {
         this.wait = queryOptions.getWait();
         this.index = queryOptions.getIndex();

@@ -8,9 +8,7 @@ import java.util.HashSet;
 import java.util.UUID;
 
 import static com.orbitz.consul.util.ClientUtil.decodeBase64;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 public class KeyValueTests {
 
@@ -86,4 +84,41 @@ public class KeyValueTests {
 
         assertFalse(keyValueClient.getValueAsString(key).isPresent());
     }
+
+    @Test
+    public void acquireAndReleaseLock() throws Exception {
+        Consul client = Consul.newClient();
+        KeyValueClient keyValueClient = client.keyValueClient();
+        SessionClient sessionClient = client.sessionClient();
+        String key = UUID.randomUUID().toString();
+
+        final String value = "{\"Name\":\"myservice\"}";
+        String session = sessionClient.createSession(value).get();
+
+        System.out.println("SessionInfo: " + session);
+        assertTrue(keyValueClient.acquireLock(key, value, session));
+        assertFalse(keyValueClient.acquireLock(key, value, session));
+
+        System.out.println("key: " + key);
+        assertNotNull("SessionId in the key value should be NOT NULL.", keyValueClient.getValue(key).get().getSession());
+        assertTrue(keyValueClient.releaseLock(key, session));
+        assertNull("SessionId in the key value should be NULL.", keyValueClient.getValue(key).get().getSession());
+    }
+
+    @Test
+    public void testGetSession() throws Exception {
+        Consul client = Consul.newClient();
+        KeyValueClient keyValueClient = client.keyValueClient();
+        SessionClient sessionClient = client.sessionClient();
+        String key = UUID.randomUUID().toString();
+
+        final String value = "{\"Name\":\"myservice\"}";
+        String session = sessionClient.createSession(value).get();
+
+        System.out.println("SessionInfo: " + session);
+        assertTrue(keyValueClient.acquireLock(key, value, session));
+        assertFalse(keyValueClient.acquireLock(key, value, session));
+        assertEquals(session, keyValueClient.getSession(key).get());
+    }
+
 }

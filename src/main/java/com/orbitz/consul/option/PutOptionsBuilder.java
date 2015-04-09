@@ -5,6 +5,7 @@ public class PutOptionsBuilder {
     private Integer cas;
     private String acquire;
     private String release;
+    private String dc;
 
     private PutOptionsBuilder() {
 
@@ -30,5 +31,16 @@ public class PutOptionsBuilder {
         this.release = release;
 
         return this;
+    }
+
+    public PutOptionsBuilder dc(String dc) {
+        this.dc = dc;
+
+        return this;
+    }
+
+
+    public PutOptions build() {
+        return new PutOptions(this.cas, this.acquire, this.release, this.dc);
     }
 }
