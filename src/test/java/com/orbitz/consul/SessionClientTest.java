@@ -1,7 +1,7 @@
 package com.orbitz.consul;
 
 import com.google.common.base.Optional;
-import com.orbitz.consul.model.kv.SessionInfo;
+import com.orbitz.consul.model.session.SessionInfo;
 import junit.framework.TestCase;
 import org.junit.Test;
 

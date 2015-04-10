@@ -1,4 +1,4 @@
-package com.orbitz.consul.model.kv;
+package com.orbitz.consul.model.session;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;

@@ -2,7 +2,7 @@ package com.orbitz.consul;
 
 import com.google.common.base.Optional;
 import com.google.common.primitives.UnsignedLongs;
-import com.orbitz.consul.model.kv.SessionInfo;
+import com.orbitz.consul.model.session.SessionInfo;
 import com.orbitz.consul.model.kv.Value;
 import com.orbitz.consul.option.PutOptions;
 import com.orbitz.consul.option.PutOptionsBuilder;
@@ -119,25 +119,6 @@ public class KeyValueClient {
 
         for(Value value : getValues(key)) {
             result.add(decodeBase64(value.getValue()));
-        }
-
-        return result;
-    }
-
-    /**
-     * Retrieves a list of string values for a specific key from the key/value
-     * store.
-     *
-     * GET /v1/keyValue/{key}?recurse
-     *
-     * @param key The key to retrieve.
-     * @return A list of zero to many string values.
-     */
-    public Map<String, String> getValuesAsMap(String key) {
-        Map<String, String> result = new HashMap<String, String>();
-
-        for(Value value : getValues(key)) {
-            result.put(value.getKey(), decodeBase64(value.getValue()));
         }
 
         return result;
