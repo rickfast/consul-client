@@ -2,6 +2,7 @@ package com.orbitz.consul;
 
 import com.orbitz.consul.model.ConsulResponse;
 import com.orbitz.consul.model.State;
+import com.orbitz.consul.model.agent.Registration;
 import com.orbitz.consul.model.health.HealthCheck;
 import com.orbitz.consul.model.health.ServiceHealth;
 import com.orbitz.consul.option.CatalogOptionsBuilder;
@@ -74,11 +75,44 @@ public class HealthTests {
         client.agentClient().register(8080, 20L, serviceName, serviceId);
         client.agentClient().pass(serviceId);
 
+
         boolean found = false;
         ConsulResponse<List<ServiceHealth>> response = client.healthClient().getAllNodes(serviceName,
                 CatalogOptionsBuilder.builder().datacenter("dc1").build(),
                 QueryOptionsBuilder.builder().blockSeconds(2, 0).build());
         assertHealth(serviceId, found, response);
+    }
+
+    @Test
+    public void shouldFetchChecksForServiceBlock() throws UnknownHostException, NotRegisteredException {
+        Consul client = Consul.newClient();
+        String serviceName = UUID.randomUUID().toString();
+        String serviceId = UUID.randomUUID().toString();
+
+        Registration.Check check = new Registration.Check();
+        check.setTtl(String.format("%ss", 5));
+        Registration registration = new Registration();
+        registration.setCheck(check);
+        registration.setPort(8080);
+        registration.setName(serviceName);
+        registration.setId(serviceId);
+
+        client.agentClient().register(registration);//8080, check, serviceName, serviceId);
+        client.agentClient().pass(serviceId);
+
+        boolean found = false;
+        ConsulResponse<List<HealthCheck>> response = client.healthClient().getServiceChecks(serviceName,
+                CatalogOptionsBuilder.builder().datacenter("dc1").build(),
+                QueryOptionsBuilder.builder().blockSeconds(20, 0).build());
+
+        List<HealthCheck> checks = response.getResponse();
+        assertEquals(1, checks.size());
+        for(HealthCheck ch : checks) {
+            if(ch.getServiceId().equals(serviceId)) {
+                found = true;
+            }
+        }
+        assertTrue(found);
     }
 
     @Test

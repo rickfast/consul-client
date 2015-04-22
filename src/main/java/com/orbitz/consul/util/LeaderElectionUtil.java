@@ -48,7 +48,11 @@ public class LeaderElectionUtil {
     public static boolean releaseLockForService(Consul client, final String serviceName) {
         final String key = getServiceKey(serviceName);
         KeyValueClient kv = client.keyValueClient();
-        return kv.releaseLock(key, kv.getValue(key).get().getSession());
+        if(kv.getValue(key).orNull() != null ) {
+            return kv.releaseLock(key, kv.getValue(key).get().getSession());
+        } else {
+            return true;
+        }
     }
 
 
