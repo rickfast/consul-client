@@ -60,7 +60,7 @@ Example 2: Find available (healthy) services.
 Consul consul = Consul.newClient(); // connect to Consul on localhost
 HealthClient healthClient = consul.healthClient();
 
-<List<ServiceHealth> nodes = healthClient.getHealthyNodes("DataService").getResponse(); // discover only "passing" nodes
+List<ServiceHealth> nodes = healthClient.getHealthyNodes("DataService").getResponse(); // discover only "passing" nodes
 ```
 
 Example 3: Store key/values.
