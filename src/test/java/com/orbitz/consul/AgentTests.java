@@ -28,12 +28,14 @@ public class AgentTests {
     }
 
     @Test
-    public void shouldRegister() throws UnknownHostException {
+    public void shouldRegister() throws UnknownHostException, InterruptedException {
         Consul client = Consul.newClient();
         String serviceName = UUID.randomUUID().toString();
         String serviceId = UUID.randomUUID().toString();
 
         client.agentClient().register(8080, 10000L, serviceName, serviceId);
+
+        Thread.sleep(100);
 
         boolean found = false;
 
