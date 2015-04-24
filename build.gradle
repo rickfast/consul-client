@@ -2,7 +2,7 @@ apply plugin: 'java'
 apply plugin: 'com.jfrog.bintray'
 apply plugin: 'maven'
 
-version = '0.8.2'
+version = '0.8.3'
 group = 'com.orbitz.consul'
 
 repositories {

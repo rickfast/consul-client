@@ -12,6 +12,9 @@ public class Registration {
     @JsonProperty("Id")
     private String id;
 
+    @JsonProperty("Address")
+    private String address;
+
     @JsonProperty("Port")
     private int port;
 
@@ -35,6 +38,14 @@ public class Registration {
 
     public void setId(String id) {
         this.id = id;
+    }
+
+    public String getAddress() {
+        return address;
+    }
+
+    public void setAddress(String address) {
+        this.address = address;
     }
 
     public int getPort() {
