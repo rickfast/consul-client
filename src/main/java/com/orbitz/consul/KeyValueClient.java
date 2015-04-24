@@ -2,8 +2,10 @@ package com.orbitz.consul;
 
 import com.google.common.base.Optional;
 import com.google.common.primitives.UnsignedLongs;
+import com.orbitz.consul.model.session.SessionInfo;
 import com.orbitz.consul.model.kv.Value;
 import com.orbitz.consul.option.PutOptions;
+import com.orbitz.consul.option.PutOptionsBuilder;
 import com.orbitz.consul.option.QueryOptions;
 import com.orbitz.consul.util.ClientUtil;
 import org.apache.commons.lang3.StringUtils;
@@ -14,11 +16,7 @@ import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.GenericType;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static com.orbitz.consul.util.ClientUtil.decodeBase64;
 
@@ -164,15 +162,15 @@ public class KeyValueClient {
         WebTarget target = webTarget;
 
         if(cas != null) {
-            webTarget.queryParam("cas", cas);
+            target = webTarget.queryParam("cas", cas);
         }
 
         if(!StringUtils.isEmpty(release)) {
-            webTarget.queryParam("release", release);
+            target = webTarget.queryParam("release", release);
         }
 
         if(!StringUtils.isEmpty(acquire)) {
-            webTarget.queryParam("acquire", acquire);
+            target = webTarget.queryParam("acquire", acquire);
         }
 
         if (flags != 0) {
@@ -231,4 +229,62 @@ public class KeyValueClient {
             throw new ConsulException(response.readEntity(String.class));
         }
     }
+
+    /**
+     * Aquire a lock for a given key.
+     *
+     * PUT /v1/kv/<key>?acquire=<session>
+     *
+     * @param key The key to acquire the lock.
+     * @param session The session to acquire lock.
+     * @return true if the lock is acquired successfully, false otherwise.
+     */
+    public boolean acquireLock(final String key, final String session) {
+        return acquireLock(key, "", session);
+    }
+
+    /**
+     * Aquire a lock for a given key.
+     *
+     * PUT /v1/kv/<key>?acquire=<session>
+     *
+     * @param key The key to acquire the lock.
+     * @param session The session to acquire lock.
+     * @param value key value (usually - application specific info about the lock requester)
+     * @return true if the lock is acquired successfully, false otherwise.
+     */
+    public boolean acquireLock(final String key, final String value, final String session) {
+        return putValue(key, value, 0, PutOptionsBuilder.builder().acquire(session).build());
+    }
+
+    /**
+     * Retrieves a session string for a specific key from the key/value store.
+     *
+     * GET /v1/kv/<key>
+     *
+     * @param key The key to retrieve.
+     * @return An {@link Optional} containing the value as a string or
+     * {@link Optional#absent()}
+     */
+    public Optional<String> getSession(String key) {
+        Optional<Value> session = getValue(key);
+
+        return session.isPresent() ? Optional.of(session.get().getSession()) : Optional.<String>absent();
+    }
+
+
+    /**
+     * Releases the lock for a given service and session.
+     *
+     * GET /v1/kv/<key>?release=<sessionId>
+     *
+     * @param key identifying the service.
+     * @param sessionId
+     *
+     * @return {@link SessionInfo}.
+     */
+    public boolean releaseLock(final String key, final String sessionId) {
+        return putValue(key, "", 0, PutOptionsBuilder.builder().release(sessionId).build());
+    }
+
 }

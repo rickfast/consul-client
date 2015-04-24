@@ -140,6 +140,47 @@ public class HealthClient {
                 });
     }
 
+
+    /**
+     * Asynchronously retrieves the healthchecks for a service in a given
+     * datacenter with {@link com.orbitz.consul.option.QueryOptions}.
+     *
+     * GET /v1/health/service/{service}?dc={datacenter}
+     *
+     * @param service      The service to query.
+     * @param queryOptions   The Query Options to use.
+     * @param callback       Callback implemented by callee to handle results.
+     * @return A {@link com.orbitz.consul.model.ConsulResponse} containing a list of
+     * {@link com.orbitz.consul.model.health.HealthCheck} objects.
+     */
+    public void getServiceChecks(String service,
+                                 QueryOptions queryOptions,
+                                 ConsulResponseCallback<List<HealthCheck>> callback) {
+        response(webTarget.path("checks").path(service), CatalogOptionsBuilder.builder().build(), queryOptions, new GenericType<List<HealthCheck>>() {
+        }, callback);
+    }
+
+    /**
+     * Asynchronously retrieves the healthchecks for a service in a given
+     * datacenter with {@link com.orbitz.consul.option.QueryOptions}.
+     *
+     * GET /v1/health/service/{service}?dc={datacenter}
+     *
+     * @param service      The service to query.
+     * @param catalogOptions The catalog specific options to use.
+     * @param queryOptions   The Query Options to use.
+     * @param callback       Callback implemented by callee to handle results.
+     * @return A {@link com.orbitz.consul.model.ConsulResponse} containing a list of
+     * {@link com.orbitz.consul.model.health.HealthCheck} objects.
+     */
+    public void getServiceChecks(String service,
+                                 CatalogOptions catalogOptions,
+                                 QueryOptions queryOptions,
+                                 ConsulResponseCallback<List<HealthCheck>> callback) {
+        response(webTarget.path("checks").path(service), catalogOptions, queryOptions, new GenericType<List<HealthCheck>>() {
+        }, callback);
+    }
+
     /**
      * Retrieves the healthchecks for a state.
      * 

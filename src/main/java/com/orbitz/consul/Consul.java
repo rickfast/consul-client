@@ -19,6 +19,7 @@ public class Consul {
     private KeyValueClient keyValueClient;
     private CatalogClient catalogClient;
     private StatusClient statusClient;
+    private SessionClient sessionClient;
 
     /**
      * Private constructor.
@@ -33,6 +34,8 @@ public class Consul {
         this.keyValueClient = new KeyValueClient(client.target(url).path("v1").path("kv"));
         this.catalogClient = new CatalogClient(client.target(url).path("v1").path("catalog"));
         this.statusClient = new StatusClient(client.target(url).path("v1").path("status"));
+        this.sessionClient = new SessionClient(client.target(url).path("v1").path("session"));
+
         agentClient.ping();
     }
 
@@ -113,5 +116,16 @@ public class Consul {
      */
     public StatusClient statusClient() {
         return statusClient;
+    }
+
+    /**
+     * Get the SessionInfo HTTP client.
+     *
+     * /v1/session
+     *
+     * @return The SessionInfo HTTP client.
+     */
+    public SessionClient sessionClient() {
+        return sessionClient;
     }
 }

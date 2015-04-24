@@ -5,3 +5,10 @@ build
 .idea
 .gradle
 out
+
+src/gradlew
+src/gradlew.bat
+gradle/gradlew
+gradle/gradlew.bat
+gradle/gradle
+src/gradle
