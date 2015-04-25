@@ -77,7 +77,7 @@ String value = kvClient.getValueAsString("foo").get(); // bar
 Example 4: Blocking call for value.
 
 ```java
-import static com.orbitz.consul.option.QueryOptionsBuilder;
+import static com.orbitz.consul.option.QueryOptionsBuilder.builder;
 
 Consul consul = Consul.newClient();
 KeyValueClient kvClient = consul.keyValueClient();
@@ -119,7 +119,7 @@ ConsulResponseCallback<List<ServiceHealth>> callback = new ConsulResponseCallbac
     }
 };
 
-healthClient.getHealthyNodes("my-service", builder().blockMinutes(1, 0).build());
+healthClient.getHealthyNodes("my-service", builder().blockMinutes(1, 0).build(), callback);
 ```         
 
 Example 6: Find Raft peers.
