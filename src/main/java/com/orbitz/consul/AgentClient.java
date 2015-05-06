@@ -14,6 +14,7 @@ import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.GenericType;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import java.net.URL;
 import java.util.List;
 import java.util.Map;
 
@@ -106,6 +107,26 @@ public class AgentClient {
      * Registers the client as a service with Consul.  Registration enables
      * the use of checks.
      *
+     * @param port     The public facing port of the service to register with Consul.
+     * @param http     Health check URL.
+     * @param interval Health script run interval in seconds.
+     * @param name     Service name to register.
+     * @param id       Service id to register.
+     * @param tags     Tags to register with.
+     */
+    public void register(int port, URL http, long interval, String name, String id, String... tags) {
+        Registration.Check check = new Registration.Check();
+
+        check.setHttp(http.toExternalForm());
+        check.setInterval(String.format("%ss", interval));
+
+        register(port, check, name, id, tags);
+    }
+
+    /**
+     * Registers the client as a service with Consul.  Registration enables
+     * the use of checks.
+     *
      * @param port  The public facing port of the service to register with Consul.
      * @param check The health check to run periodically.  Can be null.
      * @param name  Service name to register.
@@ -168,6 +189,18 @@ public class AgentClient {
      *
      * @param checkId  The Check ID to use.  Must be unique for the Agent.
      * @param name     The Check Name.
+     * @param http     Health check URL.
+     * @param interval Health script run interval in seconds.
+     */
+    public void registerCheck(String checkId, String name, URL http, long interval) {
+        registerCheck(checkId, name, http, interval, null);
+    }
+
+    /**
+     * Registers a Health Check with the Agent.
+     *
+     * @param checkId  The Check ID to use.  Must be unique for the Agent.
+     * @param name     The Check Name.
      * @param script   Health script for Consul to use.
      * @param interval Health script run interval in seconds.
      * @param notes    Human readable notes.  Not used by Consul.
@@ -178,6 +211,27 @@ public class AgentClient {
         check.setId(checkId);
         check.setName(name);
         check.setScript(script);
+        check.setInterval(String.format("%ss", interval));
+        check.setNotes(notes);
+
+        registerCheck(check);
+    }
+
+    /**
+     * Registers a Health Check with the Agent.
+     *
+     * @param checkId  The Check ID to use.  Must be unique for the Agent.
+     * @param name     The Check Name.
+     * @param http     Health check URL.
+     * @param interval Health script run interval in seconds.
+     * @param notes    Human readable notes.  Not used by Consul.
+     */
+    public void registerCheck(String checkId, String name, URL http, long interval, String notes) {
+        Check check = new Check();
+
+        check.setId(checkId);
+        check.setName(name);
+        check.setHttp(http.toExternalForm());
         check.setInterval(String.format("%ss", interval));
         check.setNotes(notes);
 
@@ -213,6 +267,8 @@ public class AgentClient {
 
         registerCheck(check);
     }
+
+
 
     /**
      * Registers a Health Check with the Agent.

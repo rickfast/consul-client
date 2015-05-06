@@ -24,6 +24,9 @@ public class Check {
     @JsonProperty("TTL")
     private String ttl;
 
+    @JsonProperty("HTTP")
+    private String http;
+
     public String getId() {
         return id;
     }
@@ -70,5 +73,13 @@ public class Check {
 
     public void setTtl(String ttl) {
         this.ttl = ttl;
+    }
+
+    public String getHttp() {
+        return http;
+    }
+
+    public void setHttp(String http) {
+        this.http = http;
     }
 }
