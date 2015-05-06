@@ -10,7 +10,7 @@ Installation
 
 ###Bintray:
 
-Grab the latest binary (0.8.3) [here](http://dl.bintray.com/orbitz/consul-client/com/orbitz/consul/consul-client/0.8.3/#consul-client-0.8.3.jar).
+Grab the latest binary (0.8.4) [here](http://dl.bintray.com/orbitz/consul-client/com/orbitz/consul/consul-client/0.8.4/#consul-client-0.8.4.jar).
 
 ###Gradle:
 
@@ -22,7 +22,7 @@ repositories {
 }
 
 dependencies {
-    compile 'com.orbitz.consul:consul-client:0.8.3'
+    compile 'com.orbitz.consul:consul-client:0.8.4'
 }
 ```
 
@@ -33,7 +33,7 @@ dependencies {
     <dependency>
         <groupId>com.orbitz.consul</groupId>
         <artifactId>consul-client</artifactId>
-        <version>0.8.3</version>
+        <version>0.8.4</version>
     </dependency>
 </dependencies>
 ```
