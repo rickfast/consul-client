@@ -14,6 +14,9 @@ import java.net.URL;
  */
 public class Consul {
 
+    public static final String DEFAULT_RPC_HOST = "localhost";
+    public static final int DEFAULT_RPC_PORT = 8500;
+
     private AgentClient agentClient;
     private HealthClient healthClient;
     private KeyValueClient keyValueClient;
@@ -25,9 +28,10 @@ public class Consul {
      * Private constructor.
      *
      * @param url The full URL of a running Consul instance.
+     * @param builder JAX-RS client builder instance.
      */
-    private Consul(String url) {
-        Client client = ClientBuilder.newBuilder().register(JacksonJaxbJsonProvider.class).build();
+    private Consul(String url, ClientBuilder builder) {
+        Client client = builder.register(JacksonJaxbJsonProvider.class).build();
 
         this.agentClient = new AgentClient(client.target(url).path("v1").path("agent"));
         this.healthClient = new HealthClient(client.target(url).path("v1").path("health"));
@@ -44,11 +48,12 @@ public class Consul {
      *
      * @param host The Consul API hostname or IP.
      * @param port The Consul port.
+     * @param builder The JAX-RS client builder instance.
      * @return A new client.
      */
-    public static Consul newClient(String host, int port) {
+    public static Consul newClient(String host, int port, ClientBuilder builder) {
         try {
-            return new Consul(new URL("http", host, port, "").toString());
+            return new Consul(new URL("http", host, port, "").toString(), builder);
         } catch (MalformedURLException e) {
             throw new ConsulException("Bad Consul URL", e);
         }
@@ -57,10 +62,21 @@ public class Consul {
     /**
      * Creates a new client given a host and a port.
      *
+     * @param host The Consul API hostname or IP.
+     * @param port The Consul port.
+     * @return A new client.
+     */
+    public static Consul newClient(String host, int port) {
+        return newClient(host, port, ClientBuilder.newBuilder());
+    }
+
+    /**
+     * Creates a new client given a host and a port.
+     *
      * @return A new client.
      */
     public static Consul newClient() {
-        return newClient("localhost", 8500);
+        return newClient(DEFAULT_RPC_HOST, DEFAULT_RPC_PORT);
     }
 
     /**
