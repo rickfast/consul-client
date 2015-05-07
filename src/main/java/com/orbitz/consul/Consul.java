@@ -14,8 +14,15 @@ import java.net.URL;
  */
 public class Consul {
 
-    public static final String DEFAULT_RPC_HOST = "localhost";
-    public static final int DEFAULT_RPC_PORT = 8500;
+    /**
+     * Default Consul HTTP API host.
+     */
+    public static final String DEFAULT_HTTP_HOST = "localhost";
+
+    /**
+     * Default Consul HTTP API port.
+     */
+    public static final int DEFAULT_HTTP_PORT = 8500;
 
     private AgentClient agentClient;
     private HealthClient healthClient;
@@ -76,7 +83,7 @@ public class Consul {
      * @return A new client.
      */
     public static Consul newClient() {
-        return newClient(DEFAULT_RPC_HOST, DEFAULT_RPC_PORT);
+        return newClient(DEFAULT_HTTP_HOST, DEFAULT_HTTP_PORT);
     }
 
     /**
