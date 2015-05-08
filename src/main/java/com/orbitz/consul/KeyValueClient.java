@@ -267,9 +267,9 @@ public class KeyValueClient {
      * {@link Optional#absent()}
      */
     public Optional<String> getSession(String key) {
-        Optional<Value> session = getValue(key);
+        Optional<Value> value = getValue(key);
 
-        return session.isPresent() ? Optional.of(session.get().getSession()) : Optional.<String>absent();
+        return value.isPresent() ? Optional.fromNullable(value.get().getSession()) : Optional.<String>absent();
     }
 
 

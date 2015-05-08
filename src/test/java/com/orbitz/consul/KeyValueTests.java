@@ -110,14 +110,19 @@ public class KeyValueTests {
         Consul client = Consul.newClient();
         KeyValueClient keyValueClient = client.keyValueClient();
         SessionClient sessionClient = client.sessionClient();
-        String key = UUID.randomUUID().toString();
 
-        final String value = "{\"Name\":\"myservice\"}";
-        String session = sessionClient.createSession(value).get();
+        String key = UUID.randomUUID().toString();
+        String value = UUID.randomUUID().toString();
+        keyValueClient.putValue(key, value);
+
+        assertEquals(false, keyValueClient.getSession(key).isPresent());
+
+        final String sessionValue = "{\"Name\":\"myservice\"}";
+        String session = sessionClient.createSession(sessionValue).get();
 
         System.out.println("SessionInfo: " + session);
-        assertTrue(keyValueClient.acquireLock(key, value, session));
-        assertFalse(keyValueClient.acquireLock(key, value, session));
+        assertTrue(keyValueClient.acquireLock(key, sessionValue, session));
+        assertFalse(keyValueClient.acquireLock(key, sessionValue, session));
         assertEquals(session, keyValueClient.getSession(key).get());
     }
 
