@@ -6,6 +6,8 @@ import com.orbitz.consul.model.health.Service;
 import com.orbitz.consul.model.health.ServiceHealth;
 import org.junit.Test;
 
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.net.UnknownHostException;
 import java.util.List;
 import java.util.Map;
@@ -34,6 +36,27 @@ public class AgentTests {
         String serviceId = UUID.randomUUID().toString();
 
         client.agentClient().register(8080, 10000L, serviceName, serviceId);
+
+        Thread.sleep(100);
+
+        boolean found = false;
+
+        for (ServiceHealth health : client.healthClient().getAllNodes(serviceName).getResponse()) {
+            if (health.getService().getId().equals(serviceId)) {
+                found = true;
+            }
+        }
+
+        assertTrue(found);
+    }
+
+    @Test
+    public void shouldRegisterHttpCheck() throws UnknownHostException, InterruptedException, MalformedURLException {
+        Consul client = Consul.newClient();
+        String serviceName = UUID.randomUUID().toString();
+        String serviceId = UUID.randomUUID().toString();
+
+        client.agentClient().register(8080, new URL("http://localhost:1337/health"), 1000L, serviceName, serviceId);
 
         Thread.sleep(100);
 

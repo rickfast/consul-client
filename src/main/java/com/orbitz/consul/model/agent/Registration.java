@@ -83,6 +83,9 @@ public class Registration {
         @JsonProperty("TTL")
         private String ttl;
 
+        @JsonProperty("HTTP")
+        private String http;
+
         public String getScript() {
             return script;
         }
@@ -105,6 +108,14 @@ public class Registration {
 
         public void setTtl(String ttl) {
             this.ttl = ttl;
+        }
+
+        public String getHttp() {
+            return http;
+        }
+
+        public void setHttp(String http) {
+            this.http = http;
         }
     }
 
