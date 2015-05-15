@@ -19,22 +19,25 @@ buildscript {
 }
 
 dependencies {
-    compile 'com.fasterxml.jackson.core:jackson-core:2.3.0'
-    compile 'com.fasterxml.jackson.core:jackson-databind:2.3.0'
-    compile 'com.fasterxml.jackson.core:jackson-annotations:2.3.0'
-    compile 'com.fasterxml.jackson.jaxrs:jackson-jaxrs-json-provider:2.3.0'
+    compile 'com.fasterxml.jackson.core:jackson-core:2.5.3'
+    compile 'com.fasterxml.jackson.core:jackson-databind:2.5.3'
+    compile 'com.fasterxml.jackson.core:jackson-annotations:2.5.3'
+    compile 'com.fasterxml.jackson.jaxrs:jackson-jaxrs-json-provider:2.5.3'
 
-    compile 'org.apache.cxf:cxf-rt-rs-client:3.0.3'
-    compile 'org.apache.cxf:cxf-rt-transports-http-hc:3.0.3'
+    compile 'javax.ws.rs:javax.ws.rs-api:2.0.1'
+
 
     compile 'javax.annotation:javax.annotation-api:1.2'
 
     compile 'org.apache.commons:commons-lang3:3.0'
-    compile 'com.fasterxml.jackson.jaxrs:jackson-jaxrs-base:2.3.0'
-    compile 'com.google.guava:guava:17.0'
+    compile 'com.fasterxml.jackson.jaxrs:jackson-jaxrs-base:2.5.3'
+    compile 'com.google.guava:guava:18.0'
     compile 'commons-codec:commons-codec:1.9'
 
-    testCompile 'junit:junit:4.11'
+    testCompile 'org.apache.cxf:cxf-rt-rs-client:3.0.3'
+    testCompile 'org.apache.cxf:cxf-rt-transports-http-hc:3.0.3'
+
+    testCompile 'junit:junit:4.12'
     testCompile 'org.mockito:mockito-all:1.9.5'
 }
 
