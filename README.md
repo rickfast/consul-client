@@ -23,6 +23,9 @@ repositories {
 
 dependencies {
     compile 'com.orbitz.consul:consul-client:0.8.4'
+    // include your preferred javax.ws.rs-api implementation, for example:
+    compile 'org.apache.cxf:cxf-rt-rs-client:3.0.3'
+    compile 'org.apache.cxf:cxf-rt-transports-http-hc:3.0.3'
 }
 ```
 
@@ -35,6 +38,7 @@ dependencies {
         <artifactId>consul-client</artifactId>
         <version>0.8.4</version>
     </dependency>
+    <!-- include your preferred javax.ws.rs-api implementation -->
 </dependencies>
 ```
 
