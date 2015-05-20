@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<metadata>
+  <groupId>com.yifan.consul</groupId>
+  <artifactId>consul-client</artifactId>
+  <version>0.8.4</version>
+  <versioning>
+    <versions>
+      <version>0.8.4</version>
+    </versions>
+    <lastUpdated>20150520225307</lastUpdated>
+  </versioning>
+</metadata>
