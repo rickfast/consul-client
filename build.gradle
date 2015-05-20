@@ -5,6 +5,9 @@ apply plugin: 'maven'
 version = '0.8.4'
 group = 'com.orbitz.consul'
 
+sourceCompatibility = JavaVersion.VERSION_1_7
+targetCompatibility = JavaVersion.VERSION_1_7
+
 repositories {
     mavenCentral()
 }
@@ -70,4 +73,10 @@ artifacts {
 
 task wrapper(type: Wrapper) {
     gradleVersion = '2.0'
+}
+
+uploadArchives {
+    repositories.mavenDeployer {
+        repository(url: "file:///Users/yying/git/consul-client/")
+    }
 }
