@@ -87,7 +87,7 @@ public class SessionClient {
     *
     * @param dc
     * @param sessionId
-    * @return
+    * @return if the session was renewed
     */
    public boolean renewSession(final String dc, final String sessionId) {
       //Map<String, String> session = null;
