@@ -4,9 +4,11 @@ import com.orbitz.consul.model.ConsulResponse;
 import com.orbitz.consul.model.State;
 import com.orbitz.consul.model.agent.Registration;
 import com.orbitz.consul.model.health.HealthCheck;
+import com.orbitz.consul.model.health.ServiceCheck;
 import com.orbitz.consul.model.health.ServiceHealth;
 import com.orbitz.consul.option.CatalogOptionsBuilder;
 import com.orbitz.consul.option.QueryOptionsBuilder;
+
 import org.junit.Test;
 
 import java.net.UnknownHostException;
@@ -101,16 +103,21 @@ public class HealthTests {
         client.agentClient().pass(serviceId);
 
         boolean found = false;
-        ConsulResponse<List<HealthCheck>> response = client.healthClient().getServiceChecks(serviceName,
+        ConsulResponse<List<ServiceCheck>> response = client.healthClient().getServiceChecks(serviceName,
                 CatalogOptionsBuilder.builder().datacenter("dc1").build(),
                 QueryOptionsBuilder.builder().blockSeconds(20, 0).build());
 
-        List<HealthCheck> checks = response.getResponse();
+        List<ServiceCheck> checks = response.getResponse();
         assertEquals(1, checks.size());
-        for(HealthCheck ch : checks) {
-            if(ch.getServiceId().equals(serviceId)) {
-                found = true;
+        for(ServiceCheck chs : checks) {
+            for(HealthCheck ch : chs.getChecks()){
+            	if(ch.getServiceId().equals(serviceId)) {
+                    found = true;
+                    break;
+                }
             }
+            if(found)
+            	break;
         }
         assertTrue(found);
     }

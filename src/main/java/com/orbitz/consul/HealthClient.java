@@ -107,10 +107,12 @@ public class HealthClient {
      *
      * @param catalogOptions The catalog specific options to use.
      * @return A {@link com.orbitz.consul.model.ConsulResponse} containing a list of
-     * {@link com.orbitz.consul.model.health.HealthCheck} objects.
+     * {@link com.orbitz.consul.model.health.ServiceCheck} objects.
      */
-    public ConsulResponse<List<HealthCheck>> getServiceChecks(String service, CatalogOptions catalogOptions) {
-        return getNodeChecks(service, catalogOptions, QueryOptions.BLANK);
+    public ConsulResponse<List<ServiceCheck>> getServiceChecks(String service, CatalogOptions catalogOptions) {
+    	return response(webTarget.path("service").path(service), catalogOptions,  QueryOptions.BLANK,
+                new GenericType<List<ServiceCheck>>() {
+                });
     }
 
     /**
@@ -120,10 +122,12 @@ public class HealthClient {
      *
      * @param queryOptions The Query Options to use.
      * @return A {@link com.orbitz.consul.model.ConsulResponse} containing a list of
-     * {@link com.orbitz.consul.model.health.HealthCheck} objects.
+     * {@link com.orbitz.consul.model.health.ServiceCheck} objects.
      */
-    public ConsulResponse<List<HealthCheck>> getServiceChecks(String service, QueryOptions queryOptions) {
-        return getNodeChecks(service, null, queryOptions);
+    public ConsulResponse<List<ServiceCheck>> getServiceChecks(String service, QueryOptions queryOptions) {
+    	return response(webTarget.path("service").path(service), null, queryOptions,
+                new GenericType<List<ServiceCheck>>() {
+                });
     }
 
     /**
@@ -134,12 +138,12 @@ public class HealthClient {
      * @param catalogOptions The catalog specific options to use.
      * @param queryOptions   The Query Options to use.
      * @return A {@link com.orbitz.consul.model.ConsulResponse} containing a list of
-     * {@link com.orbitz.consul.model.health.HealthCheck} objects.
+     * {@link com.orbitz.consul.model.health.ServiceCheck} objects.
      */
-    public ConsulResponse<List<HealthCheck>> getServiceChecks(String service, CatalogOptions catalogOptions,
+    public ConsulResponse<List<ServiceCheck>> getServiceChecks(String service, CatalogOptions catalogOptions,
                                                               QueryOptions queryOptions) {
-        return response(webTarget.path("checks").path(service), catalogOptions, queryOptions,
-                new GenericType<List<HealthCheck>>() {
+    	return response(webTarget.path("service").path(service), catalogOptions, queryOptions,
+                new GenericType<List<ServiceCheck>>() {
                 });
     }
 
@@ -154,12 +158,12 @@ public class HealthClient {
      * @param queryOptions   The Query Options to use.
      * @param callback       Callback implemented by callee to handle results.
      * @return A {@link com.orbitz.consul.model.ConsulResponse} containing a list of
-     * {@link com.orbitz.consul.model.health.HealthCheck} objects.
+     * {@link com.orbitz.consul.model.health.ServiceCheck} objects.
      */
     public void getServiceChecks(String service,
                                  QueryOptions queryOptions,
-                                 ConsulResponseCallback<List<HealthCheck>> callback) {
-        response(webTarget.path("checks").path(service), CatalogOptionsBuilder.builder().build(), queryOptions, new GenericType<List<HealthCheck>>() {
+                                 ConsulResponseCallback<List<ServiceCheck>> callback) {
+        response(webTarget.path("checks").path(service), CatalogOptionsBuilder.builder().build(), queryOptions, new GenericType<List<ServiceCheck>>() {
         }, callback);
     }
 
