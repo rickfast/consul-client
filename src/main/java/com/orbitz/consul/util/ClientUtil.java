@@ -5,6 +5,7 @@ import com.orbitz.consul.async.ConsulResponseCallback;
 import com.orbitz.consul.model.ConsulResponse;
 import com.orbitz.consul.option.CatalogOptions;
 import com.orbitz.consul.option.ConsistencyMode;
+import com.orbitz.consul.option.EventOptions;
 import com.orbitz.consul.option.QueryOptions;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang3.StringUtils;
@@ -50,6 +51,26 @@ public class ClientUtil {
 
         if(queryOptions.getConsistencyMode() == ConsistencyMode.STALE) {
             webTarget = webTarget.queryParam("stale");
+        }
+
+        return webTarget;
+    }
+
+    public static WebTarget eventConfig(WebTarget webTarget, EventOptions eventOptions) {
+        if(StringUtils.isNotEmpty(eventOptions.getDatacenter())) {
+            webTarget = webTarget.queryParam("dc", eventOptions.getDatacenter());
+        }
+
+        if(StringUtils.isNotEmpty(eventOptions.getNodeFilter())) {
+            webTarget = webTarget.queryParam("node", eventOptions.getNodeFilter());
+        }
+
+        if(StringUtils.isNotEmpty(eventOptions.getServiceFilter())) {
+            webTarget = webTarget.queryParam("service", eventOptions.getServiceFilter());
+        }
+
+        if(StringUtils.isNotEmpty(eventOptions.getTagFilter())) {
+            webTarget = webTarget.queryParam("tag", eventOptions.getTagFilter());
         }
 
         return webTarget;
