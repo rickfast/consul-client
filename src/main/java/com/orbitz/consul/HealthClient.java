@@ -4,6 +4,7 @@ import com.orbitz.consul.async.ConsulResponseCallback;
 import com.orbitz.consul.model.ConsulResponse;
 import com.orbitz.consul.model.State;
 import com.orbitz.consul.model.health.HealthCheck;
+import com.orbitz.consul.model.health.ServiceCheck;
 import com.orbitz.consul.model.health.ServiceHealth;
 import com.orbitz.consul.option.CatalogOptions;
 import com.orbitz.consul.option.CatalogOptionsBuilder;
@@ -91,10 +92,12 @@ public class HealthClient {
      * GET /v1/health/service/{service}
      *
      * @return A {@link com.orbitz.consul.model.ConsulResponse} containing a list of
-     * {@link com.orbitz.consul.model.health.HealthCheck} objects.
+     * {@link com.orbitz.consul.model.health.ServiceCheck} objects.
      */
-    public ConsulResponse<List<HealthCheck>> getServiceChecks(String service) {
-        return getNodeChecks(service, null, QueryOptions.BLANK);
+    public ConsulResponse<List<ServiceCheck>> getServiceChecks(String service) {
+    	return response(webTarget.path("service").path(service), null, QueryOptions.BLANK,
+                new GenericType<List<ServiceCheck>>() {
+                });
     }
 
     /**
