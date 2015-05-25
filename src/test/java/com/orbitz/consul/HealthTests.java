@@ -33,7 +33,7 @@ public class HealthTests {
         client2.agentClient().fail(serviceId2);
 
         boolean found = false;
-        ConsulResponse<List<ServiceHealth>> response = client2.healthClient().getHealthyNodes(serviceName);
+        ConsulResponse<List<ServiceHealth>> response = client2.healthClient().getHealthyServiceInstances(serviceName);
         assertHealth(serviceId, found, response);
     }
 
@@ -47,7 +47,7 @@ public class HealthTests {
         client.agentClient().pass(serviceId);
 
         boolean found = false;
-        ConsulResponse<List<ServiceHealth>> response = client.healthClient().getAllNodes(serviceName);
+        ConsulResponse<List<ServiceHealth>> response = client.healthClient().getAllServiceInstances(serviceName);
         assertHealth(serviceId, found, response);
     }
 
@@ -61,7 +61,7 @@ public class HealthTests {
         client.agentClient().pass(serviceId);
 
         boolean found = false;
-        ConsulResponse<List<ServiceHealth>> response = client.healthClient().getAllNodes(serviceName,
+        ConsulResponse<List<ServiceHealth>> response = client.healthClient().getAllServiceInstances(serviceName,
                 CatalogOptionsBuilder.builder().datacenter("dc1").build());
         assertHealth(serviceId, found, response);
     }
@@ -77,7 +77,7 @@ public class HealthTests {
 
 
         boolean found = false;
-        ConsulResponse<List<ServiceHealth>> response = client.healthClient().getAllNodes(serviceName,
+        ConsulResponse<List<ServiceHealth>> response = client.healthClient().getAllServiceInstances(serviceName,
                 CatalogOptionsBuilder.builder().datacenter("dc1").build(),
                 QueryOptionsBuilder.builder().blockSeconds(2, 0).build());
         assertHealth(serviceId, found, response);
