@@ -88,45 +88,45 @@ public class HealthClient {
     /**
      * Retrieves the healthchecks for a service.
      * 
-     * GET /v1/health/service/{service}
+     * GET /v1/health/checks/{service}
      *
      * @return A {@link com.orbitz.consul.model.ConsulResponse} containing a list of
      * {@link com.orbitz.consul.model.health.HealthCheck} objects.
      */
     public ConsulResponse<List<HealthCheck>> getServiceChecks(String service) {
-        return getNodeChecks(service, null, QueryOptions.BLANK);
+        return getServiceChecks(service, null, QueryOptions.BLANK);
     }
 
     /**
      * Retrieves the healthchecks for a service in a given datacenter.
-     * 
-     * GET /v1/health/service/{service}?dc={datacenter}
+     *
+     * GET /v1/health/checks/{service}?dc={datacenter}
      *
      * @param catalogOptions The catalog specific options to use.
      * @return A {@link com.orbitz.consul.model.ConsulResponse} containing a list of
      * {@link com.orbitz.consul.model.health.HealthCheck} objects.
      */
     public ConsulResponse<List<HealthCheck>> getServiceChecks(String service, CatalogOptions catalogOptions) {
-        return getNodeChecks(service, catalogOptions, QueryOptions.BLANK);
+        return getServiceChecks(service, catalogOptions, QueryOptions.BLANK);
     }
 
     /**
      * Retrieves the healthchecks for a service with {@link com.orbitz.consul.option.QueryOptions}.
-     * 
-     * GET /v1/health/service/{service}
+     *
+     * GET /v1/health/checks/{service}
      *
      * @param queryOptions The Query Options to use.
      * @return A {@link com.orbitz.consul.model.ConsulResponse} containing a list of
      * {@link com.orbitz.consul.model.health.HealthCheck} objects.
      */
     public ConsulResponse<List<HealthCheck>> getServiceChecks(String service, QueryOptions queryOptions) {
-        return getNodeChecks(service, null, queryOptions);
+        return getServiceChecks(service, null, queryOptions);
     }
 
     /**
      * Retrieves the healthchecks for a service in a given datacenter with {@link com.orbitz.consul.option.QueryOptions}.
-     * 
-     * GET /v1/health/service/{service}?dc={datacenter}
+     *
+     * GET /v1/health/checks/{service}?dc={datacenter}
      *
      * @param catalogOptions The catalog specific options to use.
      * @param queryOptions   The Query Options to use.
@@ -145,7 +145,7 @@ public class HealthClient {
      * Asynchronously retrieves the healthchecks for a service in a given
      * datacenter with {@link com.orbitz.consul.option.QueryOptions}.
      *
-     * GET /v1/health/service/{service}?dc={datacenter}
+     * GET /v1/health/checks/{service}?dc={datacenter}
      *
      * @param service      The service to query.
      * @param queryOptions   The Query Options to use.
@@ -164,7 +164,7 @@ public class HealthClient {
      * Asynchronously retrieves the healthchecks for a service in a given
      * datacenter with {@link com.orbitz.consul.option.QueryOptions}.
      *
-     * GET /v1/health/service/{service}?dc={datacenter}
+     * GET /v1/health/checks/{service}?dc={datacenter}
      *
      * @param service      The service to query.
      * @param catalogOptions The catalog specific options to use.
