@@ -51,6 +51,10 @@ public class ClientUtil {
         if(queryOptions.getConsistencyMode() == ConsistencyMode.STALE) {
             webTarget = webTarget.queryParam("stale");
         }
+        
+        if(queryOptions.passing()){
+        	webTarget = webTarget.queryParam("passing");
+        }
 
         return webTarget;
     }
@@ -113,7 +117,6 @@ public class ClientUtil {
 
     public static <T> ConsulResponse<T> response(WebTarget webTarget, GenericType<T> responseType) {
         Response response = webTarget.request().accept(MediaType.APPLICATION_JSON_TYPE).get();
-
         return consulResponse(responseType, response);
     }
 
