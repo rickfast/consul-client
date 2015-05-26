@@ -1,21 +1,24 @@
 package com.orbitz.consul;
 
-import com.orbitz.consul.async.ConsulResponseCallback;
-import com.orbitz.consul.model.ConsulResponse;
+import com.orbitz.consul.async.EventResponseCallback;
 import com.orbitz.consul.model.event.Event;
-import com.orbitz.consul.option.CatalogOptions;
+import com.orbitz.consul.model.EventResponse;
 import com.orbitz.consul.option.EventOptions;
 import com.orbitz.consul.option.QueryOptions;
+import com.orbitz.consul.util.ClientUtil;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.ws.rs.client.Entity;
+import javax.ws.rs.client.InvocationCallback;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.GenericType;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import java.math.BigInteger;
 import java.util.List;
 
 import static com.orbitz.consul.util.ClientUtil.eventConfig;
-import static com.orbitz.consul.util.ClientUtil.response;
+import static com.orbitz.consul.util.ClientUtil.handleErrors;
 
 /**
  * HTTP Client for /v1/event/ endpoints.
@@ -103,15 +106,14 @@ public class EventClient {
      * @return A {@link com.orbitz.consul.model.ConsulResponse} object containing
      *  a list of {@link com.orbitz.consul.model.event.Event} objects.
      */
-    public ConsulResponse<List<Event>> listEvents(String name, QueryOptions queryOptions) {
+    public EventResponse listEvents(String name, QueryOptions queryOptions) {
         WebTarget target = webTarget.path("list");
 
         if (StringUtils.isNotEmpty(name)) {
             target.queryParam("name", name);
         }
 
-        return response(target, CatalogOptions.BLANK, queryOptions, new GenericType<List<Event>>() {
-        });
+        return response(target, queryOptions);
     }
 
     /**
@@ -123,7 +125,7 @@ public class EventClient {
      * @return A {@link com.orbitz.consul.model.ConsulResponse} object containing
      *  a list of {@link com.orbitz.consul.model.event.Event} objects.
      */
-    public ConsulResponse<List<Event>> listEvents(String name) {
+    public EventResponse listEvents(String name) {
         return listEvents(name, QueryOptions.BLANK);
     }
 
@@ -136,7 +138,7 @@ public class EventClient {
      * @return A {@link com.orbitz.consul.model.ConsulResponse} object containing
      *  a list of {@link com.orbitz.consul.model.event.Event} objects.
      */
-    public ConsulResponse<List<Event>> listEvents(QueryOptions queryOptions) {
+    public EventResponse listEvents(QueryOptions queryOptions) {
         return listEvents(null, queryOptions);
     }
 
@@ -148,7 +150,7 @@ public class EventClient {
      * @return A {@link com.orbitz.consul.model.ConsulResponse} object containing
      *  a list of {@link com.orbitz.consul.model.event.Event} objects.
      */
-    public ConsulResponse<List<Event>> listEvents() {
+    public EventResponse listEvents() {
         return listEvents(null, QueryOptions.BLANK);
     }
 
@@ -161,14 +163,14 @@ public class EventClient {
      * @param queryOptions The query options to use.
      * @param callback The callback to asynchronously process the result.
      */
-    public void listEvents(String name, QueryOptions queryOptions, ConsulResponseCallback<List<Event>> callback) {
+    public void listEvents(String name, QueryOptions queryOptions, EventResponseCallback callback) {
         WebTarget target = webTarget.path("list");
 
         if (StringUtils.isNotEmpty(name)) {
             target.queryParam("name", name);
         }
 
-        response(target, CatalogOptions.BLANK, queryOptions, new GenericType<List<Event>>() {}, callback);
+        response(target, queryOptions, callback);
     }
 
     /**
@@ -179,7 +181,7 @@ public class EventClient {
      * @param queryOptions The query options to use.
      * @param callback The callback to asynchronously process the result.
      */
-    public void listEvents(QueryOptions queryOptions, ConsulResponseCallback<List<Event>> callback) {
+    public void listEvents(QueryOptions queryOptions, EventResponseCallback callback) {
         listEvents(null, queryOptions, callback);
     }
 
@@ -190,7 +192,48 @@ public class EventClient {
      *
      * @param callback The callback to asynchronously process the result.
      */
-    public void listEvents(ConsulResponseCallback<List<Event>> callback) {
+    public void listEvents(EventResponseCallback callback) {
         listEvents(null, QueryOptions.BLANK, callback);
+    }
+
+    private static void response(WebTarget target, QueryOptions queryOptions, final EventResponseCallback callback) {
+        target = ClientUtil.queryConfig(target, queryOptions);
+
+        target.request().accept(MediaType.APPLICATION_JSON_TYPE).async().get(new InvocationCallback<Response>() {
+
+            @Override
+            public void completed(Response response) {
+                try {
+                    callback.onComplete(eventResponse(response));
+                } catch (Exception ex) {
+                    callback.onFailure(ex);
+                }
+            }
+
+            @Override
+            public void failed(Throwable throwable) {
+                callback.onFailure(throwable);
+            }
+        });
+    }
+
+    private static EventResponse response(WebTarget target, QueryOptions queryOptions) {
+        target = ClientUtil.queryConfig(target, queryOptions);
+
+        return eventResponse(target.request().accept(MediaType.APPLICATION_JSON_TYPE).get());
+    }
+
+    private static EventResponse eventResponse(Response response) {
+        handleErrors(response);
+
+        String indexHeaderValue = response.getHeaderString("X-Consul-Index");
+
+        BigInteger index = new BigInteger(indexHeaderValue);
+
+        EventResponse eventResponse = new EventResponse(response.readEntity(new GenericType<List<Event>>() {}), index);
+        
+        response.close();
+
+        return eventResponse;
     }
 }

@@ -5,9 +5,9 @@ public class ConsulResponse<T> {
     private T response;
     private long lastContact;
     private boolean knownLeader;
-    private int index;
+    private long index;
 
-    public ConsulResponse(T response, long lastContact, boolean knownLeader, int index) {
+    public ConsulResponse(T response, long lastContact, boolean knownLeader, long index) {
         this.response = response;
         this.lastContact = lastContact;
         this.knownLeader = knownLeader;
@@ -38,11 +38,11 @@ public class ConsulResponse<T> {
         this.knownLeader = knownLeader;
     }
 
-    public int getIndex() {
+    public long getIndex() {
         return index;
     }
 
-    public void setIndex(int index) {
+    public void setIndex(long index) {
         this.index = index;
     }
 }

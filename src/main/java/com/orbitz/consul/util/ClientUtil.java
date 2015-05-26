@@ -159,7 +159,28 @@ public class ClientUtil {
     }
 
     private static <T> ConsulResponse<T> consulResponse(GenericType<T> responseType, Response response) {
+        handleErrors(response);
 
+        String indexHeaderValue = response.getHeaderString("X-Consul-Index");
+        String lastContactHeaderValue = response.getHeaderString("X-Consul-Lastcontact");
+        String knownLeaderHeaderValue = response.getHeaderString("X-Consul-Knownleader");
+
+        long index = Long.valueOf(indexHeaderValue);
+        long lastContact = lastContactHeaderValue == null ? -1 : Long.valueOf(lastContactHeaderValue);
+        boolean knownLeader = knownLeaderHeaderValue == null ? false : Boolean.valueOf(knownLeaderHeaderValue);
+
+        ConsulResponse<T> consulResponse = new ConsulResponse<T>(response.readEntity(responseType), lastContact, knownLeader, index);
+
+        response.close();
+
+        return consulResponse;
+    }
+
+    public static String decodeBase64(String value) {
+        return new String(Base64.decodeBase64(value));
+    }
+
+    public static void handleErrors(Response response) {
         if (response.getStatusInfo().getFamily() != Response.Status.Family.SUCCESSFUL) {
             ServerErrorException see = null;
 
@@ -173,18 +194,5 @@ public class ClientUtil {
             response.close();
             throw new ConsulException(see.getLocalizedMessage(), see);
         }
-
-        int index = Integer.valueOf(response.getHeaderString("X-Consul-Index"));
-        long lastContact = Long.valueOf(response.getHeaderString("X-Consul-Lastcontact"));
-        boolean knownLeader = Boolean.valueOf(response.getHeaderString("X-Consul-Knownleader"));
-        ConsulResponse<T> consulResponse = new ConsulResponse<T>(response.readEntity(responseType), lastContact, knownLeader, index);
-
-        response.close();
-
-        return consulResponse;
-    }
-
-    public static String decodeBase64(String value) {
-        return new String(Base64.decodeBase64(value));
     }
 }
