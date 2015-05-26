@@ -1,6 +1,8 @@
 package com.orbitz.consul.model.event;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.orbitz.consul.util.Base64EncodingDeserializer;
 
 public class Event {
 
@@ -11,6 +13,7 @@ public class Event {
     private String name;
 
     @JsonProperty("Payload")
+    @JsonDeserialize(using = Base64EncodingDeserializer.class)
     private String payload;
 
     @JsonProperty("NodeFilter")

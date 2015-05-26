@@ -4,7 +4,6 @@ import com.orbitz.consul.model.event.Event;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.Test;
 
-import static com.orbitz.consul.util.ClientUtil.decodeBase64;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
@@ -48,7 +47,7 @@ public class EventTests {
             if (event.getName().equals(name) && event.getId().equals(fired.getId())) {
                 found = true;
 
-                assertEquals(payload, decodeBase64(event.getPayload()));
+                assertEquals(payload, event.getPayload());
             }
         }
 
