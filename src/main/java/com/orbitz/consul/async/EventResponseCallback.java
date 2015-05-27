@@ -2,6 +2,10 @@ package com.orbitz.consul.async;
 
 import com.orbitz.consul.model.EventResponse;
 
+/**
+ * For Event API calls that support long-polling, this callback is used to handle
+ * the result on success or failure for an async HTTP call.
+ */
 public interface EventResponseCallback {
 
     /**

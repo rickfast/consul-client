@@ -41,5 +41,4 @@ public class StatusClient {
         return webTarget.path("peers").request().accept(MediaType.APPLICATION_JSON_TYPE)
                 .get(new GenericType<List<String>>() {});
     }
-
 }
