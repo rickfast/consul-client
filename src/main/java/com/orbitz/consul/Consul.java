@@ -55,6 +55,27 @@ public class Consul {
     /**
      * Creates a new client given a host and a port.
      *
+     * @param url The Consul URL.
+     * @param builder The JAX-RS client builder instance.
+     * @return A new client.
+     */
+    public static Consul newClient(URL url, ClientBuilder builder) {
+        return new Consul(url.toString(), builder);
+    }
+
+    /**
+     * Creates a new client given a host and a port.
+     *
+     * @param url The Consul URL.
+     * @return A new client.
+     */
+    public static Consul newClient(URL url) {
+        return new Consul(url.toString(), ClientBuilder.newBuilder());
+    }
+
+    /**
+     * Creates a new client given a host and a port.
+     *
      * @param host The Consul API hostname or IP.
      * @param port The Consul port.
      * @param builder The JAX-RS client builder instance.
