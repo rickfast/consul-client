@@ -60,11 +60,7 @@ public class Consul {
      * @return A new client.
      */	
 	public static Consul newClient(String url, ClientBuilder builder) {
-        try {
-            return new Consul(url, builder);
-        } catch (MalformedURLException e) {
-            throw new ConsulException("Bad Consul URL", e);
-        }
+       return new Consul(url, builder);
     }
 
     /**
