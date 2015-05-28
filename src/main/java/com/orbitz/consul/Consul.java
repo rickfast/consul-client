@@ -51,6 +51,21 @@ public class Consul {
 
         agentClient.ping();
     }
+	
+   /**
+     * Creates a new client given a complete URL.
+     *
+     * @param url The Consul API URL.
+     * @param builder The JAX-RS client builder instance.
+     * @return A new client.
+     */	
+	public static Consul newClient(String url, ClientBuilder builder) {
+        try {
+            return new Consul(new URL(url).toString(), builder);
+        } catch (MalformedURLException e) {
+            throw new ConsulException("Bad Consul URL", e);
+        }
+    }
 
     /**
      * Creates a new client given a host and a port.
