@@ -39,4 +39,21 @@ public enum State {
     public String getName() {
         return name;
     }
+
+    /**
+     * Returns the appropriate {@link com.orbitz.consul.model.State} given the
+     * name.
+     *
+     * @param name The state name e.g. "passing".
+     * @return The state.
+     */
+    public static State fromName(String name) {
+        for(State state : values()) {
+            if(state.getName().equals(name)) {
+                return state;
+            }
+        }
+
+        throw new IllegalArgumentException("Invalid State name");
+    }
 }
