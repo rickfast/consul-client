@@ -8,7 +8,6 @@ public class QueryOptionsBuilder {
     private String wait;
     private int index;
     private ConsistencyMode consistencyMode = ConsistencyMode.DEFAULT;
-    private boolean passing;
 
     private QueryOptionsBuilder() {
 
@@ -38,22 +37,16 @@ public class QueryOptionsBuilder {
         return this;
     }
 
-    public QueryOptionsBuilder passing() {
-        this.passing = true;
-
-        return this;
-    }
 
     public QueryOptionsBuilder queryOptions(QueryOptions queryOptions) {
         this.wait = queryOptions.getWait();
         this.index = queryOptions.getIndex();
         this.consistencyMode = queryOptions.getConsistencyMode();
-        this.passing = queryOptions.passing();
 
         return this;
     }
 
     public QueryOptions build() {
-        return new QueryOptions(wait, index, consistencyMode, passing);
+        return new QueryOptions(wait, index, consistencyMode);
     }
 }
