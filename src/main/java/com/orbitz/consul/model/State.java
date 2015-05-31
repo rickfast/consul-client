@@ -1,8 +1,5 @@
 package com.orbitz.consul.model;
 
-import com.orbitz.consul.HealthClient;
-import com.orbitz.consul.model.health.HealthCheck;
-
 /**
  * Represents the possible Check states.
  */
@@ -42,27 +39,4 @@ public enum State {
     public String getName() {
         return name;
     }
-    
-	/**
-	 * get {@link State} by name that could be return via
-	 * {@link HealthClient#getHealthyServiceInstances} or
-	 * {@link HealthClient#getAllServiceInstances} in {@link HealthCheck#status}
-	 * 
-	 * @param name
-	 * @return
-	 */
-	public static State getByName(String name) {
-		switch (name) {
-			case "critical":
-				return State.FAIL;
-			case "warning":
-				return State.WARN;
-			case "passing":
-				return State.PASS;
-			case "any":
-				return State.ANY;
-			default:
-				return State.UNKNOWN;
-		}
-	}
 }
