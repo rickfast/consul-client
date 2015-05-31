@@ -30,6 +30,7 @@ public class Consul {
     private CatalogClient catalogClient;
     private StatusClient statusClient;
     private SessionClient sessionClient;
+    private EventClient eventClient;
 
     /**
      * Private constructor.
@@ -46,8 +47,20 @@ public class Consul {
         this.catalogClient = new CatalogClient(client.target(url).path("v1").path("catalog"));
         this.statusClient = new StatusClient(client.target(url).path("v1").path("status"));
         this.sessionClient = new SessionClient(client.target(url).path("v1").path("session"));
+        this.eventClient = new EventClient(client.target(url).path("v1").path("event"));
 
         agentClient.ping();
+    }
+	
+   /**
+     * Creates a new client given a complete URL.
+     *
+     * @param url The Consul API URL.
+     * @param builder The JAX-RS client builder instance.
+     * @return A new client.
+     */	
+	public static Consul newClient(String url, ClientBuilder builder) {
+       return new Consul(url, builder);
     }
 
     /**
@@ -150,5 +163,16 @@ public class Consul {
      */
     public SessionClient sessionClient() {
         return sessionClient;
+    }
+
+    /**
+     * Get the Event HTTP client.
+     *
+     * /v1/event
+     *
+     * @return The Event HTTP client.
+     */
+    public EventClient eventClient() {
+        return eventClient;
     }
 }

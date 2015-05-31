@@ -41,7 +41,7 @@ public class AgentTests {
 
         boolean found = false;
 
-        for (ServiceHealth health : client.healthClient().getAllNodes(serviceName).getResponse()) {
+        for (ServiceHealth health : client.healthClient().getAllServiceInstances(serviceName).getResponse()) {
             if (health.getService().getId().equals(serviceId)) {
                 found = true;
             }
@@ -62,7 +62,7 @@ public class AgentTests {
 
         boolean found = false;
 
-        for (ServiceHealth health : client.healthClient().getAllNodes(serviceName).getResponse()) {
+        for (ServiceHealth health : client.healthClient().getAllServiceInstances(serviceName).getResponse()) {
             if (health.getService().getId().equals(serviceId)) {
                 found = true;
             }
@@ -82,7 +82,7 @@ public class AgentTests {
         Thread.sleep(1000L);
         boolean found = false;
 
-        for (ServiceHealth health : client.healthClient().getAllNodes(serviceName).getResponse()) {
+        for (ServiceHealth health : client.healthClient().getAllServiceInstances(serviceName).getResponse()) {
             if (health.getService().getId().equals(serviceId)) {
                 found = true;
             }
@@ -155,7 +155,7 @@ public class AgentTests {
 
     private void verifyState(String state, Consul client, String serviceId,
                              String serviceName, String note) throws UnknownHostException {
-        List<ServiceHealth> nodes = client.healthClient().getAllNodes(serviceName).getResponse();
+        List<ServiceHealth> nodes = client.healthClient().getAllServiceInstances(serviceName).getResponse();
         boolean found = false;
 
         for (ServiceHealth health : nodes) {
