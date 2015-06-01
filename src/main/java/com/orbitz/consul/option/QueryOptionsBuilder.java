@@ -8,6 +8,7 @@ public class QueryOptionsBuilder {
     private String wait;
     private int index;
     private ConsistencyMode consistencyMode = ConsistencyMode.DEFAULT;
+    private String token;
 
     private QueryOptionsBuilder() {
 
@@ -15,6 +16,11 @@ public class QueryOptionsBuilder {
 
     public static QueryOptionsBuilder builder() {
         return new QueryOptionsBuilder();
+    }
+
+    public QueryOptionsBuilder withToken(String token) {
+        this.token = token;
+        return this;
     }
 
     public QueryOptionsBuilder blockMinutes(int minutes, int index) {
@@ -47,6 +53,6 @@ public class QueryOptionsBuilder {
     }
 
     public QueryOptions build() {
-        return new QueryOptions(wait, index, consistencyMode);
+        return new QueryOptions(wait, index, consistencyMode, token);
     }
 }
