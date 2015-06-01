@@ -14,6 +14,9 @@ public class Service {
 
     @JsonProperty("Tags")
     private String[] tags;
+    
+    @JsonProperty("Address")
+    private String address;
 
     @JsonProperty("Port")
     private int port;
@@ -40,6 +43,14 @@ public class Service {
 
     public void setTags(String[] tags) {
         this.tags = tags;
+    }
+    
+    public String getAddress() {
+        return address;
+    }
+
+    public void setAddress(String address) {
+        this.address = address;
     }
 
     public int getPort() {
