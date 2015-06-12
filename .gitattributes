@@ -1,0 +1,3 @@
+.travis.yml eol=lf
+.git* text eol=lf
+gradlew text oel=lf
