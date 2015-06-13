@@ -66,6 +66,10 @@ public class ClientUtil {
             webTarget = webTarget.queryParam("stale");
         }
 
+        if(queryOptions.hasToken()){
+            webTarget = webTarget.queryParam("token",queryOptions.getToken());
+        }
+
         return webTarget;
     }
 
