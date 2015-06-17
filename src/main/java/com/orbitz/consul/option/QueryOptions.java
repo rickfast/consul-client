@@ -7,7 +7,7 @@ public class QueryOptions {
 
     private boolean blocking;
     private String wait;
-    private int index;
+    private long index;
     private ConsistencyMode consistencyMode;
     private boolean authenticated;
     private String token;
@@ -19,7 +19,7 @@ public class QueryOptions {
      * @param index Lock index.
      * @param consistencyMode Consistency mode to use for query.
      */
-    QueryOptions(String wait, int index, ConsistencyMode consistencyMode, String token) {
+    QueryOptions(String wait, long index, ConsistencyMode consistencyMode, String token) {
         this.wait = wait;
         this.index = index;
         this.consistencyMode = consistencyMode;
@@ -32,7 +32,7 @@ public class QueryOptions {
         return wait;
     }
 
-    public int getIndex() {
+    public long getIndex() {
         return index;
     }
 
