@@ -2,8 +2,10 @@ package com.orbitz.consul;
 
 import com.google.common.base.Optional;
 import com.google.common.primitives.UnsignedLongs;
-import com.orbitz.consul.model.session.SessionInfo;
+import com.orbitz.consul.async.ConsulResponseCallback;
 import com.orbitz.consul.model.kv.Value;
+import com.orbitz.consul.model.session.SessionInfo;
+import com.orbitz.consul.option.CatalogOptionsBuilder;
 import com.orbitz.consul.option.PutOptions;
 import com.orbitz.consul.option.PutOptionsBuilder;
 import com.orbitz.consul.option.QueryOptions;
@@ -19,6 +21,7 @@ import javax.ws.rs.core.Response;
 import java.util.*;
 
 import static com.orbitz.consul.util.ClientUtil.decodeBase64;
+import static com.orbitz.consul.util.ClientUtil.response;
 
 /**
  * HTTP Client for /v1/kv/ endpoints.
@@ -74,6 +77,21 @@ public class KeyValueClient {
     }
 
     /**
+     * Asynchronously retrieves a {@link com.orbitz.consul.model.kv.Value} for a specific key
+     * from the key/value store.
+     *
+     * GET /v1/keyValue/{key}
+     *
+     * @param key The key to retrieve.
+     * @param queryOptions The query options.
+     * @param callback Callback implemented by callee to handle results.
+     */
+    public void getValue(String key, QueryOptions queryOptions, ConsulResponseCallback<List<Value>> callback) {
+        response(webTarget.path(key), CatalogOptionsBuilder.builder().build(), queryOptions,
+                new GenericType<List<Value>>() {}, callback);
+    }
+
+    /**
      * Retrieves a list of {@link com.orbitz.consul.model.kv.Value} objects for a specific key
      * from the key/value store.
      *
@@ -87,6 +105,21 @@ public class KeyValueClient {
 
         return Arrays.asList(target
                 .request().accept(MediaType.APPLICATION_JSON_TYPE).get(Value[].class));
+    }
+
+    /**
+     * Asynchronously retrieves a list of {@link com.orbitz.consul.model.kv.Value} objects for a specific key
+     * from the key/value store.
+     *
+     * GET /v1/keyValue/{key}?recurse
+     *
+     * @param key The key to retrieve.
+     * @param queryOptions The query options.
+     * @param callback Callback implemented by callee to handle results.
+     */
+    public void getValues(String key, QueryOptions queryOptions, ConsulResponseCallback<List<Value>> callback) {
+        response(webTarget.path(key).queryParam("recurse", "true"), CatalogOptionsBuilder.builder().build(),
+                queryOptions, new GenericType<List<Value>>() {}, callback);
     }
 
     /**
