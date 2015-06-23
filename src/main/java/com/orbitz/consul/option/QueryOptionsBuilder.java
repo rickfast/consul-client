@@ -6,8 +6,9 @@ package com.orbitz.consul.option;
 public class QueryOptionsBuilder {
 
     private String wait;
-    private int index;
+    private long index;
     private ConsistencyMode consistencyMode = ConsistencyMode.DEFAULT;
+    private String token;
 
     private QueryOptionsBuilder() {
 
@@ -17,14 +18,19 @@ public class QueryOptionsBuilder {
         return new QueryOptionsBuilder();
     }
 
-    public QueryOptionsBuilder blockMinutes(int minutes, int index) {
+    public QueryOptionsBuilder withToken(String token) {
+        this.token = token;
+        return this;
+    }
+
+    public QueryOptionsBuilder blockMinutes(int minutes, long index) {
         this.wait = String.format("%sm", minutes);
         this.index = index;
 
         return this;
     }
 
-    public QueryOptionsBuilder blockSeconds(int seconds, int index) {
+    public QueryOptionsBuilder blockSeconds(int seconds, long index) {
         this.wait = String.format("%ss", seconds);
         this.index = index;
 
@@ -47,6 +53,6 @@ public class QueryOptionsBuilder {
     }
 
     public QueryOptions build() {
-        return new QueryOptions(wait, index, consistencyMode);
+        return new QueryOptions(wait, index, consistencyMode, token);
     }
 }
