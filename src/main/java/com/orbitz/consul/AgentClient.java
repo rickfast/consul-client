@@ -438,4 +438,39 @@ public class AgentClient {
     public void fail(String checkId, String note) throws NotRegisteredException {
         checkTtl(checkId, State.FAIL, note);
     }
+
+    /**
+     * GET /v1/agent/join/{address}
+     *
+     * Instructs the agent to join a node.
+     *
+     * @param address The address to join.
+     * @return <code>true</code> if successful, otherwise <code>false</code>.
+     */
+    public boolean join(String address) {
+        return join(address, false);
+    }
+
+    /**
+     * GET /v1/agent/join/{address}?wan=1
+     *
+     * Instructs the agent to join a node.
+     *
+     * @param address The address to join.
+     * @param wan Use WAN pool.
+     * @return <code>true</code> if successful, otherwise <code>false</code>.
+     */
+    public boolean join(String address, boolean wan) {
+        WebTarget resource = webTarget.path("join").path(address);
+
+        if (wan) {
+            resource = resource.queryParam("wan", "1");
+        }
+
+        try {
+            return resource.request().get().getStatus() == Response.Status.OK.getStatusCode();
+        } catch (InternalServerErrorException ex) {
+            return false;
+        }
+    }
 }
