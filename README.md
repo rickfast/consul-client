@@ -1,5 +1,5 @@
 [![Build Status](https://api.shippable.com/projects/543452637a7fb11eaa64a5c8/badge?branchName=master)](https://app.shippable.com/projects/543452637a7fb11eaa64a5c8/builds/latest)
-
+[ ![Download](https://api.bintray.com/packages/orbitz/consul-client/consul-client/images/download.svg) ](https://bintray.com/orbitz/consul-client/consul-client/_latestVersion)
 Consul Client for Java
 ======================
 
@@ -10,11 +10,9 @@ Installation
 
 ###Bintray:
 
-Grab the latest binary (0.9.5) [here](http://dl.bintray.com/orbitz/consul-client/com/orbitz/consul/consul-client/0.9.5/#consul-client-0.9.5.jar).
+Grab the latest binary (0.9.6) [here](http://dl.bintray.com/orbitz/consul-client/com/orbitz/consul/consul-client/0.9.6/#consul-client-0.9.6.jar).
 
 ###Gradle:
-
-**Note:** Maven Central inclusion pending.  Should be available soon.
 
 ```groovy
 repositories {
@@ -22,7 +20,7 @@ repositories {
 }
 
 dependencies {
-    compile 'com.orbitz.consul:consul-client:0.9.5'
+    compile 'com.orbitz.consul:consul-client:0.9.6'
     // include your preferred javax.ws.rs-api implementation, for example:
     compile 'org.apache.cxf:cxf-rt-rs-client:3.0.3'
     compile 'org.apache.cxf:cxf-rt-transports-http-hc:3.0.3'
@@ -36,7 +34,7 @@ dependencies {
     <dependency>
         <groupId>com.orbitz.consul</groupId>
         <artifactId>consul-client</artifactId>
-        <version>0.9.5</version>
+        <version>0.9.6</version>
     </dependency>
     <!-- include your preferred javax.ws.rs-api implementation -->
 </dependencies>

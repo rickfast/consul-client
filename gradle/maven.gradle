@@ -1,0 +1,56 @@
+signing {
+    sign configurations.archives
+}
+
+Properties props = new Properties()
+
+props.load(new FileReader("${System.getProperty("user.home")}/gradle.properties"))
+
+def sonatypeUsername = props.getProperty('ossrhUsername')
+def sonatypePassword = props.getProperty('ossrhPassword')
+
+ext."signing.keyId" = props.getProperty('signing.keyId')
+ext."signing.secretKeyRingFile" = props.getProperty('signing.secretKeyRingFile')
+ext."signing.password" = props.getProperty('signing.password')
+
+install.repositories.mavenInstaller.before
+
+uploadArchives {
+    repositories {
+        mavenDeployer {
+            beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
+
+            repository(url: "https://oss.sonatype.org/service/local/staging/deploy/maven2/") {
+                authentication(userName: sonatypeUsername, password: sonatypePassword)
+            }
+
+            pom.project {
+                name 'consul-client'
+                packaging 'jar'
+                description 'Java client for the Consul HTTP API.'
+                url 'https://github.com/OrbitzWorldwide/consul-client'
+
+                scm {
+                    url 'scm:git@github.com:OrbitzWorldwide/consul-client.git'
+                    connection 'scm:git@github.com:OrbitzWorldwide/consul-client.git'
+                    developerConnection 'scm:git@github.com:OrbitzWorldwide/consul-client.git'
+                }
+
+                licenses {
+                    license {
+                        name 'The Apache Software License, Version 2.0'
+                        url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+                        distribution 'repo'
+                    }
+                }
+
+                developers {
+                    developer {
+                        id 'rickfast'
+                        name 'Rick Fast'
+                    }
+                }
+            }
+        }
+    }
+}
