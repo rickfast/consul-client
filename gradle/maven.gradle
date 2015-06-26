@@ -18,6 +18,8 @@ if(file.exists()) {
     ext."signing.password" = props.getProperty('signing.password')
 }
 
+signing.onlyIf { file.exists() }
+
 uploadArchives {
     repositories {
         mavenDeployer {
