@@ -2,16 +2,21 @@ signing {
     sign configurations.archives
 }
 
-Properties props = new Properties()
+def sonatypeUsername, sonatypePassword
+def file = new File("${System.getProperty("user.home")}/gradle.properties")
 
-props.load(new FileReader("${System.getProperty("user.home")}/gradle.properties"))
+if(file.exists()) {
+    Properties props = new Properties()
 
-def sonatypeUsername = props.getProperty('ossrhUsername')
-def sonatypePassword = props.getProperty('ossrhPassword')
+    props.load(new FileReader(file))
 
-ext."signing.keyId" = props.getProperty('signing.keyId')
-ext."signing.secretKeyRingFile" = props.getProperty('signing.secretKeyRingFile')
-ext."signing.password" = props.getProperty('signing.password')
+    sonatypeUsername = props.getProperty('ossrhUsername')
+    sonatypePassword = props.getProperty('ossrhPassword')
+
+    ext."signing.keyId" = props.getProperty('signing.keyId')
+    ext."signing.secretKeyRingFile" = props.getProperty('signing.secretKeyRingFile')
+    ext."signing.password" = props.getProperty('signing.password')
+}
 
 uploadArchives {
     repositories {
