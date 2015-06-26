@@ -13,8 +13,6 @@ ext."signing.keyId" = props.getProperty('signing.keyId')
 ext."signing.secretKeyRingFile" = props.getProperty('signing.secretKeyRingFile')
 ext."signing.password" = props.getProperty('signing.password')
 
-install.repositories.mavenInstaller.before
-
 uploadArchives {
     repositories {
         mavenDeployer {
