@@ -1,4 +1,4 @@
-[![Build Status](https://api.shippable.com/projects/543452637a7fb11eaa64a5c8/badge?branchName=master)](https://app.shippable.com/projects/543452637a7fb11eaa64a5c8/builds/latest)
+[ ![Codeship Status for OrbitzWorldwide/consul-client](https://codeship.com/projects/d1bec4e0-fff2-0132-2c7a-62f74f018091/status?branch=master)](https://codeship.com/projects/88244)
 [ ![Download](https://api.bintray.com/packages/orbitz/consul-client/consul-client/images/download.svg) ](https://bintray.com/orbitz/consul-client/consul-client/_latestVersion)
 Consul Client for Java
 ======================
