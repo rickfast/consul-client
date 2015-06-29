@@ -25,5 +25,5 @@ public class Agent {
     public void setMember(Member member){
         this.member=member;
     }
-    }
+    
 }
