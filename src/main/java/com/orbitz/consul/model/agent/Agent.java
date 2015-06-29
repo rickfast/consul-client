@@ -19,4 +19,11 @@ public class Agent {
     public void setConfig(Config config) {
         this.config = config;
     }
+    public Member getMember() {
+        return member;
+    }
+    public void setMember(Member member){
+        this.member=member;
+    }
+    }
 }
