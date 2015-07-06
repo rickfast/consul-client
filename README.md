@@ -55,7 +55,7 @@ String serviceName = "MyService";
 String serviceId = "1";
 
 agentClient.register(8080, 3L, serviceName, serviceId); // registers with a TTL of 3 seconds
-agentClient.pass(serviceId); // check in with Consul
+agentClient.pass(serviceId); // check in with Consul, serviceId required only.  client will prepend "service:" for service level checks.
 ```
 
 Example 2: Find available (healthy) services.

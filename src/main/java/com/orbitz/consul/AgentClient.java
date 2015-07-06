@@ -398,45 +398,87 @@ public class AgentClient {
     }
 
     /**
+     * Sets a TTL service check to "passing" state
+     */
+    public void pass(String serviceId) throws NotRegisteredException {
+        checkTtl(serviceId, State.PASS, null);
+    }
+
+    /**
+     * Sets a TTL service check to "passing" state with a note
+     */
+    public void pass(String serviceId, String note) throws NotRegisteredException {
+        checkTtl(serviceId, State.PASS, note);
+    }
+
+    /**
+     * Sets a TTL service check to "warning" state.
+     */
+    public void warn(String serviceId) throws NotRegisteredException {
+        checkTtl(serviceId, State.WARN, null);
+    }
+
+    /**
+     * Sets a TTL service check to "warning" state with a note.
+     */
+    public void warn(String serviceId, String note) throws NotRegisteredException {
+        checkTtl(serviceId, State.WARN, note);
+    }
+
+    /**
+     * Sets a TTL service check to "critical" state.
+     */
+    public void fail(String serviceId) throws NotRegisteredException {
+        checkTtl(serviceId, State.FAIL, null);
+    }
+
+    /**
+     * Sets a TTL service check to "critical" state with a note.
+     */
+    public void fail(String serviceId, String note) throws NotRegisteredException {
+        checkTtl(serviceId, State.FAIL, note);
+    }
+
+    /**
      * Sets a TTL check to "passing" state
      */
-    public void pass(String checkId) throws NotRegisteredException {
-        checkTtl(checkId, State.PASS, null);
+    public void passCheck(String checkId) throws NotRegisteredException {
+        check(checkId, State.PASS, null);
     }
 
     /**
      * Sets a TTL check to "passing" state with a note
      */
-    public void pass(String checkId, String note) throws NotRegisteredException {
-        checkTtl(checkId, State.PASS, note);
+    public void passCheck(String checkId, String note) throws NotRegisteredException {
+        check(checkId, State.PASS, note);
     }
 
     /**
      * Sets a TTL check to "warning" state.
      */
-    public void warn(String checkId) throws NotRegisteredException {
-        checkTtl(checkId, State.WARN, null);
+    public void warnCheck(String checkId) throws NotRegisteredException {
+        check(checkId, State.WARN, null);
     }
 
     /**
      * Sets a TTL check to "warning" state with a note.
      */
-    public void warn(String checkId, String note) throws NotRegisteredException {
-        checkTtl(checkId, State.WARN, note);
+    public void warnCheck(String checkId, String note) throws NotRegisteredException {
+        check(checkId, State.WARN, note);
     }
 
     /**
      * Sets a TTL check to "critical" state.
      */
-    public void fail(String checkId) throws NotRegisteredException {
-        checkTtl(checkId, State.FAIL, null);
+    public void failCheck(String checkId) throws NotRegisteredException {
+        check(checkId, State.FAIL, null);
     }
 
     /**
      * Sets a TTL check to "critical" state with a note.
      */
-    public void fail(String checkId, String note) throws NotRegisteredException {
-        checkTtl(checkId, State.FAIL, note);
+    public void failCheck(String checkId, String note) throws NotRegisteredException {
+        check(checkId, State.FAIL, note);
     }
 
     /**
