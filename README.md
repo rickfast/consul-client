@@ -55,7 +55,7 @@ String serviceName = "MyService";
 String serviceId = "1";
 
 agentClient.register(8080, 3L, serviceName, serviceId); // registers with a TTL of 3 seconds
-agentClient.pass(); // check in with Consul
+agentClient.pass(serviceId); // check in with Consul
 ```
 
 Example 2: Find available (healthy) services.
@@ -64,7 +64,7 @@ Example 2: Find available (healthy) services.
 Consul consul = Consul.newClient(); // connect to Consul on localhost
 HealthClient healthClient = consul.healthClient();
 
-List<ServiceHealth> nodes = healthClient.getHealthyNodes("DataService").getResponse(); // discover only "passing" nodes
+List<ServiceHealth> nodes = healthClient.getHealthyServiceInstances("DataService").getResponse(); // discover only "passing" nodes
 ```
 
 Example 3: Store key/values.
@@ -113,17 +113,17 @@ ConsulResponseCallback<List<ServiceHealth>> callback = new ConsulResponseCallbac
         index = consulResponse.getIndex();
 
         // blocking request with new index
-        healthClient.getHealthyNodes("my-service", builder().blockMinutes(5, index).build(), this);
+        healthClient.getHealthyServiceInstances("my-service", builder().blockMinutes(5, index).build(), this);
     }
 
     @Override
     public void onFailure(Throwable throwable) {
         throwable.printStackTrace();
-        healthClient.getHealthyNodes("my-service", builder().blockMinutes(5, index).build(), this);
+        healthClient.getHealthyServiceInstances("my-service", builder().blockMinutes(5, index).build(), this);
     }
 };
 
-healthClient.getHealthyNodes("my-service", builder().blockMinutes(1, 0).build(), callback);
+healthClient.getHealthyServiceInstances("my-service", builder().blockMinutes(1, 0).build(), callback);
 ```         
 
 Example 6: Find Raft peers.

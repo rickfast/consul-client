@@ -43,7 +43,7 @@ public class KeyValueClient {
      * Retrieves a {@link com.orbitz.consul.model.kv.Value} for a specific key
      * from the key/value store.
      *
-     * GET /v1/keyValue/{key}
+     * GET /v1/kv/{key}
      *
      * @param key The key to retrieve.
      * @return An {@link Optional} containing the value or {@link Optional#absent()}
@@ -56,7 +56,7 @@ public class KeyValueClient {
      * Retrieves a {@link com.orbitz.consul.model.kv.Value} for a specific key
      * from the key/value store.
      *
-     * GET /v1/keyValue/{key}
+     * GET /v1/kv/{key}
      *
      * @param key The key to retrieve.
      * @param queryOptions The query options.
@@ -80,7 +80,7 @@ public class KeyValueClient {
      * Asynchronously retrieves a {@link com.orbitz.consul.model.kv.Value} for a specific key
      * from the key/value store.
      *
-     * GET /v1/keyValue/{key}
+     * GET /v1/kv/{key}
      *
      * @param key The key to retrieve.
      * @param queryOptions The query options.
@@ -95,7 +95,7 @@ public class KeyValueClient {
      * Retrieves a list of {@link com.orbitz.consul.model.kv.Value} objects for a specific key
      * from the key/value store.
      *
-     * GET /v1/keyValue/{key}?recurse
+     * GET /v1/kv/{key}?recurse
      *
      * @param key The key to retrieve.
      * @return A list of zero to many {@link com.orbitz.consul.model.kv.Value} objects.
@@ -111,7 +111,7 @@ public class KeyValueClient {
      * Asynchronously retrieves a list of {@link com.orbitz.consul.model.kv.Value} objects for a specific key
      * from the key/value store.
      *
-     * GET /v1/keyValue/{key}?recurse
+     * GET /v1/kv/{key}?recurse
      *
      * @param key The key to retrieve.
      * @param queryOptions The query options.
@@ -125,7 +125,7 @@ public class KeyValueClient {
     /**
      * Retrieves a string value for a specific key from the key/value store.
      *
-     * GET /v1/keyValue/{key}
+     * GET /v1/kv/{key}
      *
      * @param key The key to retrieve.
      * @return An {@link Optional} containing the value as a string or
@@ -142,7 +142,7 @@ public class KeyValueClient {
      * Retrieves a list of string values for a specific key from the key/value
      * store.
      *
-     * GET /v1/keyValue/{key}?recurse
+     * GET /v1/kv/{key}?recurse
      *
      * @param key The key to retrieve.
      * @return A list of zero to many string values.
@@ -217,7 +217,7 @@ public class KeyValueClient {
     /**
      * Retrieves a list of matching keys for the given key.
      *
-     * GET /v1/keyValue/{key}?keys
+     * GET /v1/kv/{key}?keys
      *
      * @param key The key to retrieve.
      * @return A list of zero to many keys.
@@ -230,7 +230,7 @@ public class KeyValueClient {
     /**
      * Deletes a specified key.
      *
-     * DELETE /v1/keyValue/{key}
+     * DELETE /v1/kv/{key}
      *
      * @param key The key to delete.
      */
@@ -241,7 +241,7 @@ public class KeyValueClient {
     /**
      * Deletes a specified key and any below it.
      *
-     * DELETE /v1/keyValue/{key}?recurse
+     * DELETE /v1/kv/{key}?recurse
      *
      * @param key The key to delete.
      */

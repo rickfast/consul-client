@@ -103,7 +103,6 @@ public class AgentTests {
             if (check.getValue().getCheckId().equals("service:" + id)) {
                 found = true;
             }
-            ;
         }
 
         assertTrue(found);
