@@ -62,8 +62,6 @@ public class AgentClient {
                 throw new ConsulException(String.format("Error pinging Consul: %s",
                         status.getReasonPhrase()));
             }
-
-            response.close();
         } catch (Exception ex) {
             throw new ConsulException("Error connecting to Consul", ex);
         } finally {
