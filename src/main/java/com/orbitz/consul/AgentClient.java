@@ -52,16 +52,24 @@ public class AgentClient {
      * Pings the Consul Agent.
      */
     public void ping() {
+        Response response = null;
+
         try {
-            Response.StatusType status = webTarget.path("self").request().get()
-                    .getStatusInfo();
+            response = webTarget.path("self").request().get();
+            Response.StatusType status = response.getStatusInfo();
 
             if (status.getStatusCode() != Response.Status.OK.getStatusCode()) {
                 throw new ConsulException(String.format("Error pinging Consul: %s",
                         status.getReasonPhrase()));
             }
+
+            response.close();
         } catch (Exception ex) {
             throw new ConsulException("Error connecting to Consul", ex);
+        } finally {
+            if(response != null) {
+                response.close();
+            }
         }
     }
 
