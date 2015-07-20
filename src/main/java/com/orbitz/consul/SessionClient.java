@@ -99,7 +99,9 @@ public class SessionClient {
 
       Response session = target.path("renew").path(sessionId).request().put(Entity.entity("{}",
               MediaType.APPLICATION_JSON_TYPE));
-      return session.hasEntity();
+      boolean result = session.hasEntity();
+      session.close();
+      return result;
 
    }
 
