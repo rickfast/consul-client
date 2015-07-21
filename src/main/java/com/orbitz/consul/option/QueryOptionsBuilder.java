@@ -1,12 +1,14 @@
 package com.orbitz.consul.option;
 
+import java.math.BigInteger;
+
 /**
  * Builder for generating Query Options for Consul API calls.
  */
 public class QueryOptionsBuilder {
 
     private String wait;
-    private long index;
+    private BigInteger index;
     private ConsistencyMode consistencyMode = ConsistencyMode.DEFAULT;
     private String token;
 
@@ -23,14 +25,14 @@ public class QueryOptionsBuilder {
         return this;
     }
 
-    public QueryOptionsBuilder blockMinutes(int minutes, long index) {
+    public QueryOptionsBuilder blockMinutes(int minutes, BigInteger index) {
         this.wait = String.format("%sm", minutes);
         this.index = index;
 
         return this;
     }
 
-    public QueryOptionsBuilder blockSeconds(int seconds, long index) {
+    public QueryOptionsBuilder blockSeconds(int seconds, BigInteger index) {
         this.wait = String.format("%ss", seconds);
         this.index = index;
 

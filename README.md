@@ -99,7 +99,7 @@ final HealthClient healthClient = consul.healthClient();
 
 ConsulResponseCallback<List<ServiceHealth>> callback = new ConsulResponseCallback<List<ServiceHealth>>() {
 
-    int index;
+    BigInteger index;
 
     @Override
     public void onComplete(ConsulResponse<List<ServiceHealth>> consulResponse) {
