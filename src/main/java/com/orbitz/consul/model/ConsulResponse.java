@@ -1,13 +1,15 @@
 package com.orbitz.consul.model;
 
+import java.math.BigInteger;
+
 public class ConsulResponse<T> {
 
     private T response;
     private long lastContact;
     private boolean knownLeader;
-    private long index;
+    private BigInteger index;
 
-    public ConsulResponse(T response, long lastContact, boolean knownLeader, long index) {
+    public ConsulResponse(T response, long lastContact, boolean knownLeader, BigInteger index) {
         this.response = response;
         this.lastContact = lastContact;
         this.knownLeader = knownLeader;
@@ -38,11 +40,11 @@ public class ConsulResponse<T> {
         this.knownLeader = knownLeader;
     }
 
-    public long getIndex() {
+    public BigInteger getIndex() {
         return index;
     }
 
-    public void setIndex(long index) {
+    public void setIndex(BigInteger index) {
         this.index = index;
     }
 }

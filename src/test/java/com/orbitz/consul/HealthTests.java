@@ -9,6 +9,7 @@ import com.orbitz.consul.option.CatalogOptionsBuilder;
 import com.orbitz.consul.option.QueryOptionsBuilder;
 import org.junit.Test;
 
+import java.math.BigInteger;
 import java.net.UnknownHostException;
 import java.util.List;
 import java.util.UUID;
@@ -79,7 +80,7 @@ public class HealthTests {
         boolean found = false;
         ConsulResponse<List<ServiceHealth>> response = client.healthClient().getAllServiceInstances(serviceName,
                 CatalogOptionsBuilder.builder().datacenter("dc1").build(),
-                QueryOptionsBuilder.builder().blockSeconds(2, 0).build());
+                QueryOptionsBuilder.builder().blockSeconds(2, new BigInteger("0")).build());
         assertHealth(serviceId, found, response);
     }
 
@@ -103,7 +104,7 @@ public class HealthTests {
         boolean found = false;
         ConsulResponse<List<HealthCheck>> response = client.healthClient().getServiceChecks(serviceName,
                 CatalogOptionsBuilder.builder().datacenter("dc1").build(),
-                QueryOptionsBuilder.builder().blockSeconds(20, 0).build());
+                QueryOptionsBuilder.builder().blockSeconds(20, new BigInteger("0")).build());
 
         List<HealthCheck> checks = response.getResponse();
         assertEquals(1, checks.size());

@@ -16,6 +16,7 @@ import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.GenericType;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import java.math.BigInteger;
 import java.util.Map;
 
 /**
@@ -225,7 +226,7 @@ public class ClientUtil {
         String lastContactHeaderValue = response.getHeaderString("X-Consul-Lastcontact");
         String knownLeaderHeaderValue = response.getHeaderString("X-Consul-Knownleader");
 
-        long index = Long.valueOf(indexHeaderValue);
+        BigInteger index = new BigInteger(indexHeaderValue);
         long lastContact = lastContactHeaderValue == null ? -1 : Long.valueOf(lastContactHeaderValue);
         boolean knownLeader = knownLeaderHeaderValue == null ? false : Boolean.valueOf(knownLeaderHeaderValue);
 

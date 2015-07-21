@@ -7,6 +7,7 @@ import com.orbitz.consul.model.health.Node;
 import com.orbitz.consul.option.CatalogOptionsBuilder;
 import org.junit.Test;
 
+import java.math.BigInteger;
 import java.net.UnknownHostException;
 import java.util.List;
 import java.util.Map;
@@ -42,7 +43,7 @@ public class CatalogTests {
 
         long start = System.currentTimeMillis();
         ConsulResponse<List<Node>> response = catalogClient.getNodes(CatalogOptionsBuilder.builder().datacenter("dc1").build(),
-                builder().blockSeconds(2, Integer.MAX_VALUE).build());
+                builder().blockSeconds(2, new BigInteger(Integer.toString(Integer.MAX_VALUE))).build());
         long time = System.currentTimeMillis() - start;
 
         assertTrue(time >= 2000);
