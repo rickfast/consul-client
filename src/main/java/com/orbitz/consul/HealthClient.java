@@ -150,7 +150,6 @@ public class HealthClient {
      * @param service      The service to query.
      * @param queryOptions   The Query Options to use.
      * @param callback       Callback implemented by callee to handle results.
-     * @return A {@link com.orbitz.consul.model.ConsulResponse} containing a list of
      * {@link com.orbitz.consul.model.health.HealthCheck} objects.
      */
     public void getServiceChecks(String service,
@@ -170,7 +169,6 @@ public class HealthClient {
      * @param catalogOptions The catalog specific options to use.
      * @param queryOptions   The Query Options to use.
      * @param callback       Callback implemented by callee to handle results.
-     * @return A {@link com.orbitz.consul.model.ConsulResponse} containing a list of
      * {@link com.orbitz.consul.model.health.HealthCheck} objects.
      */
     public void getServiceChecks(String service,
