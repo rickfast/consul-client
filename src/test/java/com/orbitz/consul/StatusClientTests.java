@@ -81,7 +81,7 @@ public class StatusClientTests {
     public void shouldGetPeers() throws UnknownHostException {
         List<String> peers = Consul.newClient().statusClient().getPeers();
         for (String ipAndPort : peers) {
-            //assertLocalIpAndCorrectPort(ipAndPort);
+            assertLocalIpAndCorrectPort(ipAndPort);
         }
     }
 }

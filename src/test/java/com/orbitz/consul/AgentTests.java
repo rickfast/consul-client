@@ -26,7 +26,7 @@ public class AgentTests {
         Agent agent = client.agentClient().getAgent();
 
         assertNotNull(agent);
-        //assertEquals("127.0.0.1", agent.getConfig().getClientAddr());
+        assertEquals("127.0.0.1", agent.getConfig().getClientAddr());
     }
 
     @Test
