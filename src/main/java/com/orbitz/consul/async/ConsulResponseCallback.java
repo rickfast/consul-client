@@ -15,12 +15,12 @@ public interface ConsulResponseCallback<T> {
      *
      * @param consulResponse The Consul response.
      */
-    public void onComplete(ConsulResponse<T> consulResponse);
+    void onComplete(ConsulResponse<T> consulResponse);
 
     /**
      * Callback for an unsuccessful request.
      *
      * @param throwable The exception thrown.
      */
-    public void onFailure(Throwable throwable);
+    void onFailure(Throwable throwable);
 }

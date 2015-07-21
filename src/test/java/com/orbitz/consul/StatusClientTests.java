@@ -73,8 +73,7 @@ public class StatusClientTests {
     @Test
     public void shouldGetLeader() throws UnknownHostException {
         String ipAndPort = Consul.newClient().statusClient().getLeader();
-        //assertLocalIpAndCorrectPort(ipAndPort);
-
+        assertLocalIpAndCorrectPort(ipAndPort);
     }
 
     @Test

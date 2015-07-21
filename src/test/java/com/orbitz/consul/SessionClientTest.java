@@ -17,7 +17,6 @@ public class SessionClientTest extends TestCase {
         Optional<String> session = sessionClient.createSession(value);
 
         assertNotNull(session);
-        System.out.println("SessionInfo: " + session.get());
         assertTrue(sessionClient.destroySession(session.get()));
     }
 
@@ -32,7 +31,6 @@ public class SessionClientTest extends TestCase {
         final String value = "{\"Name\":\"myservice\"}";
         String sessionId = sessionClient.createSession(value).get();
 
-        System.out.println("SessionInfo ID: " + sessionId);
         assertTrue(keyValueClient.acquireLock(key, value, sessionId));
         assertFalse(keyValueClient.acquireLock(key, value, sessionId));
         assertEquals(sessionId, keyValueClient.getSession(key).get());

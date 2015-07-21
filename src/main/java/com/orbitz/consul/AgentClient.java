@@ -510,15 +510,25 @@ public class AgentClient {
      */
     public boolean join(String address, boolean wan) {
         WebTarget resource = webTarget.path("join").path(address);
+        Response response = null;
+        boolean result = true;
 
         if (wan) {
             resource = resource.queryParam("wan", "1");
         }
 
         try {
-            return resource.request().get().getStatus() == Response.Status.OK.getStatusCode();
+            response = resource.request().get();
+
+            result = response.getStatus() == Response.Status.OK.getStatusCode();
         } catch (InternalServerErrorException ex) {
-            return false;
+            result = false;
+        } finally {
+            if(response != null) {
+                response.close();
+            }
         }
+
+        return result;
     }
 }

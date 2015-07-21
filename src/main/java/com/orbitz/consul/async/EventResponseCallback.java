@@ -13,12 +13,12 @@ public interface EventResponseCallback {
      *
      * @param EventResponse The Consul event response.
      */
-    public void onComplete(EventResponse EventResponse);
+    void onComplete(EventResponse EventResponse);
 
     /**
      * Callback for an unsuccessful request.
      *
      * @param throwable The exception thrown.
      */
-    public void onFailure(Throwable throwable);
+    void onFailure(Throwable throwable);
 }
