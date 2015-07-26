@@ -2,6 +2,10 @@ package com.orbitz.consul.model.session;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.orbitz.consul.util.SecondsDeserializer;
+import com.orbitz.consul.util.SecondsSerializer;
 
 import java.util.List;
 
@@ -12,6 +16,8 @@ public class SessionInfo {
     private Long createIndex;
 
     @JsonProperty("LockDelay")
+    @JsonSerialize(using = SecondsSerializer.class)
+    @JsonDeserialize(using = SecondsDeserializer.class)
     private Long lockDelay;
 
     @JsonProperty("Name")
@@ -27,6 +33,8 @@ public class SessionInfo {
     private String behavior;
 
     @JsonProperty("TTL")
+    @JsonSerialize(using = SecondsSerializer.class)
+    @JsonDeserialize(using = SecondsDeserializer.class)
     private Long ttl;
 
     @JsonProperty("ID")
