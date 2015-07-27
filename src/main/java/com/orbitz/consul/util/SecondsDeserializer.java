@@ -19,8 +19,9 @@ public class SecondsDeserializer extends JsonDeserializer<Long> {
 
         if (StringUtils.isNotEmpty(value)) {
             value = value.replaceAll("[a-zA-Z]", "");
+            return Long.valueOf(value);
+        } else {
+            return null;
         }
-
-        return Long.valueOf(value);
     }
 }
