@@ -20,7 +20,7 @@ import static com.orbitz.consul.util.ClientUtil.response;
  */
 public class CatalogClient {
     
-    private WebTarget webTarget;
+    private final WebTarget webTarget;
 
     /**
      * Constructs an instance of this class.

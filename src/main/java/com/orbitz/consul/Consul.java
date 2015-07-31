@@ -24,13 +24,13 @@ public class Consul {
      */
     public static final int DEFAULT_HTTP_PORT = 8500;
 
-    private AgentClient agentClient;
-    private HealthClient healthClient;
-    private KeyValueClient keyValueClient;
-    private CatalogClient catalogClient;
-    private StatusClient statusClient;
-    private SessionClient sessionClient;
-    private EventClient eventClient;
+    private final AgentClient agentClient;
+    private final HealthClient healthClient;
+    private final KeyValueClient keyValueClient;
+    private final CatalogClient catalogClient;
+    private final StatusClient statusClient;
+    private final SessionClient sessionClient;
+    private final EventClient eventClient;
 
     /**
      * Private constructor.

@@ -20,7 +20,7 @@ import static com.orbitz.consul.util.ClientUtil.response;
  */
 public class HealthClient {
 
-    private WebTarget webTarget;
+    private final WebTarget webTarget;
 
     /**
      * Constructs an instance of this class.

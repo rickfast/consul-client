@@ -1,8 +1,10 @@
 package com.orbitz.consul;
 
+import com.google.common.base.Function;
 import com.google.common.base.Optional;
 import com.google.common.primitives.UnsignedLongs;
 import com.orbitz.consul.async.ConsulResponseCallback;
+import com.orbitz.consul.model.ConsulResponse;
 import com.orbitz.consul.model.kv.Value;
 import com.orbitz.consul.model.session.SessionInfo;
 import com.orbitz.consul.option.CatalogOptionsBuilder;
@@ -12,7 +14,6 @@ import com.orbitz.consul.option.QueryOptions;
 import com.orbitz.consul.util.ClientUtil;
 import org.apache.commons.lang3.StringUtils;
 
-import javax.ws.rs.NotFoundException;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.GenericType;
@@ -27,7 +28,10 @@ import static com.orbitz.consul.util.ClientUtil.response;
  * HTTP Client for /v1/kv/ endpoints.
  */
 public class KeyValueClient {
-    
+
+    private static final GenericType<List<Value>> TYPE_VALUE_LIST =
+            new GenericType<List<Value>>() {};
+
     private final WebTarget webTarget;
 
     /**
@@ -64,16 +68,8 @@ public class KeyValueClient {
      */
     public Optional<Value> getValue(String key, QueryOptions queryOptions) {
         WebTarget target = ClientUtil.queryConfig(webTarget.path(key), queryOptions);
-        List<Value> values = null;
-
-        try {
-            values = target.request().accept(MediaType.APPLICATION_JSON_TYPE)
-                    .get(new GenericType<List<Value>>() {});
-        } catch (NotFoundException ex) {
-
-        }
-
-        return values != null && values.size() != 0 ? Optional.of(values.get(0)) : Optional.<Value>absent();
+        return getSingleValue(target.request().accept(MediaType.APPLICATION_JSON_TYPE)
+                .get(TYPE_VALUE_LIST));
     }
 
     /**
@@ -86,9 +82,27 @@ public class KeyValueClient {
      * @param queryOptions The query options.
      * @param callback Callback implemented by callee to handle results.
      */
-    public void getValue(String key, QueryOptions queryOptions, ConsulResponseCallback<List<Value>> callback) {
+    public void getValue(String key, QueryOptions queryOptions, final ConsulResponseCallback<Optional<Value>> callback) {
+        ConsulResponseCallback<List<Value>> wrapper = new ConsulResponseCallback<List<Value>>() {
+            @Override
+            public void onComplete(ConsulResponse<List<Value>> consulResponse) {
+                callback.onComplete(
+                        new ConsulResponse<Optional<Value>>(getSingleValue(consulResponse.getResponse()),
+                                consulResponse.getLastContact(),
+                                consulResponse.isKnownLeader(), consulResponse.getIndex()));
+            }
+
+            @Override
+            public void onFailure(Throwable throwable) {
+                callback.onFailure(throwable);
+            }
+        };
         response(webTarget.path(key), CatalogOptionsBuilder.builder().build(), queryOptions,
-                new GenericType<List<Value>>() {}, callback);
+                TYPE_VALUE_LIST, wrapper);
+    }
+
+    private Optional<Value> getSingleValue(List<Value> values){
+        return values != null && values.size() != 0 ? Optional.of(values.get(0)) : Optional.<Value>absent();
     }
 
     /**
@@ -119,7 +133,7 @@ public class KeyValueClient {
      */
     public void getValues(String key, QueryOptions queryOptions, ConsulResponseCallback<List<Value>> callback) {
         response(webTarget.path(key).queryParam("recurse", "true"), CatalogOptionsBuilder.builder().build(),
-                queryOptions, new GenericType<List<Value>>() {}, callback);
+                queryOptions, TYPE_VALUE_LIST, callback);
     }
 
     /**
