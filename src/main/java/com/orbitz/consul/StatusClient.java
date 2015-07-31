@@ -7,7 +7,7 @@ import java.util.List;
 
 public class StatusClient {
 
-    private WebTarget webTarget;
+    private final WebTarget webTarget;
 
     /**
      * Constructs an instance of this class.

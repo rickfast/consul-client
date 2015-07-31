@@ -15,7 +15,7 @@ import javax.ws.rs.core.Response;
 
 public class SessionClient {
 
-   private WebTarget webTarget;
+   private final WebTarget webTarget;
 
    /**
     * Constructs an instance of this class.

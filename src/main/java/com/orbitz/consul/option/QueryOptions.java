@@ -2,6 +2,8 @@ package com.orbitz.consul.option;
 
 import java.math.BigInteger;
 
+import static com.google.common.base.Preconditions.checkArgument;
+
 /**
  * Container for common query options used by the Consul API.
  */
@@ -22,12 +24,16 @@ public class QueryOptions {
      * @param consistencyMode Consistency mode to use for query.
      */
     QueryOptions(String wait, BigInteger index, ConsistencyMode consistencyMode, String token) {
+
         this.wait = wait;
         this.index = index;
         this.consistencyMode = consistencyMode;
         this.blocking = wait != null;
         this.token = token;
         this.authenticated = token != null;
+        if (blocking) {
+            checkArgument(index != null, "If wait is specified, index must also be specified");
+        }
     }
 
     public String getWait() {

@@ -27,7 +27,7 @@ import static com.orbitz.consul.util.ClientUtil.handleErrors;
  */
 public class EventClient {
 
-    private WebTarget webTarget;
+    private final WebTarget webTarget;
 
     /**
      * Constructs an instance of this class.

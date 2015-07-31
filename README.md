@@ -86,14 +86,43 @@ import static com.orbitz.consul.option.QueryOptionsBuilder.builder;
 Consul consul = Consul.newClient();
 KeyValueClient kvClient = consul.keyValueClient();
 
-kvClient.putValue("foo", "bar");
+    kvClient.putValue("foo", "bar");
 
-Value value = kvClient.getValue("foo", builder().blockMinutes(10, 120).build()).get(); // will block (long poll) for 10 minutes or until "foo"'s value changes.
+    ConsulResponseCallback<Optional<Value>> callback = new ConsulResponseCallback<Optional<Value>>() {
+
+        AtomicReference<BigInteger> index = new AtomicReference<>(null);
+
+        @Override
+        public void onComplete(ConsulResponse<Optional<Value>> consulResponse) {
+
+            if (consulResponse.getResponse().isPresent()) {
+                Value v = consulResponse.getResponse().get();
+                LOGGER.info("Value is: {}", new String(BaseEncoding.base64().decode(v.getValue())));
+            }
+            index.set(consulResponse.getIndex());
+            watch();
+        }
+
+        void watch() {
+            kvClient.getValue("foo", builder().blockMinutes(5, index.get()).build(), this);
+        }
+
+        @Override
+        public void onFailure(Throwable throwable) {
+            LOGGER.error("Error encountered", throwable);
+            watch();
+        }
+    };
+
+    kvClient.getValue("foo", QueryOptionsBuilder.builder().blockMinutes(5, new BigInteger("0")).build(), callback);
+        
 ```
 
 Example 5: Blocking call for healthy services using callback.
 
 ```java
+import static com.orbitz.consul.option.QueryOptionsBuilder.builder;
+
 Consul consul = Consul.newClient();
 final HealthClient healthClient = consul.healthClient();
 
