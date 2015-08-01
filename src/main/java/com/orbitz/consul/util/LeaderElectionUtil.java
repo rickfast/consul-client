@@ -4,22 +4,17 @@ import com.google.common.base.Optional;
 import com.google.common.base.Strings;
 import com.orbitz.consul.Consul;
 import com.orbitz.consul.KeyValueClient;
-import com.orbitz.consul.SessionClient;
 import com.orbitz.consul.model.kv.Value;
 
 public class LeaderElectionUtil {
 
-    Consul client;
-    KeyValueClient keyValueClient;
-    SessionClient sessionClient;
+    private final Consul client;
 
-    public void LeaderElectionUtil() {
-        this.client = Consul.newClient();
-        this.keyValueClient = client.keyValueClient();
-        this.sessionClient = client.sessionClient();
+    public LeaderElectionUtil(Consul client) {
+        this.client = client;
     }
 
-    public static String getLeaderInfoForService(Consul client, final String serviceName) {
+    public String getLeaderInfoForService(final String serviceName) {
         String leaderInfo = null;
         String key = getServiceKey(serviceName);
         Optional<Value> value = client.keyValueClient().getValue(key);
@@ -31,24 +26,24 @@ public class LeaderElectionUtil {
         return leaderInfo;
     }
 
-    private static String getLeaderInfo(Optional<Value> value) {
+    private String getLeaderInfo(Optional<Value> value) {
         return ClientUtil.decodeBase64(value.get().getValue());
     }
 
-    public static String electNewLeaderForService(Consul client, final String serviceName, final String info) {
+    public String electNewLeaderForService(final String serviceName, final String info) {
         final String key = getServiceKey(serviceName);
-        String sessionId = createSession(client, serviceName);
+        String sessionId = createSession(serviceName);
         if(client.keyValueClient().acquireLock(key, info, sessionId)){
             return info;
         }else{
-            return getLeaderInfoForService(client, serviceName);
+            return getLeaderInfoForService(serviceName);
         }
     }
 
-    public static boolean releaseLockForService(Consul client, final String serviceName) {
+    public boolean releaseLockForService(final String serviceName) {
         final String key = getServiceKey(serviceName);
         KeyValueClient kv = client.keyValueClient();
-        if(kv.getValue(key).orNull() != null ) {
+        if(kv.getValue(key).isPresent()) {
             return kv.releaseLock(key, kv.getValue(key).get().getSession());
         } else {
             return true;
@@ -56,7 +51,7 @@ public class LeaderElectionUtil {
     }
 
 
-    private static String createSession(Consul client, String serviceName) {
+    private String createSession(String serviceName) {
         final String value = "{\"Name\":\"" + serviceName + "\"}";
         return client.sessionClient().createSession(value).get();
     }
