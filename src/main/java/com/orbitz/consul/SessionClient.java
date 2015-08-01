@@ -15,6 +15,9 @@ import javax.ws.rs.core.Response;
 
 public class SessionClient {
 
+   private static final GenericType<Map<String, String>> TYPE_STRING_MAP =
+           new GenericType<Map<String, String>>() {};
+
    private final WebTarget webTarget;
 
    /**
@@ -72,8 +75,7 @@ public class SessionClient {
       }
 
       session = target.path("create").request().put(Entity.entity(value,
-              MediaType.APPLICATION_JSON_TYPE), new GenericType<Map<String, String>>() {
-              });
+              MediaType.APPLICATION_JSON_TYPE), TYPE_STRING_MAP);
 
       return session != null ? Optional.of(session.get("ID")) : Optional.<String>absent();
    }

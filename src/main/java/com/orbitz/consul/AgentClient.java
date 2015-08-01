@@ -25,6 +25,13 @@ import java.util.Map;
  */
 public class AgentClient {
 
+    private static final GenericType<Map<String, HealthCheck>> TYPE_HEALTH_CHECK_MAP =
+            new GenericType<Map<String, HealthCheck>>() {};
+    private static final GenericType<Map<String, Service>> TYPE_SERVICE_MAP =
+            new GenericType<Map<String, Service>>() {};
+    private static final GenericType<List<Member>> TYPE_MEMBER_LIST =
+            new GenericType<List<Member>>() {};
+
     private final WebTarget webTarget;
 
     /**
@@ -325,8 +332,7 @@ public class AgentClient {
      */
     public Map<String, HealthCheck> getChecks() {
         return webTarget.path("checks").request().accept(MediaType.APPLICATION_JSON_TYPE)
-                .get(new GenericType<Map<String, HealthCheck>>() {
-                });
+                .get(TYPE_HEALTH_CHECK_MAP);
     }
 
     /**
@@ -338,8 +344,7 @@ public class AgentClient {
      */
     public Map<String, Service> getServices() {
         return webTarget.path("services").request().accept(MediaType.APPLICATION_JSON_TYPE)
-                .get(new GenericType<Map<String, Service>>() {
-                });
+                .get(TYPE_SERVICE_MAP);
     }
 
     /**
@@ -351,8 +356,7 @@ public class AgentClient {
      */
     public List<Member> getMembers() {
         return webTarget.path("members").request().accept(MediaType.APPLICATION_JSON_TYPE)
-                .get(new GenericType<List<Member>>() {
-                });
+                .get(TYPE_MEMBER_LIST);
     }
 
     /**

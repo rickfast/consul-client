@@ -20,6 +20,10 @@ import static com.orbitz.consul.util.ClientUtil.response;
  */
 public class HealthClient {
 
+    private static final GenericType<List<HealthCheck>> TYPE_HEALTH_CHECK_LIST =
+            new GenericType<List<HealthCheck>>() {};
+    private static final GenericType<List<ServiceHealth>> TYPE_SERVICE_HEALTH_LIST =
+            new GenericType<List<ServiceHealth>>() {};
     private final WebTarget webTarget;
 
     /**
@@ -81,8 +85,7 @@ public class HealthClient {
      */
     public ConsulResponse<List<HealthCheck>> getNodeChecks(String node, CatalogOptions catalogOptions, QueryOptions queryOptions) {
         return response(webTarget.path("node").path(node), catalogOptions, queryOptions,
-                new GenericType<List<HealthCheck>>() {
-                });
+                TYPE_HEALTH_CHECK_LIST);
     }
 
     /**
@@ -136,8 +139,7 @@ public class HealthClient {
     public ConsulResponse<List<HealthCheck>> getServiceChecks(String service, CatalogOptions catalogOptions,
                                                               QueryOptions queryOptions) {
         return response(webTarget.path("checks").path(service), catalogOptions, queryOptions,
-                new GenericType<List<HealthCheck>>() {
-                });
+                TYPE_HEALTH_CHECK_LIST);
     }
 
 
@@ -155,8 +157,7 @@ public class HealthClient {
     public void getServiceChecks(String service,
                                  QueryOptions queryOptions,
                                  ConsulResponseCallback<List<HealthCheck>> callback) {
-        response(webTarget.path("checks").path(service), CatalogOptionsBuilder.builder().build(), queryOptions, new GenericType<List<HealthCheck>>() {
-        }, callback);
+        response(webTarget.path("checks").path(service), CatalogOptionsBuilder.builder().build(), queryOptions, TYPE_HEALTH_CHECK_LIST, callback);
     }
 
     /**
@@ -175,8 +176,7 @@ public class HealthClient {
                                  CatalogOptions catalogOptions,
                                  QueryOptions queryOptions,
                                  ConsulResponseCallback<List<HealthCheck>> callback) {
-        response(webTarget.path("checks").path(service), catalogOptions, queryOptions, new GenericType<List<HealthCheck>>() {
-        }, callback);
+        response(webTarget.path("checks").path(service), catalogOptions, queryOptions, TYPE_HEALTH_CHECK_LIST, callback);
     }
 
     /**
@@ -234,8 +234,7 @@ public class HealthClient {
     public ConsulResponse<List<HealthCheck>> getChecksByState(State state, CatalogOptions catalogOptions,
                                                               QueryOptions queryOptions) {
         return response(webTarget.path("state").path(state.getName()), catalogOptions, queryOptions,
-                new GenericType<List<HealthCheck>>() {
-                });
+                TYPE_HEALTH_CHECK_LIST);
     }
 
     /**
@@ -294,8 +293,7 @@ public class HealthClient {
     public ConsulResponse<List<ServiceHealth>> getHealthyServiceInstances(String service, CatalogOptions catalogOptions,
                                                                           QueryOptions queryOptions) {
         return response(webTarget.path("service").path(service).queryParam("passing", "true"),
-                catalogOptions, queryOptions, new GenericType<List<ServiceHealth>>() {
-                });
+                catalogOptions, queryOptions, TYPE_SERVICE_HEALTH_LIST);
     }
 
     /**
@@ -315,8 +313,7 @@ public class HealthClient {
                                            QueryOptions queryOptions,
                                            ConsulResponseCallback<List<ServiceHealth>> callback) {
         response(webTarget.path("service").path(service).queryParam("passing", "true"),
-                catalogOptions, queryOptions, new GenericType<List<ServiceHealth>>() {
-                }, callback);
+                catalogOptions, queryOptions, TYPE_SERVICE_HEALTH_LIST, callback);
     }
 
     /**
@@ -334,8 +331,7 @@ public class HealthClient {
     public void getHealthyServiceInstances(String service, QueryOptions queryOptions,
                                            ConsulResponseCallback<List<ServiceHealth>> callback) {
         response(webTarget.path("service").path(service).queryParam("passing", "true"),
-                CatalogOptionsBuilder.builder().build(), queryOptions, new GenericType<List<ServiceHealth>>() {
-                }, callback);
+                CatalogOptionsBuilder.builder().build(), queryOptions, TYPE_SERVICE_HEALTH_LIST, callback);
     }
 
     /**
@@ -394,8 +390,7 @@ public class HealthClient {
     public ConsulResponse<List<ServiceHealth>> getAllServiceInstances(String service, CatalogOptions catalogOptions,
                                                                       QueryOptions queryOptions) {
         return response(webTarget.path("service").path(service), catalogOptions, queryOptions,
-                new GenericType<List<ServiceHealth>>() {
-                });
+                TYPE_SERVICE_HEALTH_LIST);
     }
 
     /**
@@ -415,8 +410,7 @@ public class HealthClient {
                                        QueryOptions queryOptions,
                                        ConsulResponseCallback<List<ServiceHealth>> callback) {
         response(webTarget.path("service").path(service), catalogOptions, queryOptions,
-                new GenericType<List<ServiceHealth>>() {
-                }, callback);
+                TYPE_SERVICE_HEALTH_LIST, callback);
     }
 
     /**
@@ -434,7 +428,6 @@ public class HealthClient {
     public void getAllServiceInstances(String service, QueryOptions queryOptions,
                                        ConsulResponseCallback<List<ServiceHealth>> callback) {
         response(webTarget.path("service").path(service), CatalogOptionsBuilder.builder().build(),
-                queryOptions, new GenericType<List<ServiceHealth>>() {
-        }, callback);
+                queryOptions, TYPE_SERVICE_HEALTH_LIST, callback);
     }
 }

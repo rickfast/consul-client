@@ -19,9 +19,15 @@ import static com.orbitz.consul.util.ClientUtil.response;
  * HTTP Client for /v1/catalog/ endpoints.
  */
 public class CatalogClient {
+
+    private static final GenericType<List<String>> TYPE_STRING_LIST = new GenericType<List<String>>() {};
+    private static final GenericType<List<Node>> TYPE_NODE_LIST = new GenericType<List<Node>>() {};
+    private static final GenericType<Map<String, List<String>>> TYPE_SERVICES_MAP = new GenericType<Map<String, List<String>>>() {};
+    private static final GenericType<List<CatalogService>> TYPE_CATALOG_SERVICE_LIST = new GenericType<List<CatalogService>>() {};
+    private static final GenericType<CatalogNode> TYPE_CATALOG_NODE = new GenericType<CatalogNode>() {};
     
     private final WebTarget webTarget;
-
+    
     /**
      * Constructs an instance of this class.
      *
@@ -40,8 +46,7 @@ public class CatalogClient {
      */
     public List<String> getDatacenters() {
         return webTarget.path("datacenters").request()
-                .accept(MediaType.APPLICATION_JSON_TYPE).get(new GenericType<List<String>>() {
-                });
+                .accept(MediaType.APPLICATION_JSON_TYPE).get(TYPE_STRING_LIST);
     }
 
     /**
@@ -93,8 +98,7 @@ public class CatalogClient {
      * {@link com.orbitz.consul.model.health.Node} objects.
      */
     public ConsulResponse<List<Node>> getNodes(CatalogOptions catalogOptions, QueryOptions queryOptions) {
-        return response(webTarget.path("nodes"), catalogOptions, queryOptions,
-                new GenericType<List<Node>>() {});
+        return response(webTarget.path("nodes"), catalogOptions, queryOptions, TYPE_NODE_LIST);
     }
 
     /**
@@ -142,9 +146,7 @@ public class CatalogClient {
      * @return A {@link com.orbitz.consul.model.ConsulResponse} containing a map of service name to list of tags.
      */
     public ConsulResponse<Map<String, List<String>>> getServices(CatalogOptions catalogOptions, QueryOptions queryOptions) {
-        return response(webTarget.path("services"), catalogOptions, queryOptions,
-                new GenericType<Map<String, List<String>>>() {
-                });
+        return response(webTarget.path("services"), catalogOptions, queryOptions, TYPE_SERVICES_MAP);
     }
 
     /**
@@ -198,7 +200,7 @@ public class CatalogClient {
     public ConsulResponse<List<CatalogService>> getService(String service, CatalogOptions catalogOptions,
                                                            QueryOptions queryOptions) {
         return response(webTarget.path("service").path(service), catalogOptions, queryOptions,
-                new GenericType<List<CatalogService>>() {});
+                TYPE_CATALOG_SERVICE_LIST);
     }
 
     /**
@@ -247,6 +249,6 @@ public class CatalogClient {
      */
     public ConsulResponse<CatalogNode> getNode(String node, CatalogOptions catalogOptions, QueryOptions queryOptions) {
         return response(webTarget.path("node").path(node), catalogOptions, queryOptions,
-                new GenericType<CatalogNode>() {});
+                TYPE_CATALOG_NODE);
     }
 }
