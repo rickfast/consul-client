@@ -1,21 +1,25 @@
 package com.orbitz.consul.util;
 
 import com.orbitz.consul.Consul;
-import junit.framework.TestCase;
 import org.junit.Test;
 
-public class LeaderElectionUtilTest extends TestCase {
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+
+public class LeaderElectionUtilTest {
 
     @Test
     public void testGetLeaderInfoForService() throws Exception {
         Consul client = Consul.newClient();
+        LeaderElectionUtil leutil = new LeaderElectionUtil(client);
         final String serviceName = "myservice100";
         final String serviceInfo = "serviceinfo";
 
-        LeaderElectionUtil.releaseLockForService(client, serviceName);
-        assertNull(LeaderElectionUtil.getLeaderInfoForService(client, serviceName));
-        assertEquals(serviceInfo, LeaderElectionUtil.electNewLeaderForService(client, serviceName, serviceInfo));
-        assertTrue(LeaderElectionUtil.releaseLockForService(client, serviceName));
+        leutil.releaseLockForService(serviceName);
+        assertNull(leutil.getLeaderInfoForService(serviceName));
+        assertEquals(serviceInfo, leutil.electNewLeaderForService(serviceName, serviceInfo));
+        assertTrue(leutil.releaseLockForService(serviceName));
     }
 
 
