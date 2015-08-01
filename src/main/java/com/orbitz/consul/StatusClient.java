@@ -7,6 +7,8 @@ import java.util.List;
 
 public class StatusClient {
 
+    public static final GenericType<List<String>> TYPE_STRING_LIST =
+            new GenericType<List<String>>() {};
     private final WebTarget webTarget;
 
     /**
@@ -39,6 +41,6 @@ public class StatusClient {
      */
     public List<String> getPeers() {
         return webTarget.path("peers").request().accept(MediaType.APPLICATION_JSON_TYPE)
-                .get(new GenericType<List<String>>() {});
+                .get(TYPE_STRING_LIST);
     }
 }

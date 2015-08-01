@@ -27,6 +27,11 @@ import static com.orbitz.consul.util.ClientUtil.handleErrors;
  */
 public class EventClient {
 
+    private static final GenericType<Event> TYPE_EVENT =
+            new GenericType<Event>() {};
+    private static final GenericType<List<Event>> TYPE_EVENT_LIST =
+            new GenericType<List<Event>>() {};
+
     private final WebTarget webTarget;
 
     /**
@@ -55,7 +60,7 @@ public class EventClient {
 
         return target.request()
                 .put(Entity.entity(StringUtils.isEmpty(payload) ? "" : payload, MediaType.WILDCARD_TYPE),
-                        new GenericType<Event>() {});
+                        TYPE_EVENT);
     }
 
     /**
@@ -230,7 +235,7 @@ public class EventClient {
 
         BigInteger index = new BigInteger(indexHeaderValue);
 
-        EventResponse eventResponse = new EventResponse(response.readEntity(new GenericType<List<Event>>() {}), index);
+        EventResponse eventResponse = new EventResponse(response.readEntity(TYPE_EVENT_LIST), index);
         
         response.close();
 

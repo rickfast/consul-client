@@ -14,6 +14,7 @@ import com.orbitz.consul.option.QueryOptions;
 import com.orbitz.consul.util.ClientUtil;
 import org.apache.commons.lang3.StringUtils;
 
+import javax.ws.rs.NotFoundException;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.GenericType;
@@ -68,8 +69,12 @@ public class KeyValueClient {
      */
     public Optional<Value> getValue(String key, QueryOptions queryOptions) {
         WebTarget target = ClientUtil.queryConfig(webTarget.path(key), queryOptions);
-        return getSingleValue(target.request().accept(MediaType.APPLICATION_JSON_TYPE)
-                .get(TYPE_VALUE_LIST));
+        try {
+            return getSingleValue(target.request().accept(MediaType.APPLICATION_JSON_TYPE)
+                    .get(new GenericType<List<Value>>() {}));
+        } catch (NotFoundException ignored) {}
+
+        return Optional.absent();
     }
 
     /**
