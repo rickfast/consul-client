@@ -1,6 +1,5 @@
 package com.orbitz.consul;
 
-import com.google.common.base.Function;
 import com.google.common.base.Optional;
 import com.google.common.primitives.UnsignedLongs;
 import com.orbitz.consul.async.ConsulResponseCallback;
@@ -153,7 +152,7 @@ public class KeyValueClient {
     public Optional<String> getValueAsString(String key) {
         Optional<Value> value = getValue(key);
 
-        return value.isPresent() ? Optional.of(decodeBase64(value.get().getValue()))
+        return value.isPresent() && value.get().getValue().isPresent() ? Optional.of(decodeBase64(value.get().getValue().get()))
                 : Optional.<String>absent();
     }
 
@@ -170,7 +169,9 @@ public class KeyValueClient {
         List<String> result = new ArrayList<String>();
 
         for(Value value : getValues(key)) {
-            result.add(decodeBase64(value.getValue()));
+            if (value.getValue().isPresent()) {
+                result.add(decodeBase64(value.getValue().get()));
+            }
         }
 
         return result;
@@ -320,8 +321,7 @@ public class KeyValueClient {
      */
     public Optional<String> getSession(String key) {
         Optional<Value> value = getValue(key);
-
-        return value.isPresent() ? Optional.fromNullable(value.get().getSession()) : Optional.<String>absent();
+        return value.isPresent() ? value.get().getSession() : Optional.<String>absent();
     }
 
 

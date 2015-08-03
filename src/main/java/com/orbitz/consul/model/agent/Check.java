@@ -2,95 +2,54 @@ package com.orbitz.consul.model.agent;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.google.common.base.Optional;
+import org.immutables.value.Value;
 
+import static com.google.common.base.Preconditions.checkState;
+
+@Value.Immutable
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class Check {
+@JsonSerialize(as = ImmutableCheck.class)
+@JsonDeserialize(as = ImmutableCheck.class)
+public abstract class Check {
 
     @JsonProperty("ID")
-    private String id;
+    public abstract String getId();
 
     @JsonProperty("Name")
-    private String name;
+    public abstract String getName();
 
     @JsonProperty("Notes")
-    private String notes;
+    public abstract Optional<String> getNotes();
 
     @JsonProperty("Script")
-    private String script;
+    public abstract Optional<String> getScript();
 
     @JsonProperty("Interval")
-    private String interval;
+    public abstract Optional<String> getInterval();
 
     @JsonProperty("TTL")
-    private String ttl;
+    public abstract Optional<String> getTtl();
 
     @JsonProperty("HTTP")
-    private String http;
+    public abstract Optional<String> getHttp();
 
-    @JsonProperty("Service_id")
-    private String serviceId;
+    @JsonProperty("ServiceID")
+    public abstract Optional<String> getServiceId();
 
-    public String getServiceId() {
-        return serviceId;
+    @Value.Check
+    protected void validate() {
+
+        checkState(getHttp().isPresent() || getTtl().isPresent() || getScript().isPresent(),
+                "Check must specify either http, ttl, or script");
+
+        if (getHttp().isPresent() || getScript().isPresent()) {
+            checkState(getInterval().isPresent(),
+                    "Interval must be set if check type is http or script");
+        }
+
     }
-
-    public void setServiceId(String serviceId) {
-        this.serviceId = serviceId;
-    }
-
-    public String getId() {
-        return id;
-    }
-
-    public void setId(String id) {
-        this.id = id;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getNotes() {
-        return notes;
-    }
-
-    public void setNotes(String notes) {
-        this.notes = notes;
-    }
-
-    public String getScript() {
-        return script;
-    }
-
-    public void setScript(String script) {
-        this.script = script;
-    }
-
-    public String getInterval() {
-        return interval;
-    }
-
-    public void setInterval(String interval) {
-        this.interval = interval;
-    }
-
-    public String getTtl() {
-        return ttl;
-    }
-
-    public void setTtl(String ttl) {
-        this.ttl = ttl;
-    }
-
-    public String getHttp() {
-        return http;
-    }
-
-    public void setHttp(String http) {
-        this.http = http;
-    }
+    
 }

@@ -3,86 +3,36 @@ package com.orbitz.consul.model.kv;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.google.common.base.Optional;
 import com.orbitz.consul.util.UnsignedLongDeserializer;
 
+@org.immutables.value.Value.Immutable
+@JsonDeserialize(as = ImmutableValue.class)
+@JsonSerialize(as = ImmutableValue.class)
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class Value {
+public abstract class Value {
 
     @JsonProperty("CreateIndex")
-    private long createIndex;
+    public abstract long getCreateIndex();
 
     @JsonProperty("ModifyIndex")
-    private long modifyIndex;
+    public abstract long getModifyIndex();
 
     @JsonProperty("LockIndex")
-    private long lockIndex;
+    public abstract  long getLockIndex();
 
     @JsonProperty("Key")
-    private String key;
+    public abstract  String key();
 
     @JsonProperty("Flags")
     @JsonDeserialize(using=UnsignedLongDeserializer.class)
-    private long flags;
+    public abstract  long getFlags();
 
     @JsonProperty("Value")
-    private String value;
+    public abstract Optional<String> getValue();
 
     @JsonProperty("Session")
-    private String session;
+    public abstract Optional<String> getSession();
 
-    public long getCreateIndex() {
-        return createIndex;
-    }
-
-    public void setCreateIndex(long createIndex) {
-        this.createIndex = createIndex;
-    }
-
-    public long getModifyIndex() {
-        return modifyIndex;
-    }
-
-    public void setModifyIndex(long modifyIndex) {
-        this.modifyIndex = modifyIndex;
-    }
-
-    public long getLockIndex() {
-        return lockIndex;
-    }
-
-    public void setLockIndex(long lockIndex) {
-        this.lockIndex = lockIndex;
-    }
-
-    public String getKey() {
-        return key;
-    }
-
-    public void setKey(String key) {
-        this.key = key;
-    }
-
-    public long getFlags() {
-        return flags;
-    }
-
-    public void setFlags(long flags) {
-        this.flags = flags;
-    }
-
-    public String getValue() {
-        return value;
-    }
-
-    public void setValue(String value) {
-        this.value = value;
-    }
-
-    public String getSession() {
-        return session;
-    }
-
-    public void setSession(String session) {
-        this.session = session;
-    }
 }

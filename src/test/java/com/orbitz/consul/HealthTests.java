@@ -2,6 +2,7 @@ package com.orbitz.consul;
 
 import com.orbitz.consul.model.ConsulResponse;
 import com.orbitz.consul.model.State;
+import com.orbitz.consul.model.agent.ImmutableRegistration;
 import com.orbitz.consul.model.agent.Registration;
 import com.orbitz.consul.model.health.HealthCheck;
 import com.orbitz.consul.model.health.ServiceHealth;
@@ -35,7 +36,11 @@ public class HealthTests {
 
         boolean found = false;
         ConsulResponse<List<ServiceHealth>> response = client2.healthClient().getHealthyServiceInstances(serviceName);
-        assertHealth(serviceId, found, response);
+        assertHealth(serviceId, response);
+
+        client.agentClient().deregister(serviceId);
+        client.agentClient().deregister(serviceId2);
+
     }
 
     @Test
@@ -49,7 +54,9 @@ public class HealthTests {
 
         boolean found = false;
         ConsulResponse<List<ServiceHealth>> response = client.healthClient().getAllServiceInstances(serviceName);
-        assertHealth(serviceId, found, response);
+        assertHealth(serviceId, response);
+
+        client.agentClient().deregister(serviceId);
     }
 
     @Test
@@ -64,7 +71,9 @@ public class HealthTests {
         boolean found = false;
         ConsulResponse<List<ServiceHealth>> response = client.healthClient().getAllServiceInstances(serviceName,
                 CatalogOptionsBuilder.builder().datacenter("dc1").build());
-        assertHealth(serviceId, found, response);
+        assertHealth(serviceId, response);
+        client.agentClient().deregister(serviceId);
+
     }
 
     @Test
@@ -76,12 +85,12 @@ public class HealthTests {
         client.agentClient().register(8080, 20L, serviceName, serviceId);
         client.agentClient().pass(serviceId);
 
-
-        boolean found = false;
         ConsulResponse<List<ServiceHealth>> response = client.healthClient().getAllServiceInstances(serviceName,
                 CatalogOptionsBuilder.builder().datacenter("dc1").build(),
                 QueryOptionsBuilder.builder().blockSeconds(2, new BigInteger("0")).build());
-        assertHealth(serviceId, found, response);
+        assertHealth(serviceId, response);
+        client.agentClient().deregister(serviceId);
+
     }
 
     @Test
@@ -90,15 +99,16 @@ public class HealthTests {
         String serviceName = UUID.randomUUID().toString();
         String serviceId = UUID.randomUUID().toString();
 
-        Registration.Check check = new Registration.Check();
-        check.setTtl(String.format("%ss", 5));
-        Registration registration = new Registration();
-        registration.setCheck(check);
-        registration.setPort(8080);
-        registration.setName(serviceName);
-        registration.setId(serviceId);
+        Registration.RegCheck check = Registration.RegCheck.ttl(5);
+        Registration registration = ImmutableRegistration
+                .builder()
+                .check(check)
+                .port(8080)
+                .name(serviceName)
+                .id(serviceId)
+                .build();
 
-        client.agentClient().register(registration);//8080, check, serviceName, serviceId);
+        client.agentClient().register(registration);
         client.agentClient().pass(serviceId);
 
         boolean found = false;
@@ -114,6 +124,7 @@ public class HealthTests {
             }
         }
         assertTrue(found);
+        client.agentClient().deregister(serviceId);
     }
 
     @Test
@@ -135,9 +146,12 @@ public class HealthTests {
         }
 
         assertTrue(found);
+        client.agentClient().deregister(serviceId);
+
     }
 
-    private void assertHealth(String serviceId, boolean found, ConsulResponse<List<ServiceHealth>> response) {
+    private void assertHealth(String serviceId, ConsulResponse<List<ServiceHealth>> response) {
+        boolean found = false;
         List<ServiceHealth> nodes = response.getResponse();
 
         assertEquals(1, nodes.size());

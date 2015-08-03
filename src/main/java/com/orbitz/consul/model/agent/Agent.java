@@ -3,28 +3,20 @@ package com.orbitz.consul.model.agent;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import org.immutables.value.Value;
+
+@Value.Immutable
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class Agent {
+@JsonSerialize(as = ImmutableAgent.class)
+@JsonDeserialize(as = ImmutableAgent.class)
+public abstract class Agent {
 
     @JsonProperty("Config")
-    private Config config;
+    public abstract Config getConfig();
 
     @JsonProperty("Member")
-    private Member member;
+    public abstract Member getMember();
 
-    public Config getConfig() {
-        return config;
-    }
-
-    public void setConfig(Config config) {
-        this.config = config;
-    }
-
-    public Member getMember() {
-        return member;
-    }
-
-    public void setMember(Member member) {
-        this.member = member;
-    }
 }

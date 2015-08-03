@@ -1,6 +1,9 @@
 package com.orbitz.consul;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.guava.GuavaModule;
 import com.fasterxml.jackson.jaxrs.json.JacksonJaxbJsonProvider;
+import com.orbitz.consul.util.Jackson;
 
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
@@ -38,8 +41,14 @@ public class Consul {
      * @param url The full URL of a running Consul instance.
      * @param builder JAX-RS client builder instance.
      */
-    private Consul(String url, ClientBuilder builder) {
-        Client client = builder.register(JacksonJaxbJsonProvider.class).build();
+    private Consul(String url, ClientBuilder builder, ObjectMapper mapper) {
+
+        JacksonJaxbJsonProvider provider = new JacksonJaxbJsonProvider();
+        provider.setMapper(mapper);
+
+        Client client = builder
+                .register(provider)
+                .build();
 
         this.agentClient = new AgentClient(client.target(url).path("v1").path("agent"));
         this.healthClient = new HealthClient(client.target(url).path("v1").path("health"));
@@ -59,8 +68,8 @@ public class Consul {
      * @param builder The JAX-RS client builder instance.
      * @return A new client.
      */	
-	public static Consul newClient(String url, ClientBuilder builder) {
-       return new Consul(url, builder);
+	public static Consul newClient(String url, ClientBuilder builder, ObjectMapper mapper) {
+       return new Consul(url, builder, mapper);
     }
 
     /**
@@ -71,9 +80,9 @@ public class Consul {
      * @param builder The JAX-RS client builder instance.
      * @return A new client.
      */
-    public static Consul newClient(String host, int port, ClientBuilder builder) {
+    public static Consul newClient(String host, int port, ClientBuilder builder, ObjectMapper mapper) {
         try {
-            return new Consul(new URL("http", host, port, "").toString(), builder);
+            return new Consul(new URL("http", host, port, "").toString(), builder, mapper);
         } catch (MalformedURLException e) {
             throw new ConsulException("Bad Consul URL", e);
         }
@@ -87,7 +96,7 @@ public class Consul {
      * @return A new client.
      */
     public static Consul newClient(String host, int port) {
-        return newClient(host, port, ClientBuilder.newBuilder());
+        return newClient(host, port, ClientBuilder.newBuilder(), Jackson.MAPPER);
     }
 
     /**

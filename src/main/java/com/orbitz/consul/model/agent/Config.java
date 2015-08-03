@@ -2,304 +2,96 @@ package com.orbitz.consul.model.agent;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import org.immutables.value.Value;
 
+import java.util.List;
+
+@Value.Immutable
+@JsonSerialize(as = ImmutableConfig.class)
+@JsonDeserialize(as = ImmutableConfig.class)
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class Config {
+public abstract class Config {
 
     @JsonProperty("Bootstrap")
-    private boolean bootstrap;
+    public abstract boolean getBootstrap();
 
     @JsonProperty("Server")
-    private boolean server;
+    public abstract boolean getServer();
 
     @JsonProperty("Datacenter")
-    private String datacenter;
+    public abstract String getDatacenter();
 
     @JsonProperty("DataDir")
-    private String dataDir;
+    public abstract String getDataDir();
 
     @JsonProperty("DNSRecursor")
-    private String dnsRecursor;
+    public abstract String dnsRecursor();
 
     @JsonProperty("Domain")
-    private String domain;
+    public abstract String getDomain();
 
     @JsonProperty("LogLevel")
-    private String logLevel;
+    public abstract String getLogLevel();
 
     @JsonProperty("NodeName")
-    private String nodeName;
+    public abstract String getNodeName();
 
     @JsonProperty("ClientAddr")
-    private String clientAddr;
+    public abstract String getClientAddr();
 
     @JsonProperty("BindAddr")
-    private String bindAddr;
+    public abstract String getBindAddr();
 
     @JsonProperty("AdvertiseAddr")
-    private String advertiseAddr;
+    public abstract String getAdvertiseAddr();
 
     @JsonProperty("Ports")
-    private Ports ports;
+    public abstract Ports getPorts();
 
     @JsonProperty("LeaveOnTerm")
-    private boolean leaveOnTerm;
+    public abstract boolean getLeaveOnTerm();
 
     @JsonProperty("SkipLeaveOnInt")
-    private boolean skipLeaveOnInt;
+    public abstract boolean getSkipLeaveOnInt();
 
     @JsonProperty("StatsiteAddr")
-    private String statsiteAddr;
+    public abstract String getStatsiteAddr();
 
     @JsonProperty("Protocol")
-    private int protocol;
+    public abstract int getProtocol();
 
     @JsonProperty("EnableDebug")
-    private boolean enableDebug;
+    public abstract boolean getEnableDebug();
 
     @JsonProperty("VerifyIncoming")
-    private boolean verifyIncoming;
+    public abstract boolean getVerifyIncoming();
 
     @JsonProperty("VerifyOutgoing")
-    private boolean verifyOutgoing;
+    public abstract boolean getVerifyOutgoing();
 
     @JsonProperty("CAFile")
-    private String caFile;
+    public abstract String getCaFile();
 
     @JsonProperty("CertFile")
-    private String certFile;
+    public abstract String getCertFile();
 
     @JsonProperty("KeyFile")
-    private String keyFile;
+    public abstract String getKeyFile();
 
     @JsonProperty("StartJoin")
-    private String[] startJoin;
+    public abstract List<String> getStartJoin();
 
     @JsonProperty("UiDir")
-    private String uiDir;
+    public abstract String getUiDir();
 
     @JsonProperty("PidFile")
-    private String pidFile;
+    public abstract String getPidFile();
 
     @JsonProperty("EnableSyslog")
-    private boolean enableSyslog;
+    public abstract boolean getEnableSyslog();
 
     @JsonProperty("RejoinAfterLeave")
-    private boolean rejoinAfterLeave;
-
-    public boolean isBootstrap() {
-        return bootstrap;
-    }
-
-    public void setBootstrap(boolean bootstrap) {
-        this.bootstrap = bootstrap;
-    }
-
-    public boolean isServer() {
-        return server;
-    }
-
-    public void setServer(boolean server) {
-        this.server = server;
-    }
-
-    public String getDatacenter() {
-        return datacenter;
-    }
-
-    public void setDatacenter(String datacenter) {
-        this.datacenter = datacenter;
-    }
-
-    public String getDataDir() {
-        return dataDir;
-    }
-
-    public void setDataDir(String dataDir) {
-        this.dataDir = dataDir;
-    }
-
-    public String getDnsRecursor() {
-        return dnsRecursor;
-    }
-
-    public void setDnsRecursor(String dnsRecursor) {
-        this.dnsRecursor = dnsRecursor;
-    }
-
-    public String getDomain() {
-        return domain;
-    }
-
-    public void setDomain(String domain) {
-        this.domain = domain;
-    }
-
-    public String getLogLevel() {
-        return logLevel;
-    }
-
-    public void setLogLevel(String logLevel) {
-        this.logLevel = logLevel;
-    }
-
-    public String getNodeName() {
-        return nodeName;
-    }
-
-    public void setNodeName(String nodeName) {
-        this.nodeName = nodeName;
-    }
-
-    public String getClientAddr() {
-        return clientAddr;
-    }
-
-    public void setClientAddr(String clientAddr) {
-        this.clientAddr = clientAddr;
-    }
-
-    public String getBindAddr() {
-        return bindAddr;
-    }
-
-    public void setBindAddr(String bindAddr) {
-        this.bindAddr = bindAddr;
-    }
-
-    public String getAdvertiseAddr() {
-        return advertiseAddr;
-    }
-
-    public void setAdvertiseAddr(String advertiseAddr) {
-        this.advertiseAddr = advertiseAddr;
-    }
-
-    public Ports getPorts() {
-        return ports;
-    }
-
-    public void setPorts(Ports ports) {
-        this.ports = ports;
-    }
-
-    public boolean isLeaveOnTerm() {
-        return leaveOnTerm;
-    }
-
-    public void setLeaveOnTerm(boolean leaveOnTerm) {
-        this.leaveOnTerm = leaveOnTerm;
-    }
-
-    public boolean isSkipLeaveOnInt() {
-        return skipLeaveOnInt;
-    }
-
-    public void setSkipLeaveOnInt(boolean skipLeaveOnInt) {
-        this.skipLeaveOnInt = skipLeaveOnInt;
-    }
-
-    public String getStatsiteAddr() {
-        return statsiteAddr;
-    }
-
-    public void setStatsiteAddr(String statsiteAddr) {
-        this.statsiteAddr = statsiteAddr;
-    }
-
-    public int getProtocol() {
-        return protocol;
-    }
-
-    public void setProtocol(int protocol) {
-        this.protocol = protocol;
-    }
-
-    public boolean isEnableDebug() {
-        return enableDebug;
-    }
-
-    public void setEnableDebug(boolean enableDebug) {
-        this.enableDebug = enableDebug;
-    }
-
-    public boolean isVerifyIncoming() {
-        return verifyIncoming;
-    }
-
-    public void setVerifyIncoming(boolean verifyIncoming) {
-        this.verifyIncoming = verifyIncoming;
-    }
-
-    public boolean isVerifyOutgoing() {
-        return verifyOutgoing;
-    }
-
-    public void setVerifyOutgoing(boolean verifyOutgoing) {
-        this.verifyOutgoing = verifyOutgoing;
-    }
-
-    public String getCaFile() {
-        return caFile;
-    }
-
-    public void setCaFile(String caFile) {
-        this.caFile = caFile;
-    }
-
-    public String getCertFile() {
-        return certFile;
-    }
-
-    public void setCertFile(String certFile) {
-        this.certFile = certFile;
-    }
-
-    public String getKeyFile() {
-        return keyFile;
-    }
-
-    public void setKeyFile(String keyFile) {
-        this.keyFile = keyFile;
-    }
-
-    public String[] getStartJoin() {
-        return startJoin;
-    }
-
-    public void setStartJoin(String[] startJoin) {
-        this.startJoin = startJoin;
-    }
-
-    public String getUiDir() {
-        return uiDir;
-    }
-
-    public void setUiDir(String uiDir) {
-        this.uiDir = uiDir;
-    }
-
-    public String getPidFile() {
-        return pidFile;
-    }
-
-    public void setPidFile(String pidFile) {
-        this.pidFile = pidFile;
-    }
-
-    public boolean isEnableSyslog() {
-        return enableSyslog;
-    }
-
-    public void setEnableSyslog(boolean enableSyslog) {
-        this.enableSyslog = enableSyslog;
-    }
-
-    public boolean isRejoinAfterLeave() {
-        return rejoinAfterLeave;
-    }
-
-    public void setRejoinAfterLeave(boolean rejoinAfterLeave) {
-        this.rejoinAfterLeave = rejoinAfterLeave;
-    }
+    public abstract boolean getRejoinAfterLeave();
 }

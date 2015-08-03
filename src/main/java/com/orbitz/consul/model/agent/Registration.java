@@ -2,121 +2,94 @@ package com.orbitz.consul.model.agent;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.google.common.base.Optional;
+import org.immutables.value.Value;
 
+import java.util.List;
+
+import static com.google.common.base.Preconditions.checkState;
+
+
+@Value.Immutable
+@JsonSerialize(as = ImmutableRegistration.class)
+@JsonDeserialize(as = ImmutableRegistration.class)
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class Registration {
+public abstract class Registration {
 
     @JsonProperty("Name")
-    private String name;
+    public abstract String getName();
 
     @JsonProperty("Id")
-    private String id;
+    public abstract String getId();
 
     @JsonProperty("Address")
-    private String address;
+    public abstract Optional<String> getAddress();
 
     @JsonProperty("Port")
-    private int port;
+    public abstract Optional<Integer> getPort();
 
     @JsonProperty("Check")
-    private Check check;
+    public abstract Optional<RegCheck> getCheck();
 
     @JsonProperty("Tags")
-    private String[] tags;
+    public abstract Optional<String[]> getTags();
 
-    public String getName() {
-        return name;
-    }
 
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getId() {
-        return id;
-    }
-
-    public void setId(String id) {
-        this.id = id;
-    }
-
-    public String getAddress() {
-        return address;
-    }
-
-    public void setAddress(String address) {
-        this.address = address;
-    }
-
-    public int getPort() {
-        return port;
-    }
-
-    public void setPort(int port) {
-        this.port = port;
-    }
-
-    public Check getCheck() {
-        return check;
-    }
-
-    public void setCheck(Check check) {
-        this.check = check;
-    }
-
-    public String[] getTags() {
-        return tags;
-    }
-
-    public void setTags(String... tags) {
-        this.tags = tags;
-    }
-
-    public static class Check {
+    @Value.Immutable
+    @JsonSerialize(as = ImmutableRegCheck.class)
+    @JsonDeserialize(as = ImmutableRegCheck.class)
+    public abstract static class RegCheck {
 
         @JsonProperty("Script")
-        private String script;
+        public abstract Optional<String> getScript();
 
         @JsonProperty("Interval")
-        private String interval;
+        public abstract Optional<String> getInterval();
 
         @JsonProperty("TTL")
-        private String ttl;
+        public abstract Optional<String> getTtl();
 
         @JsonProperty("HTTP")
-        private String http;
+        public abstract Optional<String> getHttp();
 
-        public String getScript() {
-            return script;
+
+        public static RegCheck ttl(long ttl) {
+            return ImmutableRegCheck
+                    .builder()
+                    .ttl(String.format("%ss", ttl))
+                    .build();
         }
 
-        public void setScript(String script) {
-            this.script = script;
+        public static RegCheck script(String script, long interval) {
+            return ImmutableRegCheck
+                    .builder()
+                    .script(script)
+                    .interval(String.format("%ss", interval))
+                    .build();
         }
 
-        public String getInterval() {
-            return interval;
+        public static RegCheck http(String http, long interval) {
+            return ImmutableRegCheck
+                    .builder()
+                    .http(http)
+                    .interval(String.format("%ss", interval))
+                    .build();
         }
 
-        public void setInterval(String interval) {
-            this.interval = interval;
-        }
+        @Value.Check
+        protected void validate() {
 
-        public String getTtl() {
-            return ttl;
-        }
+            checkState(getHttp().isPresent() || getTtl().isPresent() || getScript().isPresent(),
+                    "Check must specify either http, ttl, or script");
 
-        public void setTtl(String ttl) {
-            this.ttl = ttl;
+            if (getHttp().isPresent() || getScript().isPresent()) {
+                checkState(getInterval().isPresent(),
+                        "Interval must be set if check type is http or script");
+            }
         }
-
-        public String getHttp() {
-            return http;
-        }
-
-        public void setHttp(String http) {
-            this.http = http;
-        }
+        
     }
 
 }
