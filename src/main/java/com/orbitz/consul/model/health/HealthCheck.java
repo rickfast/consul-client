@@ -2,95 +2,39 @@ package com.orbitz.consul.model.health;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.google.common.base.Optional;
+import org.immutables.value.Value;
 
+@Value.Immutable
+@JsonSerialize(as = ImmutableHealthCheck.class)
+@JsonDeserialize(as = ImmutableHealthCheck.class)
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class HealthCheck {
+public abstract class HealthCheck {
 
     @JsonProperty("Node")
-    private String node;
+    public abstract String getNode();
 
     @JsonProperty("CheckID")
-    private String checkId;
+    public abstract String getCheckId();
 
     @JsonProperty("Name")
-    private String name;
+    public abstract String getName();
 
     @JsonProperty("Status")
-    private String status;
+    public abstract String getStatus();
 
     @JsonProperty("Notes")
-    private String notes;
+    public abstract Optional<String> getNotes();
 
     @JsonProperty("Output")
-    private String output;
+    public abstract Optional<String> getOutput();
 
     @JsonProperty("ServiceID")
-    private String serviceId;
+    public abstract Optional<String> getServiceId();
 
     @JsonProperty("ServiceName")
-    private String serviceName;
+    public abstract Optional<String> getServiceName();
 
-    public String getNode() {
-        return node;
-    }
-
-    public void setNode(String node) {
-        this.node = node;
-    }
-
-    public String getCheckId() {
-        return checkId;
-    }
-
-    public void setCheckId(String checkId) {
-        this.checkId = checkId;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getStatus() {
-        return status;
-    }
-
-    public void setStatus(String status) {
-        this.status = status;
-    }
-
-    public String getNotes() {
-        return notes;
-    }
-
-    public void setNotes(String notes) {
-        this.notes = notes;
-    }
-
-    public String getOutput() {
-        return output;
-    }
-
-    public void setOutput(String output) {
-        this.output = output;
-    }
-
-    public String getServiceId() {
-        return serviceId;
-    }
-
-    public void setServiceId(String serviceId) {
-        this.serviceId = serviceId;
-    }
-
-    public String getServiceName() {
-        return serviceName;
-    }
-
-    public void setServiceName(String serviceName) {
-        this.serviceName = serviceName;
-    }
 }

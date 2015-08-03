@@ -2,33 +2,25 @@ package com.orbitz.consul.model.catalog;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.orbitz.consul.model.agent.ImmutableRegistration;
 import com.orbitz.consul.model.health.Node;
 import com.orbitz.consul.model.health.Service;
+import org.immutables.value.Value;
 
 import java.util.Map;
 
+@Value.Immutable
+@JsonSerialize(as = ImmutableCatalogNode.class)
+@JsonDeserialize(as = ImmutableCatalogNode.class)
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class CatalogNode {
+public abstract class CatalogNode {
 
     @JsonProperty("Node")
-    private Node node;
+    public abstract Node getNode();
 
     @JsonProperty("Services")
-    private Map<String, Service> services;
+    public abstract Map<String, Service> getServices();
 
-    public Node getNode() {
-        return node;
-    }
-
-    public void setNode(Node node) {
-        this.node = node;
-    }
-
-    public Map<String, Service> getServices() {
-        return services;
-    }
-
-    public void setServices(Map<String, Service> services) {
-        this.services = services;
-    }
 }

@@ -1,25 +1,21 @@
 package com.orbitz.consul.model;
 
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.orbitz.consul.model.event.Event;
+import org.immutables.value.Value;
 
 import java.math.BigInteger;
 import java.util.List;
 
-public class EventResponse {
+@Value.Immutable
+@JsonSerialize(as = ImmutableEventResponse.class)
+@JsonDeserialize(as = ImmutableEventResponse.class)
+public abstract class EventResponse {
 
-    private List<Event> events;
-    private BigInteger index;
+    @Value.Parameter
+    public abstract List<Event> getEvents();
+    @Value.Parameter
+    public abstract BigInteger getIndex();
 
-    public EventResponse(List<Event> events, BigInteger index) {
-        this.events = events;
-        this.index = index;
-    }
-
-    public List<Event> getEvents() {
-        return events;
-    }
-
-    public BigInteger getIndex() {
-        return index;
-    }
 }

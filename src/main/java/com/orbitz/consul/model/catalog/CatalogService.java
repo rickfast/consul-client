@@ -2,86 +2,36 @@ package com.orbitz.consul.model.catalog;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import org.immutables.value.Value;
 
 import java.util.List;
 
+@Value.Immutable
+@JsonSerialize(as = ImmutableCatalogService.class)
+@JsonDeserialize(as = ImmutableCatalogService.class)
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class CatalogService {
+public abstract class CatalogService {
 
     @JsonProperty("Node")
-    private String node;
+    public abstract String getNode();
 
     @JsonProperty("Address")
-    private String address;
+    public abstract String getAddress();
 
     @JsonProperty("ServiceName")
-    private String serviceName;
+    public abstract String getServiceName();
 
     @JsonProperty("ServiceID")
-    private String serviceId;
+    public abstract String getServiceId();
 
 	@JsonProperty("ServiceAddress")
-    private String serviceAddress;
+    public abstract String getServiceAddress();
 
     @JsonProperty("ServicePort")
-    private int servicePort;
+    public abstract int getServicePort();
 
     @JsonProperty("ServiceTags")
-    private List<String> serviceTags;
-
-    public String getNode() {
-        return node;
-    }
-
-    public void setNode(String node) {
-        this.node = node;
-    }
-
-    public String getAddress() {
-        return address;
-    }
-
-    public void setAddress(String address) {
-        this.address = address;
-    }
-
-    public String getServiceName() {
-        return serviceName;
-    }
-
-    public void setServiceName(String serviceName) {
-        this.serviceName = serviceName;
-    }
-
-    public String getServiceId() {
-        return serviceId;
-    }
-
-    public void setServiceId(String serviceId) {
-        this.serviceId = serviceId;
-    }
-
-    public String getServiceAddress() {
-		return serviceAddress;
-	}
-
-	public void setServiceAddress(String serviceAddress) {
-		this.serviceAddress = serviceAddress;
-	}
-
-    public int getServicePort() {
-        return servicePort;
-    }
-
-    public void setServicePort(int servicePort) {
-        this.servicePort = servicePort;
-    }
-
-    public List<String> getServiceTags() {
-        return serviceTags;
-    }
-
-    public void setServiceTags(List<String> serviceTags) {
-        this.serviceTags = serviceTags;
-    }
+    public abstract List<String> getServiceTags();
 }

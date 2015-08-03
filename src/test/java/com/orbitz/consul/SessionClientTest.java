@@ -2,12 +2,13 @@ package com.orbitz.consul;
 
 import com.google.common.base.Optional;
 import com.orbitz.consul.model.session.SessionInfo;
-import junit.framework.TestCase;
 import org.junit.Test;
 
 import java.util.UUID;
 
-public class SessionClientTest extends TestCase {
+import static org.junit.Assert.*;
+
+public class SessionClientTest {
 
     @Test
     public void testCreateAndDestroySession() throws Exception {
