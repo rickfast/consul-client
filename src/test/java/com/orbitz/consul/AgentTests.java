@@ -152,6 +152,53 @@ public class AgentTests {
         verifyState("critical", client, serviceId, serviceName, note);
     }
 
+    @Test
+    public void shouldRegisterNodeScriptCheck() throws InterruptedException {
+        Consul client = Consul.newClient();
+        String checkId = UUID.randomUUID().toString();
+
+        client.agentClient().registerCheck(checkId, "test-validate", "/usr/bin/echo \"sup\"", 30);
+
+        HealthCheck check = client.agentClient().getChecks().get(checkId);
+
+        assertEquals(check.getCheckId(), checkId);
+        assertEquals(check.getName(), "test-validate");
+
+        client.agentClient().deregisterCheck(checkId);
+    }
+
+
+    @Test
+    public void shouldRegisterNodeHttpCheck() throws InterruptedException, MalformedURLException {
+        Consul client = Consul.newClient();
+        String checkId = UUID.randomUUID().toString();
+
+        client.agentClient().registerCheck(checkId, "test-validate", new URL("http://foo.local:1337/check"), 30);
+
+        HealthCheck check = client.agentClient().getChecks().get(checkId);
+
+        assertEquals(check.getCheckId(), checkId);
+        assertEquals(check.getName(), "test-validate");
+
+        client.agentClient().deregisterCheck(checkId);
+    }
+
+    @Test
+    public void shouldRegisterNodeTtlCheck() throws InterruptedException, MalformedURLException {
+        Consul client = Consul.newClient();
+        String checkId = UUID.randomUUID().toString();
+
+        client.agentClient().registerCheck(checkId, "test-validate", 30);
+
+        HealthCheck check = client.agentClient().getChecks().get(checkId);
+
+        assertEquals(check.getCheckId(), checkId);
+        assertEquals(check.getName(), "test-validate");
+
+        client.agentClient().deregisterCheck(checkId);
+    }
+
+
     private void verifyState(String state, Consul client, String serviceId,
                              String serviceName, String note) throws UnknownHostException {
         List<ServiceHealth> nodes = client.healthClient().getAllServiceInstances(serviceName).getResponse();

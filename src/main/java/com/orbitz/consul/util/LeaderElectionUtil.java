@@ -1,7 +1,6 @@
 package com.orbitz.consul.util;
 
 import com.google.common.base.Optional;
-import com.google.common.base.Strings;
 import com.orbitz.consul.Consul;
 import com.orbitz.consul.KeyValueClient;
 import com.orbitz.consul.model.kv.Value;
@@ -19,15 +18,15 @@ public class LeaderElectionUtil {
         String key = getServiceKey(serviceName);
         Optional<Value> value = client.keyValueClient().getValue(key);
         if(value.isPresent()){
-            if(!Strings.isNullOrEmpty(value.get().getSession())) {
+            if(value.get().getSession().isPresent()) {
                 leaderInfo = getLeaderInfo(value);
             }
         }
         return leaderInfo;
     }
 
-    private String getLeaderInfo(Optional<Value> value) {
-        return ClientUtil.decodeBase64(value.get().getValue());
+    private static String getLeaderInfo(Optional<Value> value) {
+        return ClientUtil.decodeBase64(value.get().getValue().get());
     }
 
     public String electNewLeaderForService(final String serviceName, final String info) {
@@ -43,8 +42,9 @@ public class LeaderElectionUtil {
     public boolean releaseLockForService(final String serviceName) {
         final String key = getServiceKey(serviceName);
         KeyValueClient kv = client.keyValueClient();
-        if(kv.getValue(key).isPresent()) {
-            return kv.releaseLock(key, kv.getValue(key).get().getSession());
+        Optional<Value> value = kv.getValue(key);
+        if(value.isPresent() && value.get().getSession().isPresent()) {
+            return kv.releaseLock(key, value.get().getSession().get());
         } else {
             return true;
         }

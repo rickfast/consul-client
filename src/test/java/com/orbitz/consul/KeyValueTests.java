@@ -32,7 +32,7 @@ public class KeyValueTests {
 
         assertTrue(keyValueClient.putValue(key, value));
         Value received = keyValueClient.getValue(key).get();
-        assertEquals(value, decodeBase64(received.getValue()));
+        assertEquals(value, decodeBase64(received.getValue().get()));
         assertEquals(0L, received.getFlags());
     }
 
@@ -46,7 +46,7 @@ public class KeyValueTests {
 
         assertTrue(keyValueClient.putValue(key, value, flags));
         Value received = keyValueClient.getValue(key).get();
-        assertEquals(value, decodeBase64(received.getValue()));
+        assertEquals(value, decodeBase64(received.getValue().get()));
         assertEquals(flags, received.getFlags());
     }
 
@@ -100,9 +100,9 @@ public class KeyValueTests {
         assertFalse(keyValueClient.acquireLock(key, value, session));
 
         System.out.println("key: " + key);
-        assertNotNull("SessionId in the key value should be NOT NULL.", keyValueClient.getValue(key).get().getSession());
+        assertTrue("SessionId must be present.", keyValueClient.getValue(key).get().getSession().isPresent());
         assertTrue(keyValueClient.releaseLock(key, session));
-        assertNull("SessionId in the key value should be NULL.", keyValueClient.getValue(key).get().getSession());
+        assertFalse("SessionId in the key value should be absent.", keyValueClient.getValue(key).get().getSession().isPresent());
     }
 
     @Test

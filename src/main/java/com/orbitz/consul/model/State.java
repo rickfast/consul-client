@@ -12,11 +12,9 @@ public enum State {
     private String name;
 
     /**
-     * Private constructor.
-     *
      * @param path Consul API path value.
      */
-    private State(String path, String name) {
+    State(String path, String name) {
         this.path = path;
         this.name = name;
     }

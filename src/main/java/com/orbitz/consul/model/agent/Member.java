@@ -3,132 +3,49 @@ package com.orbitz.consul.model.agent;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import org.immutables.value.Value;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+@Value.Immutable
+@JsonSerialize(as = ImmutableMember.class)
+@JsonDeserialize(as = ImmutableMember.class)
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class Member {
+public abstract class Member {
 
     @JsonProperty("Name")
-    private String name;
+    public abstract String getName();
 
-    @JsonProperty("Address")
-    private String address;
+    @JsonProperty("Addr")
+    public abstract String getAddress();
 
     @JsonProperty("Port")
-    private int port;
+    public abstract int getPort();
 
     @JsonProperty("Tags")
     @JsonDeserialize(as = LinkedHashMap.class, keyAs = String.class, contentAs = String.class)
-    private Map<String, String> tags;
+    public abstract Map<String, String> getTags();
 
     @JsonProperty("Status")
-    private int status;
+    public abstract int getStatus();
 
     @JsonProperty("ProtocolMin")
-    private int protocolMin;
+    public abstract int getProtocolMin();
 
     @JsonProperty("ProtocolMax")
-    private int protocolMax;
+    public abstract int getProtocolMax();
 
     @JsonProperty("ProtocolCur")
-    private int protocolCur;
+    public abstract int getProtocolCur();
 
     @JsonProperty("DelegateMin")
-    private int delegateMin;
+    public abstract int getDelegateMin();
 
     @JsonProperty("DelegateMax")
-    private int delegateMax;
+    public abstract int getDelegateMax();
 
     @JsonProperty("DelegateCur")
-    private int delegateCur;
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getAddress() {
-        return address;
-    }
-
-    public void setAddress(String address) {
-        this.address = address;
-    }
-
-    public int getPort() {
-        return port;
-    }
-
-    public void setPort(int port) {
-        this.port = port;
-    }
-
-    public Map<String, String> getTags() {
-        return tags;
-    }
-
-    public void setTags(Map<String, String> tags) {
-        this.tags = tags;
-    }
-
-    public int getStatus() {
-        return status;
-    }
-
-    public void setStatus(int status) {
-        this.status = status;
-    }
-
-    public int getProtocolMin() {
-        return protocolMin;
-    }
-
-    public void setProtocolMin(int protocolMin) {
-        this.protocolMin = protocolMin;
-    }
-
-    public int getProtocolMax() {
-        return protocolMax;
-    }
-
-    public void setProtocolMax(int protocolMax) {
-        this.protocolMax = protocolMax;
-    }
-
-    public int getProtocolCur() {
-        return protocolCur;
-    }
-
-    public void setProtocolCur(int protocolCur) {
-        this.protocolCur = protocolCur;
-    }
-
-    public int getDelegateMin() {
-        return delegateMin;
-    }
-
-    public void setDelegateMin(int delegateMin) {
-        this.delegateMin = delegateMin;
-    }
-
-    public int getDelegateMax() {
-        return delegateMax;
-    }
-
-    public void setDelegateMax(int delegateMax) {
-        this.delegateMax = delegateMax;
-    }
-
-    public int getDelegateCur() {
-        return delegateCur;
-    }
-
-    public void setDelegateCur(int delegateCur) {
-        this.delegateCur = delegateCur;
-    }
+    public abstract int getDelegateCur();
 }

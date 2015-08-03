@@ -2,73 +2,31 @@ package com.orbitz.consul.model.agent;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import org.immutables.value.Value;
 
+@Value.Immutable
+@JsonSerialize(as = ImmutablePorts.class)
+@JsonDeserialize(as = ImmutablePorts.class)
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class Ports {
+public abstract class Ports {
 
     @JsonProperty("DNS")
-    private int dns;
+    public abstract int getDns();
 
     @JsonProperty("HTTP")
-    private int http;
+    public abstract int getHttp();
 
     @JsonProperty("RPC")
-    private int rpc;
+    public abstract int getRpc();
 
     @JsonProperty("SerfLan")
-    private int serfLan;
+    public abstract int getSerfLan();
 
     @JsonProperty("SerfWan")
-    private int serfWan;
+    public abstract int getSerfWan();
 
     @JsonProperty("Server")
-    private int server;
-
-    public int getDns() {
-        return dns;
-    }
-
-    public void setDns(int dns) {
-        this.dns = dns;
-    }
-
-    public int getHttp() {
-        return http;
-    }
-
-    public void setHttp(int http) {
-        this.http = http;
-    }
-
-    public int getRpc() {
-        return rpc;
-    }
-
-    public void setRpc(int rpc) {
-        this.rpc = rpc;
-    }
-
-    public int getSerfLan() {
-        return serfLan;
-    }
-
-    public void setSerfLan(int serfLan) {
-        this.serfLan = serfLan;
-    }
-
-    public int getSerfWan() {
-        return serfWan;
-    }
-
-    public void setSerfWan(int serfWan) {
-        this.serfWan = serfWan;
-    }
-
-    public int getServer() {
-        return server;
-    }
-
-    public void setServer(int server) {
-        this.server = server;
-    }
+    public abstract int getServer();
 }

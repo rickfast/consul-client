@@ -1,8 +1,11 @@
 package com.orbitz.consul;
 
+import com.google.common.base.Optional;
 import com.orbitz.consul.model.State;
 import com.orbitz.consul.model.agent.Agent;
 import com.orbitz.consul.model.agent.Check;
+import com.orbitz.consul.model.agent.ImmutableCheck;
+import com.orbitz.consul.model.agent.ImmutableRegistration;
 import com.orbitz.consul.model.agent.Member;
 import com.orbitz.consul.model.agent.Registration;
 import com.orbitz.consul.model.health.HealthCheck;
@@ -89,10 +92,7 @@ public class AgentClient {
      * @param tags Tags to register with.
      */
     public void register(int port, long ttl, String name, String id, String... tags) {
-        Registration.Check check = new Registration.Check();
-
-        check.setTtl(String.format("%ss", ttl));
-
+        Registration.RegCheck check = Registration.RegCheck.ttl(ttl);
         register(port, check, name, id, tags);
     }
 
@@ -108,11 +108,7 @@ public class AgentClient {
      * @param tags     Tags to register with.
      */
     public void register(int port, String script, long interval, String name, String id, String... tags) {
-        Registration.Check check = new Registration.Check();
-
-        check.setScript(script);
-        check.setInterval(String.format("%ss", interval));
-
+        Registration.RegCheck check = Registration.RegCheck.script(script, interval);
         register(port, check, name, id, tags);
     }
 
@@ -128,11 +124,7 @@ public class AgentClient {
      * @param tags     Tags to register with.
      */
     public void register(int port, URL http, long interval, String name, String id, String... tags) {
-        Registration.Check check = new Registration.Check();
-
-        check.setHttp(http.toExternalForm());
-        check.setInterval(String.format("%ss", interval));
-
+        Registration.RegCheck check = Registration.RegCheck.http(http.toExternalForm(), interval);
         register(port, check, name, id, tags);
     }
 
@@ -146,14 +138,15 @@ public class AgentClient {
      * @param id    Service id to register.
      * @param tags  Tags to register with.
      */
-    public void register(int port, Registration.Check check, String name, String id, String... tags) {
-        Registration registration = new Registration();
-
-        registration.setPort(port);
-        registration.setCheck(check);
-        registration.setName(name);
-        registration.setId(id);
-        registration.setTags(tags);
+    public void register(int port, Registration.RegCheck check, String name, String id, String... tags) {
+        Registration registration = ImmutableRegistration
+                .builder()
+                .port(port)
+                .check(Optional.fromNullable(check))
+                .name(name)
+                .id(id)
+                .tags(Optional.fromNullable(tags))
+                .build();
 
         register(registration);
     }
@@ -219,13 +212,13 @@ public class AgentClient {
      * @param notes    Human readable notes.  Not used by Consul.
      */
     public void registerCheck(String checkId, String name, String script, long interval, String notes) {
-        Check check = new Check();
-
-        check.setId(checkId);
-        check.setName(name);
-        check.setScript(script);
-        check.setInterval(String.format("%ss", interval));
-        check.setNotes(notes);
+        Check check = ImmutableCheck.builder()
+            .id(checkId)
+            .name(name)
+            .script(script)
+            .interval(String.format("%ss", interval))
+            .notes(Optional.fromNullable(notes))
+            .build();
 
         registerCheck(check);
     }
@@ -240,13 +233,14 @@ public class AgentClient {
      * @param notes    Human readable notes.  Not used by Consul.
      */
     public void registerCheck(String checkId, String name, URL http, long interval, String notes) {
-        Check check = new Check();
 
-        check.setId(checkId);
-        check.setName(name);
-        check.setHttp(http.toExternalForm());
-        check.setInterval(String.format("%ss", interval));
-        check.setNotes(notes);
+        Check check = ImmutableCheck.builder()
+                .id(checkId)
+                .name(name)
+                .http(http.toExternalForm())
+                .interval(String.format("%ss", interval))
+                .notes(Optional.fromNullable(notes))
+                .build();
 
         registerCheck(check);
     }
@@ -271,12 +265,13 @@ public class AgentClient {
      * @param notes   Human readable notes.  Not used by Consul.
      */
     public void registerCheck(String checkId, String name, long ttl, String notes) {
-        Check check = new Check();
 
-        check.setId(checkId);
-        check.setName(name);
-        check.setTtl(String.format("%ss", ttl));
-        check.setNotes(notes);
+        Check check = ImmutableCheck.builder()
+                .id(checkId)
+                .name(name)
+                .ttl(String.format("%ss", ttl))
+                .notes(Optional.fromNullable(notes))
+                .build();
 
         registerCheck(check);
     }
