@@ -2,29 +2,20 @@ package com.orbitz.consul.model.health;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import org.immutables.value.Value;
 
+@Value.Immutable
+@JsonSerialize(as = ImmutableNode.class)
+@JsonDeserialize(as = ImmutableNode.class)
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class Node {
+public abstract class Node {
 
     @JsonProperty("Node")
-    private String node;
+    public abstract  String getNode();
 
     @JsonProperty("Address")
-    private String address;
+    public abstract String getAddress();
 
-    public String getNode() {
-        return node;
-    }
-
-    public void setNode(String node) {
-        this.node = node;
-    }
-
-    public String getAddress() {
-        return address;
-    }
-
-    public void setAddress(String address) {
-        this.address = address;
-    }
 }

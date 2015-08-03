@@ -1,6 +1,7 @@
 package com.orbitz.consul;
 
 import com.orbitz.consul.async.EventResponseCallback;
+import com.orbitz.consul.model.ImmutableEventResponse;
 import com.orbitz.consul.model.event.Event;
 import com.orbitz.consul.model.EventResponse;
 import com.orbitz.consul.option.EventOptions;
@@ -235,7 +236,7 @@ public class EventClient {
 
         BigInteger index = new BigInteger(indexHeaderValue);
 
-        EventResponse eventResponse = new EventResponse(response.readEntity(TYPE_EVENT_LIST), index);
+        EventResponse eventResponse = ImmutableEventResponse.of(response.readEntity(TYPE_EVENT_LIST), index);
         
         response.close();
 

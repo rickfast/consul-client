@@ -2,96 +2,39 @@ package com.orbitz.consul.model.event;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.google.common.base.Optional;
 import com.orbitz.consul.util.Base64EncodingDeserializer;
+import org.immutables.value.Value;
 
-public class Event {
+@Value.Immutable
+@JsonSerialize(as = ImmutableEvent.class)
+@JsonDeserialize(as = ImmutableEvent.class)
+public abstract class Event {
 
     @JsonProperty("ID")
-    private String id;
+    public abstract String getId();
 
     @JsonProperty("Name")
-    private String name;
+    public abstract String getName();
 
     @JsonProperty("Payload")
     @JsonDeserialize(using = Base64EncodingDeserializer.class)
-    private String payload;
+    public abstract Optional<String> getPayload();
 
     @JsonProperty("NodeFilter")
-    private String nodeFilter;
+    public abstract Optional<String> getNodeFilter();
 
     @JsonProperty("ServiceFilter")
-    private String serviceFilter;
+    public abstract Optional<String> getServiceFilter();
 
     @JsonProperty("TagFilter")
-    private String tagFilter;
+    public abstract Optional<String> getTagFilter();
 
     @JsonProperty("Version")
-    private int version;
+    public abstract int getVersion();
 
     @JsonProperty("LTime")
-    private long lTime;
+    public abstract Long getLTime();
 
-    public String getId() {
-        return id;
-    }
-
-    public void setId(String id) {
-        this.id = id;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getPayload() {
-        return payload;
-    }
-
-    public void setPayload(String payload) {
-        this.payload = payload;
-    }
-
-    public String getNodeFilter() {
-        return nodeFilter;
-    }
-
-    public void setNodeFilter(String nodeFilter) {
-        this.nodeFilter = nodeFilter;
-    }
-
-    public String getServiceFilter() {
-        return serviceFilter;
-    }
-
-    public void setServiceFilter(String serviceFilter) {
-        this.serviceFilter = serviceFilter;
-    }
-
-    public String getTagFilter() {
-        return tagFilter;
-    }
-
-    public void setTagFilter(String tagFilter) {
-        this.tagFilter = tagFilter;
-    }
-
-    public int getVersion() {
-        return version;
-    }
-
-    public void setVersion(int version) {
-        this.version = version;
-    }
-
-    public long getlTime() {
-        return lTime;
-    }
-
-    public void setlTime(long lTime) {
-        this.lTime = lTime;
-    }
 }

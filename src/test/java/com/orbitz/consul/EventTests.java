@@ -17,7 +17,7 @@ public class EventTests {
         String name = RandomStringUtils.random(10);
         Event fired = eventClient.fireEvent(name);
 
-        Thread.sleep(1000);
+        Thread.sleep(100);
 
         boolean found = false;
 
@@ -39,7 +39,7 @@ public class EventTests {
         String name = RandomStringUtils.random(10);
         Event fired = eventClient.fireEvent(name, payload);
 
-        Thread.sleep(1000);
+        Thread.sleep(100);
 
         boolean found = false;
 
@@ -47,7 +47,7 @@ public class EventTests {
             if (event.getName().equals(name) && event.getId().equals(fired.getId())) {
                 found = true;
 
-                assertEquals(payload, event.getPayload());
+                assertEquals(payload, event.getPayload().get());
             }
         }
 

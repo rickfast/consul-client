@@ -2,30 +2,24 @@ package com.orbitz.consul.model.health;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import org.immutables.value.Value;
 
 import java.util.List;
 
+@Value.Immutable
+@JsonSerialize(as = ImmutableServiceCheck.class)
+@JsonDeserialize(as = ImmutableServiceCheck.class)
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class ServiceCheck {
+public abstract class ServiceCheck {
 
     @JsonProperty("Node")
-    private Node node;
+    public abstract Node getNode();
 
     @JsonProperty("Service")
-    private Service service;
+    public abstract Service getService();
 
     @JsonProperty("Checks")
-    private List<HealthCheck> checks;
-
-    public Node getNode(){
-        return node;
-    }
-
-    public Service getService(){
-        return service;
-    }
-
-    public List<HealthCheck> getChecks(){
-        return checks;
-    }
+    public abstract List<HealthCheck> getChecks();
 }

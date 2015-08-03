@@ -34,7 +34,6 @@ public class HealthTests {
         client2.agentClient().register(8080, 20L, serviceName, serviceId2);
         client2.agentClient().fail(serviceId2);
 
-        boolean found = false;
         ConsulResponse<List<ServiceHealth>> response = client2.healthClient().getHealthyServiceInstances(serviceName);
         assertHealth(serviceId, response);
 
@@ -52,7 +51,6 @@ public class HealthTests {
         client.agentClient().register(8080, 20L, serviceName, serviceId);
         client.agentClient().pass(serviceId);
 
-        boolean found = false;
         ConsulResponse<List<ServiceHealth>> response = client.healthClient().getAllServiceInstances(serviceName);
         assertHealth(serviceId, response);
 
@@ -68,7 +66,6 @@ public class HealthTests {
         client.agentClient().register(8080, 20L, serviceName, serviceId);
         client.agentClient().pass(serviceId);
 
-        boolean found = false;
         ConsulResponse<List<ServiceHealth>> response = client.healthClient().getAllServiceInstances(serviceName,
                 CatalogOptionsBuilder.builder().datacenter("dc1").build());
         assertHealth(serviceId, response);
@@ -119,7 +116,7 @@ public class HealthTests {
         List<HealthCheck> checks = response.getResponse();
         assertEquals(1, checks.size());
         for(HealthCheck ch : checks) {
-            if(ch.getServiceId().equals(serviceId)) {
+            if(ch.getServiceId().isPresent() && ch.getServiceId().get().equals(serviceId)) {
                 found = true;
             }
         }
@@ -140,7 +137,7 @@ public class HealthTests {
         ConsulResponse<List<HealthCheck>> response = client.healthClient().getChecksByState(State.WARN);
 
         for(HealthCheck healthCheck : response.getResponse()) {
-            if(healthCheck.getServiceId().equals(serviceId)) {
+            if(healthCheck.getServiceId().isPresent() && healthCheck.getServiceId().get().equals(serviceId)) {
                 found = true;
             }
         }

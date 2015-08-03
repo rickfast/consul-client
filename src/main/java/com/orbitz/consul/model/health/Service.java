@@ -2,62 +2,29 @@ package com.orbitz.consul.model.health;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.google.common.base.Optional;
+import org.immutables.value.Value;
 
+@Value.Immutable
+@JsonSerialize(as = ImmutableService.class)
+@JsonDeserialize(as = ImmutableService.class)
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class Service {
+public abstract class Service {
 
     @JsonProperty("ID")
-    private String id;
+    public abstract  String getId();
 
     @JsonProperty("Service")
-    private String service;
+    public abstract  String getService();
 
     @JsonProperty("Tags")
-    private String[] tags;
+    public abstract Optional<String[]> getTags();
     
     @JsonProperty("Address")
-    private String address;
+    public abstract  String getAddress();
 
     @JsonProperty("Port")
-    private int port;
-
-    public String getId() {
-        return id;
-    }
-
-    public void setId(String id) {
-        this.id = id;
-    }
-
-    public String getService() {
-        return service;
-    }
-
-    public void setService(String service) {
-        this.service = service;
-    }
-
-    public String[] getTags() {
-        return tags;
-    }
-
-    public void setTags(String[] tags) {
-        this.tags = tags;
-    }
-    
-    public String getAddress() {
-        return address;
-    }
-
-    public void setAddress(String address) {
-        this.address = address;
-    }
-
-    public int getPort() {
-        return port;
-    }
-
-    public void setPort(int port) {
-        this.port = port;
-    }
+    public abstract  int getPort();
 }

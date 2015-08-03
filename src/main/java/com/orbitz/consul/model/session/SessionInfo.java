@@ -4,103 +4,45 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.google.common.base.Optional;
 import com.orbitz.consul.util.SecondsDeserializer;
 import com.orbitz.consul.util.SecondsSerializer;
+import org.immutables.value.Value;
 
 import java.util.List;
 
+@Value.Immutable
+@JsonSerialize(as = ImmutableSessionInfo.class)
+@JsonDeserialize(as = ImmutableSessionInfo.class)
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class SessionInfo {
+public abstract class SessionInfo {
 
     @JsonProperty("CreateIndex")
-    private Long createIndex;
+    public abstract long getCreateIndex();
 
     @JsonProperty("LockDelay")
     @JsonSerialize(using = SecondsSerializer.class)
     @JsonDeserialize(using = SecondsDeserializer.class)
-    private Long lockDelay;
+    public abstract Long getLockDelay();
 
     @JsonProperty("Name")
-    private String name;
+    public abstract  Optional<String> getName();
 
     @JsonProperty("Node")
-    private String node;
+    public abstract  String getNode();
 
     @JsonProperty("Checks")
-    private List<String> checks;
+    public abstract  List<String> getChecks();
 
     @JsonProperty("Behavior")
-    private String behavior;
+    public abstract String getBehavior();
 
     @JsonProperty("TTL")
     @JsonSerialize(using = SecondsSerializer.class)
     @JsonDeserialize(using = SecondsDeserializer.class)
-    private Long ttl;
+    public abstract Optional<Long> getTtl();
 
     @JsonProperty("ID")
-    private String id;
+    public abstract String getId();
 
-    public Long getCreateIndex() {
-        return createIndex;
-    }
-
-    public void setCreateIndex(Long createIndex) {
-        this.createIndex = createIndex;
-    }
-
-    public Long getLockDelay() {
-        return lockDelay;
-    }
-
-    public void setLockDelay(Long lockDelay) {
-        this.lockDelay = lockDelay;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getNode() {
-        return node;
-    }
-
-    public void setNode(String node) {
-        this.node = node;
-    }
-
-    public List<String> getChecks() {
-        return checks;
-    }
-
-    public void setChecks(List<String> checks) {
-        this.checks = checks;
-    }
-
-    public String getBehavior() {
-        return behavior;
-    }
-
-    public void setBehavior(String behavior) {
-        this.behavior = behavior;
-    }
-
-    public Long getTtl() {
-        return ttl;
-    }
-
-    public void setTtl(Long ttl) {
-        this.ttl = ttl;
-    }
-
-    public String getId() {
-        return id;
-    }
-
-    public void setId(String id) {
-        this.id = id;
-    }
 }
