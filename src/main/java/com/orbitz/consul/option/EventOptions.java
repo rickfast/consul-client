@@ -1,39 +1,30 @@
 package com.orbitz.consul.option;
 
-/**
- * Created by rfast on 5/25/15.
- */
-public class EventOptions {
+import com.google.common.base.Optional;
+import org.immutables.value.Value;
 
-    private String datacenter;
-    private String nodeFilter;
-    private String serviceFilter;
-    private String tagFilter;
+import javax.ws.rs.client.WebTarget;
 
-    public static EventOptions BLANK = new EventOptions();
+import static com.orbitz.consul.option.Options.optionallyAdd;
 
-    private EventOptions() {}
+@Value.Immutable
+public abstract class EventOptions implements ParamAdder {
 
-    EventOptions(String datacenter, String nodeFilter, String serviceFilter, String tagFilter) {
-        this.datacenter = datacenter;
-        this.nodeFilter = nodeFilter;
-        this.serviceFilter = serviceFilter;
-        this.tagFilter = tagFilter;
-    }
+    public static final EventOptions BLANK = ImmutableEventOptions.builder().build();
 
-    public String getDatacenter() {
-        return datacenter;
-    }
+    public abstract Optional<String> getDatacenter();
+    public abstract Optional<String> getNodeFilter();
+    public abstract Optional<String> getServiceFilter();
+    public abstract Optional<String> getTagFilter();
 
-    public String getNodeFilter() {
-        return nodeFilter;
-    }
+    @Override
+    public final WebTarget apply(final WebTarget input) {
+        WebTarget added = optionallyAdd(input, "dc", getDatacenter());
 
-    public String getServiceFilter() {
-        return serviceFilter;
-    }
+        added = optionallyAdd(added, "node", getNodeFilter());
+        added = optionallyAdd(added, "service", getServiceFilter());
+        added = optionallyAdd(added, "tag", getTagFilter());
 
-    public String getTagFilter() {
-        return tagFilter;
+        return added;
     }
 }

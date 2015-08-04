@@ -1,58 +1,81 @@
 package com.orbitz.consul.option;
 
+import com.google.common.base.Optional;
+import org.immutables.value.Value;
+
+import javax.ws.rs.client.WebTarget;
 import java.math.BigInteger;
 
 import static com.google.common.base.Preconditions.checkArgument;
+import static com.orbitz.consul.option.Options.optionallyAdd;
 
 /**
  * Container for common query options used by the Consul API.
  */
-public class QueryOptions {
+@Value.Immutable
+public abstract class QueryOptions implements ParamAdder {
 
-    private boolean blocking;
-    private String wait;
-    private BigInteger index;
-    private ConsistencyMode consistencyMode;
-    private boolean authenticated;
-    private String token;
+    public static final QueryOptions BLANK = ImmutableQueryOptions.builder().build();
 
-    public static QueryOptions BLANK = new QueryOptions(null, new BigInteger("0"), ConsistencyMode.DEFAULT, null);
+    public abstract Optional<String> getWait();
+    public abstract Optional<String> getToken();
+    public abstract Optional<BigInteger> getIndex();
 
-    /**
-     * @param wait Wait string, e.g. "10s" or "10m"
-     * @param index Lock index.
-     * @param consistencyMode Consistency mode to use for query.
-     */
-    QueryOptions(String wait, BigInteger index, ConsistencyMode consistencyMode, String token) {
+    @Value.Default
+    public ConsistencyMode getConsistencyMode() {
+        return ConsistencyMode.DEFAULT;
+    }
 
-        this.wait = wait;
-        this.index = index;
-        this.consistencyMode = consistencyMode;
-        this.blocking = wait != null;
-        this.token = token;
-        this.authenticated = token != null;
-        if (blocking) {
-            checkArgument(index != null, "If wait is specified, index must also be specified");
+    @Value.Derived
+    public boolean isBlocking() {
+        return getWait().isPresent();
+    }
+
+    @Value.Derived
+    public boolean hasToken() {
+        return getToken().isPresent();
+    }
+
+    @Value.Check
+    void validate() {
+        if (isBlocking()) {
+            checkArgument(getIndex().isPresent(), "If wait is specified, index must also be specified");
         }
     }
 
-    public String getWait() {
-        return wait;
+    public static ImmutableQueryOptions.Builder blockSeconds(int seconds, BigInteger index) {
+        return blockBuilder("s", seconds, index);
     }
 
-    public BigInteger getIndex() {
-        return index;
+    public static ImmutableQueryOptions.Builder blockMinutes(int minutes, BigInteger index) {
+        return blockBuilder("n", minutes, index);
     }
 
-    public ConsistencyMode getConsistencyMode() {
-        return consistencyMode;
+    private static ImmutableQueryOptions.Builder blockBuilder(String identifier, int qty, BigInteger index) {
+        return ImmutableQueryOptions.builder()
+                .wait(String.format("%s%s", qty, identifier))
+                .index(index);
     }
 
-    public boolean isBlocking() {
-        return blocking;
+    @Override
+    public WebTarget apply(WebTarget input) {
+
+        WebTarget added = input;
+        switch (getConsistencyMode()) {
+            case CONSISTENT:
+                added = added.queryParam("consistent");
+                break;
+            case STALE:
+                added = added.queryParam("stale");
+                break;
+        }
+
+        if (isBlocking()) {
+            added = added.queryParam("wait", getWait().get())
+                    .queryParam("index", String.valueOf(getIndex().get()));
+        }
+
+        added = optionallyAdd(added, "token", getToken());
+        return added;
     }
-
-    public boolean hasToken() { return authenticated; }
-
-    public String getToken() { return token; }
 }

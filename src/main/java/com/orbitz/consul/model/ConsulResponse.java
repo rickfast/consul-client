@@ -1,13 +1,15 @@
 package com.orbitz.consul.model;
 
+import com.google.common.base.Objects;
+
 import java.math.BigInteger;
 
 public class ConsulResponse<T> {
 
-    private T response;
-    private long lastContact;
-    private boolean knownLeader;
-    private BigInteger index;
+    private final T response;
+    private final long lastContact;
+    private final boolean knownLeader;
+    private final BigInteger index;
 
     public ConsulResponse(T response, long lastContact, boolean knownLeader, BigInteger index) {
         this.response = response;
@@ -20,31 +22,43 @@ public class ConsulResponse<T> {
         return response;
     }
 
-    public void setResponse(T response) {
-        this.response = response;
-    }
-
     public long getLastContact() {
         return lastContact;
-    }
-
-    public void setLastContact(long lastContact) {
-        this.lastContact = lastContact;
     }
 
     public boolean isKnownLeader() {
         return knownLeader;
     }
 
-    public void setKnownLeader(boolean knownLeader) {
-        this.knownLeader = knownLeader;
-    }
-
     public BigInteger getIndex() {
         return index;
     }
 
-    public void setIndex(BigInteger index) {
-        this.index = index;
+    @Override
+    public String toString() {
+        return "ConsulResponse{" +
+                "response=" + response +
+                ", lastContact=" + lastContact +
+                ", knownLeader=" + knownLeader +
+                ", index=" + index +
+                '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        ConsulResponse that = (ConsulResponse) o;
+
+        return Objects.equal(this.response, that.response) &&
+                Objects.equal(this.lastContact, that.lastContact) &&
+                Objects.equal(this.knownLeader, that.knownLeader) &&
+                Objects.equal(this.index, that.index);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hashCode(response, lastContact, knownLeader, index);
     }
 }

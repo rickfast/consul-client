@@ -1,51 +1,30 @@
 package com.orbitz.consul.option;
 
-public class PutOptions {
+import com.google.common.base.Optional;
+import org.immutables.value.Value;
 
-    private Integer cas;
-    private String acquire;
-    private String release;
-    private String dc;
+import javax.ws.rs.client.WebTarget;
 
-    public static PutOptions BLANK = new PutOptions(null, null, null, null);
+import static com.orbitz.consul.option.Options.optionallyAdd;
 
-    PutOptions(Integer cas, String acquire, String release, String dc) {
-        this.cas = cas;
-        this.acquire = acquire;
-        this.release = release;
-        this.dc = dc;
+@Value.Immutable
+public abstract class PutOptions implements ParamAdder {
+    
+    public static PutOptions BLANK = ImmutablePutOptions.builder().build();
+    
+    public abstract Optional<Integer> getCas();
+    public abstract Optional<String> getAcquire();
+    public abstract Optional<String> getRelease();
+    public abstract Optional<String> getDc();
+
+    @Override
+    public final WebTarget apply(final WebTarget input) {
+        WebTarget added = optionallyAdd(input, "cas", getCas());
+
+        added = optionallyAdd(added, "release", getRelease());
+        added = optionallyAdd(added, "acquire", getAcquire());
+        added = optionallyAdd(added, "dc", getDc());
+
+        return added;
     }
-
-    public Integer getCas() {
-        return cas;
-    }
-
-    public void setCas(Integer cas) {
-        this.cas = cas;
-    }
-
-    public String getAcquire() {
-        return acquire;
-    }
-
-    public void setAcquire(String acquire) {
-        this.acquire = acquire;
-    }
-
-    public String getRelease() {
-        return release;
-    }
-
-    public void setRelease(String release) {
-        this.release = release;
-    }
-
-    public String getDc() {
-        return dc;
-    }
-
-    public void setDc(String dc) {
-        this.dc = dc;
-    }
-
 }

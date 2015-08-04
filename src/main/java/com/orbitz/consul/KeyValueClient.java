@@ -6,12 +6,10 @@ import com.orbitz.consul.async.ConsulResponseCallback;
 import com.orbitz.consul.model.ConsulResponse;
 import com.orbitz.consul.model.kv.Value;
 import com.orbitz.consul.model.session.SessionInfo;
-import com.orbitz.consul.option.CatalogOptionsBuilder;
+import com.orbitz.consul.option.CatalogOptions;
+import com.orbitz.consul.option.ImmutablePutOptions;
 import com.orbitz.consul.option.PutOptions;
-import com.orbitz.consul.option.PutOptionsBuilder;
 import com.orbitz.consul.option.QueryOptions;
-import com.orbitz.consul.util.ClientUtil;
-import org.apache.commons.lang3.StringUtils;
 
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.client.Entity;
@@ -21,6 +19,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.util.*;
 
+import static com.orbitz.consul.util.ClientUtil.addParams;
 import static com.orbitz.consul.util.ClientUtil.decodeBase64;
 import static com.orbitz.consul.util.ClientUtil.response;
 
@@ -67,7 +66,7 @@ public class KeyValueClient {
      * @return An {@link Optional} containing the value or {@link Optional#absent()}
      */
     public Optional<Value> getValue(String key, QueryOptions queryOptions) {
-        WebTarget target = ClientUtil.queryConfig(webTarget.path(key), queryOptions);
+        WebTarget target = addParams(webTarget.path(key), queryOptions);
         try {
             return getSingleValue(target.request().accept(MediaType.APPLICATION_JSON_TYPE)
                     .get(new GenericType<List<Value>>() {}));
@@ -101,7 +100,7 @@ public class KeyValueClient {
                 callback.onFailure(throwable);
             }
         };
-        response(webTarget.path(key), CatalogOptionsBuilder.builder().build(), queryOptions,
+        response(webTarget.path(key), CatalogOptions.BLANK, queryOptions,
                 TYPE_VALUE_LIST, wrapper);
     }
 
@@ -136,7 +135,7 @@ public class KeyValueClient {
      * @param callback Callback implemented by callee to handle results.
      */
     public void getValues(String key, QueryOptions queryOptions, ConsulResponseCallback<List<Value>> callback) {
-        response(webTarget.path(key).queryParam("recurse", "true"), CatalogOptionsBuilder.builder().build(),
+        response(webTarget.path(key).queryParam("recurse", "true"), CatalogOptions.BLANK,
                 queryOptions, TYPE_VALUE_LIST, callback);
     }
 
@@ -209,25 +208,11 @@ public class KeyValueClient {
      * @return <code>true</code> if the value was successfully indexed.
      */
     private boolean putValue(String key, String value, long flags, PutOptions putOptions) {
-        Integer cas = putOptions.getCas();
-        String release = putOptions.getRelease();
-        String acquire = putOptions.getAcquire();
-        WebTarget target = webTarget;
 
-        if(cas != null) {
-            target = webTarget.queryParam("cas", cas);
-        }
-
-        if(!StringUtils.isEmpty(release)) {
-            target = webTarget.queryParam("release", release);
-        }
-
-        if(!StringUtils.isEmpty(acquire)) {
-            target = webTarget.queryParam("acquire", acquire);
-        }
+        WebTarget target = putOptions.apply(webTarget);
 
         if (flags != 0) {
-            target = webTarget.queryParam("flags", UnsignedLongs.toString(flags));
+            target = target.queryParam("flags", UnsignedLongs.toString(flags));
         }
 
         return target.path(key).request().put(Entity.entity(value,
@@ -307,7 +292,7 @@ public class KeyValueClient {
      * @return true if the lock is acquired successfully, false otherwise.
      */
     public boolean acquireLock(final String key, final String value, final String session) {
-        return putValue(key, value, 0, PutOptionsBuilder.builder().acquire(session).build());
+        return putValue(key, value, 0, ImmutablePutOptions.builder().acquire(session).build());
     }
 
     /**
@@ -336,7 +321,7 @@ public class KeyValueClient {
      * @return {@link SessionInfo}.
      */
     public boolean releaseLock(final String key, final String sessionId) {
-        return putValue(key, "", 0, PutOptionsBuilder.builder().release(sessionId).build());
+        return putValue(key, "", 0, ImmutablePutOptions.builder().release(sessionId).build());
     }
 
 }

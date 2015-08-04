@@ -6,7 +6,6 @@ import com.orbitz.consul.model.State;
 import com.orbitz.consul.model.health.HealthCheck;
 import com.orbitz.consul.model.health.ServiceHealth;
 import com.orbitz.consul.option.CatalogOptions;
-import com.orbitz.consul.option.CatalogOptionsBuilder;
 import com.orbitz.consul.option.QueryOptions;
 
 import javax.ws.rs.client.WebTarget;
@@ -157,7 +156,7 @@ public class HealthClient {
     public void getServiceChecks(String service,
                                  QueryOptions queryOptions,
                                  ConsulResponseCallback<List<HealthCheck>> callback) {
-        response(webTarget.path("checks").path(service), CatalogOptionsBuilder.builder().build(), queryOptions, TYPE_HEALTH_CHECK_LIST, callback);
+        response(webTarget.path("checks").path(service), CatalogOptions.BLANK, queryOptions, TYPE_HEALTH_CHECK_LIST, callback);
     }
 
     /**
@@ -331,7 +330,7 @@ public class HealthClient {
     public void getHealthyServiceInstances(String service, QueryOptions queryOptions,
                                            ConsulResponseCallback<List<ServiceHealth>> callback) {
         response(webTarget.path("service").path(service).queryParam("passing", "true"),
-                CatalogOptionsBuilder.builder().build(), queryOptions, TYPE_SERVICE_HEALTH_LIST, callback);
+                CatalogOptions.BLANK, queryOptions, TYPE_SERVICE_HEALTH_LIST, callback);
     }
 
     /**
@@ -427,7 +426,7 @@ public class HealthClient {
      */
     public void getAllServiceInstances(String service, QueryOptions queryOptions,
                                        ConsulResponseCallback<List<ServiceHealth>> callback) {
-        response(webTarget.path("service").path(service), CatalogOptionsBuilder.builder().build(),
+        response(webTarget.path("service").path(service), CatalogOptions.BLANK,
                 queryOptions, TYPE_SERVICE_HEALTH_LIST, callback);
     }
 }

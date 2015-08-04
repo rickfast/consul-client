@@ -3,15 +3,17 @@ package com.orbitz.consul;
 import com.google.common.base.Optional;
 import com.orbitz.consul.model.session.SessionInfo;
 import com.orbitz.consul.option.QueryOptions;
-import com.orbitz.consul.util.ClientUtil;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
+
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.GenericType;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+
+import static com.orbitz.consul.util.ClientUtil.addParams;
 
 public class SessionClient {
 
@@ -168,10 +170,10 @@ public class SessionClient {
       WebTarget target = webTarget;
 
       if (dc != null) {
-         target = webTarget.queryParam("dc", dc);
+         target = target.queryParam("dc", dc);
       }
 
-      target = ClientUtil.queryConfig(target.path("info").path(sessionId), QueryOptions.BLANK);
+      target = addParams(target.path("info").path(sessionId), QueryOptions.BLANK);
 
       List<SessionInfo> sessionInfo = Arrays.asList(target
               .request().accept(MediaType.APPLICATION_JSON_TYPE).get(SessionInfo[].class));
