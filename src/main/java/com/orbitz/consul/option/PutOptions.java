@@ -10,7 +10,7 @@ import static com.orbitz.consul.option.Options.optionallyAdd;
 @Value.Immutable
 public abstract class PutOptions implements ParamAdder {
     
-    public static PutOptions BLANK = ImmutablePutOptions.builder().build();
+    public static final PutOptions BLANK = ImmutablePutOptions.builder().build();
     
     public abstract Optional<Integer> getCas();
     public abstract Optional<String> getAcquire();
