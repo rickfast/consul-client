@@ -1,12 +1,11 @@
 package com.orbitz.consul;
 
 import com.orbitz.consul.async.EventResponseCallback;
+import com.orbitz.consul.model.EventResponse;
 import com.orbitz.consul.model.ImmutableEventResponse;
 import com.orbitz.consul.model.event.Event;
-import com.orbitz.consul.model.EventResponse;
 import com.orbitz.consul.option.EventOptions;
 import com.orbitz.consul.option.QueryOptions;
-import com.orbitz.consul.util.ClientUtil;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.ws.rs.client.Entity;
@@ -18,7 +17,7 @@ import javax.ws.rs.core.Response;
 import java.math.BigInteger;
 import java.util.List;
 
-import static com.orbitz.consul.util.ClientUtil.eventConfig;
+import static com.orbitz.consul.util.ClientUtil.addParams;
 import static com.orbitz.consul.util.ClientUtil.handleErrors;
 
 /**
@@ -57,7 +56,7 @@ public class EventClient {
     public Event fireEvent(String name, EventOptions eventOptions, String payload) {
         WebTarget target = webTarget.path("fire").path(name);
 
-        target = eventConfig(target, eventOptions);
+        target = addParams(target, eventOptions);
 
         return target.request()
                 .put(Entity.entity(StringUtils.isEmpty(payload) ? "" : payload, MediaType.WILDCARD_TYPE),
@@ -203,7 +202,7 @@ public class EventClient {
     }
 
     private static void response(WebTarget target, QueryOptions queryOptions, final EventResponseCallback callback) {
-        target = ClientUtil.queryConfig(target, queryOptions);
+        target = addParams(target, queryOptions);
 
         target.request().accept(MediaType.APPLICATION_JSON_TYPE).async().get(new InvocationCallback<Response>() {
 
@@ -224,7 +223,7 @@ public class EventClient {
     }
 
     private static EventResponse response(WebTarget target, QueryOptions queryOptions) {
-        target = ClientUtil.queryConfig(target, queryOptions);
+        target = addParams(target, queryOptions);
 
         return eventResponse(target.request().accept(MediaType.APPLICATION_JSON_TYPE).get());
     }

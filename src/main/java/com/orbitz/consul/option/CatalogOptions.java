@@ -1,26 +1,24 @@
 package com.orbitz.consul.option;
 
-public class CatalogOptions {
+import com.google.common.base.Optional;
+import org.immutables.value.Value;
 
-    private String datacenter;
-    private String tag;
+import javax.ws.rs.client.WebTarget;
 
-    public static CatalogOptions BLANK = new CatalogOptions();
+import static com.orbitz.consul.option.Options.optionallyAdd;
 
-    private CatalogOptions() {
+@Value.Immutable
+public abstract class CatalogOptions implements ParamAdder {
 
-    }
+    public abstract Optional<String> getDatacenter();
+    public abstract Optional<String> getTag();
 
-    CatalogOptions(String datacenter, String tag) {
-        this.datacenter = datacenter;
-        this.tag = tag;
-    }
+    public static final CatalogOptions BLANK = ImmutableCatalogOptions.builder().build();
 
-    public String getDatacenter() {
-        return datacenter;
-    }
-
-    public String getTag() {
-        return tag;
+    @Override
+    public final WebTarget apply(final WebTarget input) {
+        WebTarget added = optionallyAdd(input, "dc", getDatacenter());
+        added = optionallyAdd(added, "tag", getTag());
+        return added;
     }
 }

@@ -4,7 +4,8 @@ import com.orbitz.consul.model.ConsulResponse;
 import com.orbitz.consul.model.catalog.CatalogNode;
 import com.orbitz.consul.model.catalog.CatalogService;
 import com.orbitz.consul.model.health.Node;
-import com.orbitz.consul.option.CatalogOptionsBuilder;
+import com.orbitz.consul.option.ImmutableCatalogOptions;
+import com.orbitz.consul.option.QueryOptions;
 import org.junit.Test;
 
 import java.math.BigInteger;
@@ -12,7 +13,6 @@ import java.net.UnknownHostException;
 import java.util.List;
 import java.util.Map;
 
-import static com.orbitz.consul.option.QueryOptionsBuilder.builder;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -33,7 +33,7 @@ public class CatalogTests {
         Consul client = Consul.newClient();
         CatalogClient catalogClient = client.catalogClient();
 
-        assertFalse(catalogClient.getNodes(CatalogOptionsBuilder.builder().datacenter("dc1").build()).getResponse().isEmpty());
+        assertFalse(catalogClient.getNodes(ImmutableCatalogOptions.builder().datacenter("dc1").build()).getResponse().isEmpty());
     }
 
     @Test
@@ -42,8 +42,8 @@ public class CatalogTests {
         CatalogClient catalogClient = client.catalogClient();
 
         long start = System.currentTimeMillis();
-        ConsulResponse<List<Node>> response = catalogClient.getNodes(CatalogOptionsBuilder.builder().datacenter("dc1").build(),
-                builder().blockSeconds(2, new BigInteger(Integer.toString(Integer.MAX_VALUE))).build());
+        ConsulResponse<List<Node>> response = catalogClient.getNodes(ImmutableCatalogOptions.builder().datacenter("dc1").build(),
+                QueryOptions.blockSeconds(2, new BigInteger(Integer.toString(Integer.MAX_VALUE))).build());
         long time = System.currentTimeMillis() - start;
 
         assertTrue(time >= 2000);
