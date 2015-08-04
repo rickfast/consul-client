@@ -10,6 +10,7 @@ import com.orbitz.consul.option.CatalogOptions;
 import com.orbitz.consul.option.ImmutablePutOptions;
 import com.orbitz.consul.option.PutOptions;
 import com.orbitz.consul.option.QueryOptions;
+import org.apache.commons.lang3.StringUtils;
 
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.client.Entity;
@@ -19,8 +20,8 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.util.*;
 
+import static com.google.common.base.Preconditions.checkArgument;
 import static com.orbitz.consul.util.ClientUtil.addParams;
-import static com.orbitz.consul.util.ClientUtil.decodeBase64;
 import static com.orbitz.consul.util.ClientUtil.response;
 
 /**
@@ -149,10 +150,10 @@ public class KeyValueClient {
      * {@link Optional#absent()}
      */
     public Optional<String> getValueAsString(String key) {
-        Optional<Value> value = getValue(key);
-
-        return value.isPresent() && value.get().getValue().isPresent() ? Optional.of(decodeBase64(value.get().getValue().get()))
-                : Optional.<String>absent();
+        for (Value v: getValue(key).asSet()) {
+            return v.getValueAsString();
+        }
+        return Optional.absent();
     }
 
     /**
@@ -168,8 +169,8 @@ public class KeyValueClient {
         List<String> result = new ArrayList<String>();
 
         for(Value value : getValues(key)) {
-            if (value.getValue().isPresent()) {
-                result.add(decodeBase64(value.getValue().get()));
+            if (value.getValueAsString().isPresent()) {
+                result.add(value.getValueAsString().get());
             }
         }
 
@@ -209,13 +210,14 @@ public class KeyValueClient {
      */
     private boolean putValue(String key, String value, long flags, PutOptions putOptions) {
 
-        WebTarget target = putOptions.apply(webTarget);
+        checkArgument(StringUtils.isNotEmpty(key), "Key must be defined");
+        WebTarget target = putOptions.apply(webTarget).path(key);
 
         if (flags != 0) {
             target = target.queryParam("flags", UnsignedLongs.toString(flags));
         }
 
-        return target.path(key).request().put(Entity.entity(value,
+        return target.request().put(Entity.entity(value,
                 MediaType.TEXT_PLAIN_TYPE), Boolean.class);
     }
 

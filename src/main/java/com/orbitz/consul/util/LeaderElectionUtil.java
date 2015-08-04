@@ -13,27 +13,22 @@ public class LeaderElectionUtil {
         this.client = client;
     }
 
-    public String getLeaderInfoForService(final String serviceName) {
-        String leaderInfo = null;
+    public Optional<String> getLeaderInfoForService(final String serviceName) {
         String key = getServiceKey(serviceName);
         Optional<Value> value = client.keyValueClient().getValue(key);
         if(value.isPresent()){
             if(value.get().getSession().isPresent()) {
-                leaderInfo = getLeaderInfo(value);
+                return value.get().getValueAsString();
             }
         }
-        return leaderInfo;
+        return Optional.absent();
     }
 
-    private static String getLeaderInfo(Optional<Value> value) {
-        return ClientUtil.decodeBase64(value.get().getValue().get());
-    }
-
-    public String electNewLeaderForService(final String serviceName, final String info) {
+    public Optional<String> electNewLeaderForService(final String serviceName, final String info) {
         final String key = getServiceKey(serviceName);
         String sessionId = createSession(serviceName);
         if(client.keyValueClient().acquireLock(key, info, sessionId)){
-            return info;
+            return Optional.of(info);
         }else{
             return getLeaderInfoForService(serviceName);
         }

@@ -6,7 +6,6 @@ import com.orbitz.consul.model.ConsulResponse;
 import com.orbitz.consul.option.CatalogOptions;
 import com.orbitz.consul.option.ParamAdder;
 import com.orbitz.consul.option.QueryOptions;
-import org.apache.commons.codec.binary.Base64;
 
 import javax.ws.rs.ServerErrorException;
 import javax.ws.rs.client.InvocationCallback;
@@ -165,16 +164,6 @@ public class ClientUtil {
         response.close();
 
         return consulResponse;
-    }
-
-    /**
-     * Decodes a Base 64 encoded string.
-     *
-     * @param value The encoded string.
-     * @return The decoded string.
-     */
-    public static String decodeBase64(String value) {
-        return new String(Base64.decodeBase64(value));
     }
 
     /**

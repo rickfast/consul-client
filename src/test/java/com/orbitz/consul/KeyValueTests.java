@@ -7,7 +7,6 @@ import java.net.UnknownHostException;
 import java.util.HashSet;
 import java.util.UUID;
 
-import static com.orbitz.consul.util.ClientUtil.decodeBase64;
 import static org.junit.Assert.*;
 
 public class KeyValueTests {
@@ -32,8 +31,10 @@ public class KeyValueTests {
 
         assertTrue(keyValueClient.putValue(key, value));
         Value received = keyValueClient.getValue(key).get();
-        assertEquals(value, decodeBase64(received.getValue().get()));
+        assertEquals(value, received.getValueAsString().get());
         assertEquals(0L, received.getFlags());
+        keyValueClient.deleteKey(key);
+
     }
 
     @Test
@@ -46,8 +47,10 @@ public class KeyValueTests {
 
         assertTrue(keyValueClient.putValue(key, value, flags));
         Value received = keyValueClient.getValue(key).get();
-        assertEquals(value, decodeBase64(received.getValue().get()));
+        assertEquals(value, received.getValueAsString().get());
         assertEquals(flags, received.getFlags());
+        keyValueClient.deleteKey(key);
+
     }
 
     @Test
@@ -67,6 +70,10 @@ public class KeyValueTests {
                 add(value2);
             }
         }, new HashSet<String>(keyValueClient.getValuesAsString(key)));
+
+        keyValueClient.deleteKey(key);
+        keyValueClient.deleteKey(key2);
+
     }
 
     @Test
@@ -95,14 +102,14 @@ public class KeyValueTests {
         final String value = "{\"Name\":\"myservice\"}";
         String session = sessionClient.createSession(value).get();
 
-        System.out.println("SessionInfo: " + session);
         assertTrue(keyValueClient.acquireLock(key, value, session));
         assertFalse(keyValueClient.acquireLock(key, value, session));
 
-        System.out.println("key: " + key);
         assertTrue("SessionId must be present.", keyValueClient.getValue(key).get().getSession().isPresent());
         assertTrue(keyValueClient.releaseLock(key, session));
         assertFalse("SessionId in the key value should be absent.", keyValueClient.getValue(key).get().getSession().isPresent());
+        keyValueClient.deleteKey(key);
+
     }
 
     @Test
@@ -120,10 +127,11 @@ public class KeyValueTests {
         final String sessionValue = "{\"Name\":\"myservice\"}";
         String session = sessionClient.createSession(sessionValue).get();
 
-        System.out.println("SessionInfo: " + session);
         assertTrue(keyValueClient.acquireLock(key, sessionValue, session));
         assertFalse(keyValueClient.acquireLock(key, sessionValue, session));
         assertEquals(session, keyValueClient.getSession(key).get());
+        keyValueClient.deleteKey(key);
+
     }
 
 }
