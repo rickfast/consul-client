@@ -1,5 +1,8 @@
 package com.orbitz.consul.util;
 
+import com.google.common.base.Optional;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.orbitz.consul.ConsulException;
 import com.orbitz.consul.async.ConsulResponseCallback;
 import com.orbitz.consul.model.ConsulResponse;
@@ -8,12 +11,14 @@ import com.orbitz.consul.option.ParamAdder;
 import com.orbitz.consul.option.QueryOptions;
 
 import javax.ws.rs.ServerErrorException;
+import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.client.InvocationCallback;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.GenericType;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.math.BigInteger;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -159,11 +164,37 @@ public class ClientUtil {
         long lastContact = lastContactHeaderValue == null ? -1 : Long.valueOf(lastContactHeaderValue);
         boolean knownLeader = knownLeaderHeaderValue == null ? false : Boolean.valueOf(knownLeaderHeaderValue);
 
-        ConsulResponse<T> consulResponse = new ConsulResponse<T>(response.readEntity(responseType), lastContact, knownLeader, index);
+        ConsulResponse<T> consulResponse = new ConsulResponse<T>(readResponse(response, responseType), lastContact, knownLeader, index);
 
         response.close();
 
         return consulResponse;
+    }
+
+    /**
+     * Converts a {@link Response} object to the generic type provided, or an empty
+     * representation if appropriate
+     *
+     * @param response response
+     * @param responseType response type
+     * @param <T>
+     * @return the re
+     */
+    private static <T> T readResponse(Response response, GenericType<T> responseType) {
+        if (response.getStatus() == Response.Status.NOT_FOUND.getStatusCode()) {
+            // would be nice I knew a better way to do this
+            if (responseType.getRawType() == List.class) {
+                return (T) ImmutableList.of();
+            } else if (responseType.getRawType() == Optional.class) {
+                return (T) Optional.absent();
+            } else if(responseType.getRawType() == Map.class) {
+                return (T) ImmutableMap.of();
+            } else {
+                // Not sure if this case will be reached, but if it is it'll be nice to know
+                throw new IllegalStateException("Cannot determine empty representation for " + responseType.getRawType());
+            }
+        }
+        return response.readEntity(responseType);
     }
 
     /**
@@ -174,18 +205,24 @@ public class ClientUtil {
      * @param response The HTTP response.
      */
     public static void handleErrors(Response response) {
-        if (response.getStatusInfo().getFamily() != Response.Status.Family.SUCCESSFUL) {
-            ServerErrorException see = null;
 
-            if (response.hasEntity()) {
-                // Consul sends back error information in the response body
-                String message = response.readEntity(String.class);
-                see = new ServerErrorException(message, response);
+        if (response.getStatusInfo().getFamily() == Response.Status.Family.SUCCESSFUL
+                || response.getStatus() == Response.Status.NOT_FOUND.getStatusCode()) {
+            // not an error
+            return;
+        }
+
+        try {
+            final String message = response.hasEntity() ? response.readEntity(String.class) : null;
+            if (response.getStatusInfo().getFamily() ==  Response.Status.Family.SERVER_ERROR) {
+                throw new ServerErrorException(message, response);
             } else {
-                see = new ServerErrorException(response);
+                throw new WebApplicationException(message, response);
             }
+        } catch (Exception e) {
+            throw new ConsulException(e.getLocalizedMessage(), e);
+        } finally {
             response.close();
-            throw new ConsulException(see.getLocalizedMessage(), see);
         }
     }
 }
