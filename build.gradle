@@ -26,23 +26,21 @@ dependencies {
     compile 'com.fasterxml.jackson.core:jackson-annotations:2.5.3'
     compile 'com.fasterxml.jackson.jaxrs:jackson-jaxrs-json-provider:2.5.3'
     compile 'com.fasterxml.jackson.datatype:jackson-datatype-guava:2.5.3'
-
-    compile 'javax.ws.rs:javax.ws.rs-api:2.0.1'
-
-
-    compile 'javax.annotation:javax.annotation-api:1.2'
-
-    compile 'org.apache.commons:commons-lang3:3.0'
     compile 'com.fasterxml.jackson.jaxrs:jackson-jaxrs-base:2.5.3'
     compile 'com.google.guava:guava:18.0'
-    compile 'commons-codec:commons-codec:1.9'
+    compile 'org.apache.commons:commons-lang3:3.0'
     compile 'org.immutables:value:2.0.16'
+    compile 'org.slf4j:slf4j-api:1.7.12'
+
+    compile 'javax.ws.rs:javax.ws.rs-api:2.0.1'
+    compile 'javax.annotation:javax.annotation-api:1.2'
 
     testCompile 'org.apache.cxf:cxf-rt-rs-client:3.0.3'
     testCompile 'org.apache.cxf:cxf-rt-transports-http-hc:3.0.3'
 
     testCompile 'junit:junit:4.12'
     testCompile 'org.mockito:mockito-all:1.9.5'
+    testCompile 'commons-logging:commons-logging:1.1.1'
 }
 
 task sourcesJar(type: Jar, dependsOn: classes) {

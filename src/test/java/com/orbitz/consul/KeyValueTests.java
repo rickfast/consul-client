@@ -1,11 +1,19 @@
 package com.orbitz.consul;
 
+import com.google.common.base.Optional;
+import com.orbitz.consul.async.ConsulResponseCallback;
+import com.orbitz.consul.model.ConsulResponse;
 import com.orbitz.consul.model.kv.Value;
+import com.orbitz.consul.option.QueryOptions;
 import org.junit.Test;
 
 import java.net.UnknownHostException;
 import java.util.HashSet;
+import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.junit.Assert.*;
 
@@ -134,4 +142,64 @@ public class KeyValueTests {
 
     }
 
+    @Test
+    public void testGetValuesAsync() throws InterruptedException {
+        Consul client = Consul.newClient();
+        KeyValueClient keyValueClient = client.keyValueClient();
+        String key = UUID.randomUUID().toString();
+        String value = UUID.randomUUID().toString();
+        keyValueClient.putValue(key, value);
+
+        final CountDownLatch completed = new CountDownLatch(1);
+        final AtomicBoolean success = new AtomicBoolean(false);
+
+        keyValueClient.getValues(key, QueryOptions.BLANK, new ConsulResponseCallback<List<Value>>() {
+            @Override
+            public void onComplete(ConsulResponse<List<Value>> consulResponse) {
+                success.set(true);
+                completed.countDown();
+            }
+
+            @Override
+            public void onFailure(Throwable throwable) {
+                throwable.printStackTrace();
+                completed.countDown();
+            }
+        });
+        completed.await(3, TimeUnit.SECONDS);
+        keyValueClient.deleteKey(key);
+        assertTrue(success.get());
+    }
+
+    @Test
+    public void testGetValueNotFoundAsync() throws InterruptedException {
+        Consul client = Consul.newClient();
+        KeyValueClient keyValueClient = client.keyValueClient();
+        String key = UUID.randomUUID().toString();
+
+
+        final CountDownLatch completed = new CountDownLatch(1);
+        final AtomicBoolean success = new AtomicBoolean(false);
+
+        keyValueClient.getValue(key, QueryOptions.BLANK, new ConsulResponseCallback<Optional<Value>>() {
+
+            @Override
+            public void onComplete(ConsulResponse<Optional<Value>> consulResponse) {
+
+                success.set(!consulResponse.getResponse().isPresent());
+                completed.countDown();
+            }
+
+            @Override
+            public void onFailure(Throwable throwable) {
+                throwable.printStackTrace();
+                completed.countDown();
+            }
+        });
+
+        completed.await(3, TimeUnit.SECONDS);
+        keyValueClient.deleteKey(key);
+        assertTrue(success.get());
+
+    }
 }
