@@ -12,7 +12,7 @@ Installation
 
 ###Bintray:
 
-Grab the latest binary (0.9.7) [here](http://dl.bintray.com/orbitz/consul-client/com/orbitz/consul/consul-client/0.9.7/#consul-client-0.9.7.jar).
+Grab the latest binary (0.9.8) [here](http://dl.bintray.com/orbitz/consul-client/com/orbitz/consul/consul-client/0.9.8/#consul-client-0.9.8.jar).
 
 ###Gradle:
 
@@ -22,7 +22,7 @@ repositories {
 }
 
 dependencies {
-    compile 'com.orbitz.consul:consul-client:0.9.7'
+    compile 'com.orbitz.consul:consul-client:0.9.8'
     // include your preferred javax.ws.rs-api implementation, for example:
     compile 'org.apache.cxf:cxf-rt-rs-client:3.0.3'
     compile 'org.apache.cxf:cxf-rt-transports-http-hc:3.0.3'
@@ -36,7 +36,7 @@ dependencies {
     <dependency>
         <groupId>com.orbitz.consul</groupId>
         <artifactId>consul-client</artifactId>
-        <version>0.9.7</version>
+        <version>0.9.8</version>
     </dependency>
     <!-- include your preferred javax.ws.rs-api implementation -->
 </dependencies>
