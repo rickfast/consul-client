@@ -9,7 +9,6 @@ import org.junit.Test;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.UnknownHostException;
-import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -48,6 +47,7 @@ public class AgentTests {
         }
 
         assertTrue(found);
+        client.agentClient().deregister(serviceId);
     }
 
     @Test
@@ -69,6 +69,7 @@ public class AgentTests {
         }
 
         assertTrue(found);
+        client.agentClient().deregister(serviceId);
     }
 
     @Test
@@ -106,6 +107,7 @@ public class AgentTests {
         }
 
         assertTrue(found);
+        client.agentClient().deregister(id);
     }
 
     @Test
@@ -124,6 +126,7 @@ public class AgentTests {
         }
 
         assertTrue(found);
+        client.agentClient().deregister(id);
     }
 
     @Test
@@ -137,6 +140,7 @@ public class AgentTests {
         client.agentClient().warn(serviceId, note);
 
         verifyState("warning", client, serviceId, serviceName, note);
+        client.agentClient().deregister(serviceId);
     }
 
     @Test
@@ -150,6 +154,7 @@ public class AgentTests {
         client.agentClient().fail(serviceId, note);
 
         verifyState("critical", client, serviceId, serviceName, note);
+        client.agentClient().deregister(serviceId);
     }
 
     @Test
@@ -200,24 +205,18 @@ public class AgentTests {
 
 
     private void verifyState(String state, Consul client, String serviceId,
-                             String serviceName, String note) throws UnknownHostException {
-        List<ServiceHealth> nodes = client.healthClient().getAllServiceInstances(serviceName).getResponse();
-        boolean found = false;
+                             String serviceName, String output) throws UnknownHostException {
 
-        for (ServiceHealth health : nodes) {
-            if (health.getService().getId().equals(serviceId)) {
-                List<HealthCheck> checks = health.getChecks();
+        Map<String, HealthCheck> checks = client.agentClient().getChecks();
+        HealthCheck check = checks.get("service:" + serviceId);
 
-                found = true;
+        assertNotNull(check);
+        assertEquals(serviceId, check.getServiceId().get());
+        assertEquals(serviceName, check.getServiceName().get());
+        assertEquals(state, check.getStatus());
 
-                assertEquals(serviceId, health.getService().getId());
-                assertEquals(state, checks.get(0).getStatus());
-                if (note != null) {
-                    assertEquals(note, checks.get(0).getNotes().get());
-                }
-            }
+        if (output != null) {
+            assertEquals(output, check.getOutput().get());
         }
-
-        assertTrue(found);
     }
 }

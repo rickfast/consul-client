@@ -24,6 +24,9 @@ public abstract class Check {
     @JsonProperty("Notes")
     public abstract Optional<String> getNotes();
 
+    @JsonProperty("Output")
+    public abstract Optional<String> getOutput();
+
     @JsonProperty("Script")
     public abstract Optional<String> getScript();
 
