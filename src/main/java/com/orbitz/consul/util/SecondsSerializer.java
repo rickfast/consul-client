@@ -1,7 +1,6 @@
 package com.orbitz.consul.util;
 
 import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.SerializerProvider;
 
@@ -13,7 +12,7 @@ import java.io.IOException;
 public class SecondsSerializer extends JsonSerializer<Long> {
 
     @Override
-    public void serialize(Long value, JsonGenerator gen, SerializerProvider serializers) throws IOException, JsonProcessingException {
+    public void serialize(Long value, JsonGenerator gen, SerializerProvider serializers) throws IOException {
         gen.writeString(String.format("%ss", value));
     }
 }

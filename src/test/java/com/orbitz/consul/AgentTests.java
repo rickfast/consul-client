@@ -212,6 +212,9 @@ public class AgentTests {
 
                 assertEquals(serviceId, health.getService().getId());
                 assertEquals(state, checks.get(0).getStatus());
+                if (note != null) {
+                    assertEquals(note, checks.get(0).getNotes().get());
+                }
             }
         }
 

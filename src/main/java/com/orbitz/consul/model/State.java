@@ -8,8 +8,8 @@ public enum State {
     PASS("pass", "passing"), WARN("warn", "warning"), FAIL("fail", "critical"), ANY("any", "any"),
     UNKNOWN("unknown", "unknown");
 
-    private String path;
-    private String name;
+    private final String path;
+    private final String name;
 
     /**
      * @param path Consul API path value.

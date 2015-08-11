@@ -94,7 +94,6 @@ public class SessionClient {
     * @return if the session was renewed
     */
    public boolean renewSession(final String dc, final String sessionId) {
-      //Map<String, String> session = null;
       WebTarget target = webTarget;
 
       if (dc != null) {
@@ -112,7 +111,7 @@ public class SessionClient {
    /**
     * Destroy session.
     *
-    * PUT /v1/session/destroy/<sessionId>
+    * PUT /v1/session/destroy/{sessionId}
     *
     * @param sessionId
     *
@@ -125,7 +124,7 @@ public class SessionClient {
    /**
     * Destroy session.
     *
-    * PUT /v1/session/destroy/<sessionId>
+    * PUT /v1/session/destroy/{sessionId}
     *
     * @param sessionId
     * @param dc Data center
@@ -146,7 +145,7 @@ public class SessionClient {
    /**
     * Retrieves session info.
     *
-    * GET /v1/session/info/<sessionId>
+    * GET /v1/session/info/{sessionId}
     *
     * @param sessionId
     *
@@ -159,7 +158,7 @@ public class SessionClient {
    /**
     * Retrieves session info.
     *
-    * GET /v1/session/info/<sessionId>
+    * GET /v1/session/info/{sessionId}
     *
     * @param sessionId
     * @param dc Data center

@@ -31,6 +31,7 @@ public class KeyValueClient {
 
     private static final GenericType<List<Value>> TYPE_VALUE_LIST =
             new GenericType<List<Value>>() {};
+    private static final Entity<String> EMPTY_ENTITY = Entity.text("");
 
     private final WebTarget webTarget;
 
@@ -178,6 +179,16 @@ public class KeyValueClient {
     }
 
     /**
+     * Puts a null value into the key/value store.
+     *
+     * @param key The key to use as index.
+     * @return <code>true</code> if the value was successfully indexed.
+     */
+    public boolean putValue(String key) {
+        return putValue(key, null, 0L, PutOptions.BLANK);
+    }
+
+    /**
      * Puts a value into the key/value store.
      *
      * @param key The key to use as index.
@@ -217,8 +228,7 @@ public class KeyValueClient {
             target = target.queryParam("flags", UnsignedLongs.toString(flags));
         }
 
-        return target.request().put(Entity.entity(value,
-                MediaType.TEXT_PLAIN_TYPE), Boolean.class);
+        return target.request().put(value == null ? EMPTY_ENTITY : Entity.text(value), Boolean.class);
     }
 
     /**
@@ -242,7 +252,11 @@ public class KeyValueClient {
      * @param key The key to delete.
      */
     public void deleteKey(String key) {
-        delete(key, Collections.EMPTY_MAP);
+        Response response = webTarget.path(key).request().delete();
+
+        if(response.getStatus() != 200) {
+            throw new ConsulException(response.readEntity(String.class));
+        }
     }
 
     /**
@@ -253,17 +267,7 @@ public class KeyValueClient {
      * @param key The key to delete.
      */
     public void deleteKeys(String key) {
-        delete(key, Collections.singletonMap("recurse", "true"));
-    }
-
-    /**
-     * Deletes a specified key.
-     *
-     * @param key The key to delete.
-     * @param params Map of parameters, e.g. recurse.
-     */
-    private void delete(String key, Map<String, String> params) {
-        Response response = webTarget.path(key).request().delete();
+        Response response = webTarget.path(key).queryParam("recurse", "true").request().delete();
 
         if(response.getStatus() != 200) {
             throw new ConsulException(response.readEntity(String.class));
@@ -273,7 +277,7 @@ public class KeyValueClient {
     /**
      * Aquire a lock for a given key.
      *
-     * PUT /v1/kv/<key>?acquire=<session>
+     * PUT /v1/kv/{key}?acquire={session}
      *
      * @param key The key to acquire the lock.
      * @param session The session to acquire lock.
@@ -286,7 +290,7 @@ public class KeyValueClient {
     /**
      * Aquire a lock for a given key.
      *
-     * PUT /v1/kv/<key>?acquire=<session>
+     * PUT /v1/kv/{key}?acquire={session}
      *
      * @param key The key to acquire the lock.
      * @param session The session to acquire lock.
@@ -300,7 +304,7 @@ public class KeyValueClient {
     /**
      * Retrieves a session string for a specific key from the key/value store.
      *
-     * GET /v1/kv/<key>
+     * GET /v1/kv/{key}
      *
      * @param key The key to retrieve.
      * @return An {@link Optional} containing the value as a string or
@@ -315,7 +319,7 @@ public class KeyValueClient {
     /**
      * Releases the lock for a given service and session.
      *
-     * GET /v1/kv/<key>?release=<sessionId>
+     * GET /v1/kv/{key}?release={sessionId}
      *
      * @param key identifying the service.
      * @param sessionId
