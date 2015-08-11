@@ -62,6 +62,21 @@ public class KeyValueTests {
     }
 
     @Test
+    public void putNullValue() {
+
+        Consul client = Consul.newClient();
+        KeyValueClient keyValueClient = client.keyValueClient();
+        String key = UUID.randomUUID().toString();
+
+        assertTrue(keyValueClient.putValue(key));
+
+        Value received = keyValueClient.getValue(key).get();
+        assertFalse(received.getValue().isPresent());
+
+        keyValueClient.deleteKey(key);
+    }
+
+    @Test
     public void shouldPutAndReceiveStrings() throws UnknownHostException {
         Consul client = Consul.newClient();
         KeyValueClient keyValueClient = client.keyValueClient();
@@ -98,6 +113,29 @@ public class KeyValueTests {
         keyValueClient.deleteKey(key);
 
         assertFalse(keyValueClient.getValueAsString(key).isPresent());
+    }
+
+
+    @Test
+    public void shouldDeleteRecursively() throws Exception {
+
+        Consul client = Consul.newClient();
+        KeyValueClient keyValueClient = client.keyValueClient();
+        String key = UUID.randomUUID().toString();
+        String childKEY = key + "/" + UUID.randomUUID().toString();
+
+        final String value = UUID.randomUUID().toString();
+
+        keyValueClient.putValue(key);
+        keyValueClient.putValue(childKEY, value);
+
+        assertTrue(keyValueClient.getValueAsString(childKEY).isPresent());
+
+        keyValueClient.deleteKeys(key);
+
+        assertFalse(keyValueClient.getValueAsString(key).isPresent());
+        assertFalse(keyValueClient.getValueAsString(childKEY).isPresent());
+
     }
 
     @Test
