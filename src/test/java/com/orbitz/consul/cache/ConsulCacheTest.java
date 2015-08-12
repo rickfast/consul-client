@@ -1,6 +1,7 @@
 package com.orbitz.consul.cache;
 
 import com.google.common.collect.ImmutableMap;
+import com.google.common.net.HostAndPort;
 import com.orbitz.consul.Consul;
 import com.orbitz.consul.HealthClient;
 import com.orbitz.consul.KeyValueClient;
@@ -39,13 +40,14 @@ public class ConsulCacheTest {
         svHealth.start();
         svHealth.awaitInitialized(3, TimeUnit.SECONDS);
 
-        ServiceHealth health  = svHealth.getMap().get(agent.getConfig().getNodeName());
+        HostAndPort serviceKey = HostAndPort.fromParts(agent.getConfig().getAdvertiseAddr(), 8080);
+        ServiceHealth health  = svHealth.getMap().get(serviceKey);
         assertEquals(serviceId, health.getService().getId());
 
         client.agentClient().fail(serviceId);
         Thread.sleep(100);
 
-        health  = svHealth.getMap().get(agent.getConfig().getNodeName());
+        health  = svHealth.getMap().get(serviceKey);
         assertNull(health);
 
     }
@@ -61,7 +63,7 @@ public class ConsulCacheTest {
             kvClient.putValue(root + "/" + i, String.valueOf(i) );
         }
 
-        ConsulCache<Value> nc = KVCache.newCache(
+        KVCache nc = KVCache.newCache(
                 kvClient, root, 10
         );
         nc.start();
@@ -102,7 +104,7 @@ public class ConsulCacheTest {
         KeyValueClient kvClient = consul.keyValueClient();
         String root = UUID.randomUUID().toString();
 
-        ConsulCache<Value> nc = KVCache.newCache(
+        KVCache nc = KVCache.newCache(
                 kvClient, root, 10
         );
         nc.start();
@@ -113,7 +115,7 @@ public class ConsulCacheTest {
 
         final List<Map<String, Value>> events = new ArrayList<Map<String, Value>>();
 
-        nc.addListener(new ConsulCache.Listener<Value>() {
+        nc.addListener(new ConsulCache.Listener<String, Value>() {
             @Override
             public void notify(Map<String, Value> newValues) {
                 events.add(newValues);
