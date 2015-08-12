@@ -145,7 +145,7 @@ public class AgentClient {
                 .check(Optional.fromNullable(check))
                 .name(name)
                 .id(id)
-                .tags(Optional.fromNullable(tags))
+                .addTags(tags)
                 .build();
 
         register(registration);
