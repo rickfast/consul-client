@@ -41,13 +41,13 @@ public class ConsulCacheTest {
         svHealth.awaitInitialized(3, TimeUnit.SECONDS);
 
         HostAndPort serviceKey = HostAndPort.fromParts(agent.getConfig().getAdvertiseAddr(), 8080);
-        ServiceHealth health  = svHealth.getMap().get(serviceKey);
+        ServiceHealth health = svHealth.getMap().get(serviceKey);
         assertEquals(serviceId, health.getService().getId());
 
         client.agentClient().fail(serviceId);
         Thread.sleep(100);
 
-        health  = svHealth.getMap().get(serviceKey);
+        health = svHealth.getMap().get(serviceKey);
         assertNull(health);
 
     }
@@ -60,7 +60,7 @@ public class ConsulCacheTest {
         String root = UUID.randomUUID().toString();
 
         for (int i = 0; i < 5; i++) {
-            kvClient.putValue(root + "/" + i, String.valueOf(i) );
+            kvClient.putValue(root + "/" + i, String.valueOf(i));
         }
 
         KVCache nc = KVCache.newCache(
@@ -107,14 +107,8 @@ public class ConsulCacheTest {
         KVCache nc = KVCache.newCache(
                 kvClient, root, 10
         );
-        nc.start();
-
-        if (!nc.awaitInitialized(1, TimeUnit.SECONDS)) {
-            fail("cache initialization failed");
-        }
 
         final List<Map<String, Value>> events = new ArrayList<Map<String, Value>>();
-
         nc.addListener(new ConsulCache.Listener<String, Value>() {
             @Override
             public void notify(Map<String, Value> newValues) {
@@ -122,8 +116,14 @@ public class ConsulCacheTest {
             }
         });
 
+        nc.start();
+
+        if (!nc.awaitInitialized(1, TimeUnit.SECONDS)) {
+            fail("cache initialization failed");
+        }
+
         for (int i = 0; i < 5; i++) {
-            kvClient.putValue(root + "/" + i, String.valueOf(i) );
+            kvClient.putValue(root + "/" + i, String.valueOf(i));
             Thread.sleep(100);
         }
 
@@ -132,15 +132,55 @@ public class ConsulCacheTest {
         for (int i = 0; i < 5; i++) {
 
             Map<String, Value> map = events.get(i);
-            assertEquals(i +1, map.size());
+            assertEquals(i + 1, map.size());
             for (int j = 0; j < i; j++) {
                 String keyStr = "" + j;
                 String valStr = keyStr;
                 assertEquals(valStr, map.get(keyStr).getValueAsString().get());
             }
-
         }
         kvClient.deleteKeys(root);
 
+    }
+
+    @Test
+    public void testLateListenersGetValues() throws Exception {
+        Consul consul = Consul.newClient();
+        KeyValueClient kvClient = consul.keyValueClient();
+        String root = UUID.randomUUID().toString();
+
+        KVCache nc = KVCache.newCache(
+                kvClient, root, 10
+        );
+        nc.start();
+
+        if (!nc.awaitInitialized(1, TimeUnit.SECONDS)) {
+            fail("cache initialization failed");
+        }
+
+        final List<Map<String, Value>> events = new ArrayList<Map<String, Value>>();
+
+        for (int i = 0; i < 5; i++) {
+            kvClient.putValue(root + "/" + i, String.valueOf(i));
+            Thread.sleep(100);
+        }
+
+        nc.addListener(new ConsulCache.Listener<String, Value>() {
+            @Override
+            public void notify(Map<String, Value> newValues) {
+                events.add(newValues);
+            }
+        });
+
+        assertEquals(1, events.size());
+
+        Map<String, Value> map = events.get(0);
+        assertEquals(5, map.size());
+        for (int j = 0; j < 5; j++) {
+            String keyStr = "" + j;
+            String valStr = keyStr;
+            assertEquals(valStr, map.get(keyStr).getValueAsString().get());
+        }
+        kvClient.deleteKeys(root);
     }
 }

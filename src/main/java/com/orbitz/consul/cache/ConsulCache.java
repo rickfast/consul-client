@@ -30,7 +30,7 @@ public class ConsulCache<K, V> {
     private final static Logger LOGGER = LoggerFactory.getLogger(ConsulCache.class);
 
     private final AtomicReference<BigInteger> latestIndex = new AtomicReference<BigInteger>(null);
-    private final AtomicReference<ImmutableMap<K, V>> lastState = new AtomicReference<ImmutableMap<K, V>>(null);
+    private final AtomicReference<ImmutableMap<K, V>> lastState = new AtomicReference<ImmutableMap<K, V>>(ImmutableMap.<K, V>of());
     private final AtomicBoolean initialized = new AtomicBoolean(false);
     private final CountDownLatch initLatch = new CountDownLatch(1);
     private final ScheduledExecutorService executorService = Executors.newSingleThreadScheduledExecutor();
@@ -159,7 +159,11 @@ public class ConsulCache<K, V> {
     }
 
     public boolean addListener(Listener<K, V> listener) {
-        return listeners.add(listener);
+        boolean added = listeners.add(listener);
+        if (initialized.get()) {
+            listener.notify(lastState.get());
+        }
+        return added;
     }
 
     public boolean removeListener(Listener<K, V> listener) {
