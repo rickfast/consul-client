@@ -8,7 +8,7 @@ import com.orbitz.consul.model.kv.Value;
 import java.math.BigInteger;
 import java.util.List;
 
-public class KVCache extends ConsulCache<Value> {
+public class KVCache extends ConsulCache<String, Value> {
 
     private KVCache(Function<Value, String> keyConversion, ConsulCache.CallbackConsumer<Value> callbackConsumer) {
         super(keyConversion, callbackConsumer);
@@ -22,7 +22,7 @@ public class KVCache extends ConsulCache<Value> {
      * @param rootPath the root path
      * @return the cache object
      */
-    public static ConsulCache<Value> newCache(
+    public static KVCache newCache(
             final KeyValueClient kvClient,
             final String rootPath,
             final int watchSeconds) {

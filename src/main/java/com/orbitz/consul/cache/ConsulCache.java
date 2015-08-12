@@ -25,29 +25,29 @@ import java.util.concurrent.atomic.AtomicReference;
  *
  * @param <V>
  */
-public class ConsulCache<V> {
+public class ConsulCache<K, V> {
 
     private final static Logger LOGGER = LoggerFactory.getLogger(ConsulCache.class);
 
     private final AtomicReference<BigInteger> latestIndex = new AtomicReference<BigInteger>(null);
-    private final AtomicReference<ImmutableMap<String, V>> lastState = new AtomicReference<ImmutableMap<String, V>>(null);
+    private final AtomicReference<ImmutableMap<K, V>> lastState = new AtomicReference<ImmutableMap<K, V>>(null);
     private final AtomicBoolean initialized = new AtomicBoolean(false);
     private final CountDownLatch initLatch = new CountDownLatch(1);
     private final ScheduledExecutorService executorService = Executors.newSingleThreadScheduledExecutor();
-    private final CopyOnWriteArrayList<Listener<V>> listeners = new CopyOnWriteArrayList<Listener<V>>();
+    private final CopyOnWriteArrayList<Listener<K, V>> listeners = new CopyOnWriteArrayList<Listener<K, V>>();
 
-    private final Function<V, String> keyConversion;
+    private final Function<V, K> keyConversion;
     private final CallbackConsumer<V> callBackConsumer;
     private final ConsulResponseCallback<List<V>> responseCallback;
 
     ConsulCache(
-            Function<V, String> keyConversion,
+            Function<V, K> keyConversion,
             CallbackConsumer<V> callbackConsumer) {
         this(keyConversion, callbackConsumer, 10, TimeUnit.SECONDS);
     }
 
     ConsulCache(
-            Function<V, String> keyConversion,
+            Function<V, K> keyConversion,
             CallbackConsumer<V> callbackConsumer,
             final long backoffDelayQty,
             final TimeUnit backoffDelayUnit) {
@@ -60,7 +60,7 @@ public class ConsulCache<V> {
             public void onComplete(ConsulResponse<List<V>> consulResponse) {
 
                 updateIndex(consulResponse);
-                ImmutableMap<String, V> full = convertToMap(consulResponse);
+                ImmutableMap<K, V> full = convertToMap(consulResponse);
 
                 boolean changed = !full.equals(lastState.get());
                 if (changed) {
@@ -72,7 +72,7 @@ public class ConsulCache<V> {
                 }
 
                 if (changed) {
-                    for (Listener<V> l : listeners) {
+                    for (Listener<K, V> l : listeners) {
                         l.notify(full);
                     }
                 }
@@ -106,18 +106,18 @@ public class ConsulCache<V> {
         return initLatch.await(timeout, unit);
     }
 
-    public ImmutableMap<String, V> getMap() {
+    public ImmutableMap<K, V> getMap() {
         return lastState.get();
     }
 
-    private ImmutableMap<String, V> convertToMap(ConsulResponse<List<V>> response) {
+    private ImmutableMap<K, V> convertToMap(ConsulResponse<List<V>> response) {
         if (response == null || response.getResponse() == null || response.getResponse().isEmpty()) {
             return ImmutableMap.of();
         }
 
-        ImmutableMap.Builder<String, V> builder = ImmutableMap.builder();
+        ImmutableMap.Builder<K, V> builder = ImmutableMap.builder();
         for (V v : response.getResponse()) {
-            String key = keyConversion.apply(v);
+            K key = keyConversion.apply(v);
             if (key != null) {
                 builder.put(key, v);
             }
@@ -154,15 +154,15 @@ public class ConsulCache<V> {
      *
      * @param <V>
      */
-    public interface Listener<V> {
-        void notify(Map<String, V> newValues);
+    public interface Listener<K, V> {
+        void notify(Map<K, V> newValues);
     }
 
-    public boolean addListener(Listener<V> listener) {
+    public boolean addListener(Listener<K, V> listener) {
         return listeners.add(listener);
     }
 
-    public boolean removeListener(Listener<V> listener) {
+    public boolean removeListener(Listener<K, V> listener) {
         return listeners.remove(listener);
     }
 
