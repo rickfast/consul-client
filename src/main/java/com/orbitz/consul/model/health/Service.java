@@ -7,6 +7,8 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.base.Optional;
 import org.immutables.value.Value;
 
+import java.util.List;
+
 @Value.Immutable
 @JsonSerialize(as = ImmutableService.class)
 @JsonDeserialize(as = ImmutableService.class)
@@ -20,7 +22,7 @@ public abstract class Service {
     public abstract  String getService();
 
     @JsonProperty("Tags")
-    public abstract Optional<String[]> getTags();
+    public abstract List<String> getTags();
     
     @JsonProperty("Address")
     public abstract  String getAddress();

@@ -34,7 +34,7 @@ public abstract class Registration {
     public abstract Optional<RegCheck> getCheck();
 
     @JsonProperty("Tags")
-    public abstract Optional<String[]> getTags();
+    public abstract List<String> getTags();
 
 
     @Value.Immutable
