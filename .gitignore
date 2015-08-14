@@ -5,6 +5,7 @@ build
 .idea
 .gradle
 out
+generated
 
 src/gradlew
 src/gradlew.bat

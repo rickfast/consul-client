@@ -40,12 +40,25 @@ dependencies {
     </dependency>
     <!-- include your preferred javax.ws.rs-api implementation -->
 </dependencies>
+
+<repositories>
+    <repository>
+        <snapshots>
+            <enabled>false</enabled>
+        </snapshots>
+        <id>central</id>
+        <name>bintray</name>
+        <url>http://jcenter.bintray.com</url>
+    </repository>
+</repositories>
 ```
 
 Basic Usage
 -----------
 
-Example 1: Register and check your service in with Consul.  Note that you need to continually check in before the TTL expires, otherwise your service's state will be marked as "critical".
+### Example 1: Register and check your service in with Consul.  
+
+Note that you need to continually check in before the TTL expires, otherwise your service's state will be marked as "critical".
 
 ```java
 Consul consul = Consul.newClient(); // connect to Consul on localhost
@@ -58,7 +71,7 @@ agentClient.register(8080, 3L, serviceName, serviceId); // registers with a TTL 
 agentClient.pass(serviceId); // check in with Consul, serviceId required only.  client will prepend "service:" for service level checks.
 ```
 
-Example 2: Find available (healthy) services.
+### Example 2: Find available (healthy) services.
 
 ```java
 Consul consul = Consul.newClient(); // connect to Consul on localhost
@@ -67,7 +80,7 @@ HealthClient healthClient = consul.healthClient();
 List<ServiceHealth> nodes = healthClient.getHealthyServiceInstances("DataService").getResponse(); // discover only "passing" nodes
 ```
 
-Example 3: Store key/values.
+### Example 3: Store key/values.
 
 ```java
 Consul consul = Consul.newClient(); // connect to Consul on localhost
@@ -78,7 +91,7 @@ kvClient.putValue("foo", "bar");
 String value = kvClient.getValueAsString("foo").get(); // bar
 ```
 
-Example 4: Blocking call for value.
+### Example 4: Blocking call for value.
 
 ```java
 import static com.orbitz.consul.option.QueryOptionsBuilder.builder;
@@ -86,76 +99,59 @@ import static com.orbitz.consul.option.QueryOptionsBuilder.builder;
 Consul consul = Consul.newClient();
 KeyValueClient kvClient = consul.keyValueClient();
 
-    kvClient.putValue("foo", "bar");
+kvClient.putValue("foo", "bar");
 
-    ConsulResponseCallback<Optional<Value>> callback = new ConsulResponseCallback<Optional<Value>>() {
+ConsulResponseCallback<Optional<Value>> callback = new ConsulResponseCallback<Optional<Value>>() {
 
-        AtomicReference<BigInteger> index = new AtomicReference<>(null);
-
-        @Override
-        public void onComplete(ConsulResponse<Optional<Value>> consulResponse) {
-
-            if (consulResponse.getResponse().isPresent()) {
-                Value v = consulResponse.getResponse().get();
-                LOGGER.info("Value is: {}", new String(BaseEncoding.base64().decode(v.getValue())));
-            }
-            index.set(consulResponse.getIndex());
-            watch();
-        }
-
-        void watch() {
-            kvClient.getValue("foo", builder().blockMinutes(5, index.get()).build(), this);
-        }
-
-        @Override
-        public void onFailure(Throwable throwable) {
-            LOGGER.error("Error encountered", throwable);
-            watch();
-        }
-    };
-
-    kvClient.getValue("foo", QueryOptionsBuilder.builder().blockMinutes(5, new BigInteger("0")).build(), callback);
-        
-```
-
-Example 5: Blocking call for healthy services using callback.
-
-```java
-import static com.orbitz.consul.option.QueryOptionsBuilder.builder;
-
-Consul consul = Consul.newClient();
-final HealthClient healthClient = consul.healthClient();
-
-ConsulResponseCallback<List<ServiceHealth>> callback = new ConsulResponseCallback<List<ServiceHealth>>() {
-
-    BigInteger index;
+    AtomicReference<BigInteger> index = new AtomicReference<>(null);
 
     @Override
-    public void onComplete(ConsulResponse<List<ServiceHealth>> consulResponse) {
-        for(ServiceHealth health : consulResponse.getResponse()) {
-            String host = health.getNode().getAddress();
-            int port = health.getService().getPort();
+    public void onComplete(ConsulResponse<Optional<Value>> consulResponse) {
 
-            // do something with this service information
+        if (consulResponse.getResponse().isPresent()) {
+            Value v = consulResponse.getResponse().get();
+            LOGGER.info("Value is: {}", new String(BaseEncoding.base64().decode(v.getValue())));
         }
+        index.set(consulResponse.getIndex());
+        watch();
+    }
 
-        index = consulResponse.getIndex();
-
-        // blocking request with new index
-        healthClient.getHealthyServiceInstances("my-service", builder().blockMinutes(5, index).build(), this);
+    void watch() {
+        kvClient.getValue("foo", builder().blockMinutes(5, index.get()).build(), this);
     }
 
     @Override
     public void onFailure(Throwable throwable) {
-        throwable.printStackTrace();
-        healthClient.getHealthyServiceInstances("my-service", builder().blockMinutes(5, index).build(), this);
+        LOGGER.error("Error encountered", throwable);
+        watch();
     }
 };
 
-healthClient.getHealthyServiceInstances("my-service", builder().blockMinutes(1, 0).build(), callback);
+kvClient.getValue("foo", QueryOptionsBuilder.builder().blockMinutes(5, new BigInteger("0")).build(), callback);
+        
+```
+
+### Example 6: Subscribe to healthy services
+
+You can also use the ConsulCache implementations to easily subscribe to healthy service changes or Key-Value changes.
+
+```java
+
+Agent agent = client.agentClient().getAgent();
+String serviceName = "my-service";
+
+ServiceHealthCache svHealth = ServiceHealthCache.newCache(healthClient, serviceName);
+
+svHealth.addListener(new ConsulCache.Listener<HostAndPort, ServiceHealth>() {
+    @Override
+    public void notify(Map<HostAndPort, ServiceHealth> newValues) {
+        // do Something with updated server map
+    }
+});
+svHealth.start();
 ```         
 
-Example 6: Find Raft peers.
+### Example 7: Find Raft peers.
 
 ```java
 StatusClient statusClient = Consul.newClient().statusClient();
@@ -165,10 +161,29 @@ for(String peer : statusClient.getPeers()) {
 }
 ```
 
-Example 7: Find Raft leader.
+### Example 8: Find Raft leader.
 
 ```java
 StatusClient statusClient = Consul.newClient().statusClient();
 
 System.out.println(statusClient.getLeader()); // 127.0.0.1:8300
 ```
+
+Development Notes
+-----------
+
+`consul-client` makes use of [immutables](http://immutables.github.io/) to generate code for many of the value classes.
+This provides a lot of functionality and benefit for little code, but it does require some additional development setup.
+
+First off, follow the instructions for your IDE [here](http://immutables.github.io/apt.html), although you may want
+to change the target directories to the more gradle-like "generated/source/apt/main" and  "generated/source/apt/test" targets.
+
+### IntelliJ-specific notes
+
+One caveat found using IntelliJ is that you must mark your source directory as a "Generated sources root" 
+for IntelliJ to add the contents to your classpath. For example, if you setup your target directory as 
+"generated/source/apt/main", right-click on the 'main' subfolde and click "Mark Directory as -> Generated sources root". 
+
+Another issue is that upon changes to the build.gradle file or reimporting the gradle project, the "sources root" designation 
+may be cleared, and it will need to be re-marked.
+
