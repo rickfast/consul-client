@@ -5,6 +5,7 @@ import com.google.common.collect.ImmutableMap;
 import com.orbitz.consul.async.ConsulResponseCallback;
 import com.orbitz.consul.model.ConsulResponse;
 import com.orbitz.consul.option.QueryOptions;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -82,7 +83,7 @@ public class ConsulCache<K, V> {
             @Override
             public void onFailure(Throwable throwable) {
 
-                LOGGER.error("Error getting response from consul. will retry in {} {}", backoffDelayQty, backoffDelayUnit, throwable);
+                LOGGER.error(String.format("Error getting response from consul. will retry in %d %s", backoffDelayQty, backoffDelayUnit), throwable);
 
                 executorService.schedule(new Runnable() {
                     @Override
