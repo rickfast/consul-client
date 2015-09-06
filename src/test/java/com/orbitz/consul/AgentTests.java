@@ -1,6 +1,9 @@
 package com.orbitz.consul;
 
+import com.google.common.collect.ImmutableList;
 import com.orbitz.consul.model.agent.Agent;
+import com.orbitz.consul.model.agent.ImmutableRegistration;
+import com.orbitz.consul.model.agent.Registration;
 import com.orbitz.consul.model.health.HealthCheck;
 import com.orbitz.consul.model.health.Service;
 import com.orbitz.consul.model.health.ServiceHealth;
@@ -9,12 +12,15 @@ import org.junit.Test;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.UnknownHostException;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 public class AgentTests {
@@ -29,7 +35,7 @@ public class AgentTests {
     }
 
     @Test
-    public void shouldRegister() throws UnknownHostException, InterruptedException {
+    public void shouldRegisterTtlCheck() throws UnknownHostException, InterruptedException {
         Consul client = Consul.newClient();
         String serviceName = UUID.randomUUID().toString();
         String serviceId = UUID.randomUUID().toString();
@@ -43,6 +49,7 @@ public class AgentTests {
         for (ServiceHealth health : client.healthClient().getAllServiceInstances(serviceName).getResponse()) {
             if (health.getService().getId().equals(serviceId)) {
                 found = true;
+                assertThat(health.getChecks().size(), is(2));
             }
         }
 
@@ -65,6 +72,73 @@ public class AgentTests {
         for (ServiceHealth health : client.healthClient().getAllServiceInstances(serviceName).getResponse()) {
             if (health.getService().getId().equals(serviceId)) {
                 found = true;
+                assertThat(health.getChecks().size(), is(2));
+            }
+        }
+
+        assertTrue(found);
+        client.agentClient().deregister(serviceId);
+    }
+
+    @Test
+    public void shouldRegisterMultipleChecks() throws UnknownHostException, InterruptedException, MalformedURLException {
+        Consul client = Consul.newClient();
+        String serviceName = UUID.randomUUID().toString();
+        String serviceId = UUID.randomUUID().toString();
+
+        List<Registration.RegCheck> regChecks = ImmutableList.of(
+                Registration.RegCheck.script("/usr/bin/echo \"sup\"", 10),
+                Registration.RegCheck.http("http://localhost:8080/health", 10));
+
+        client.agentClient().register(8080, regChecks, serviceName, serviceId);
+
+        Thread.sleep(100);
+
+        boolean found = false;
+
+        for (ServiceHealth health : client.healthClient().getAllServiceInstances(serviceName).getResponse()) {
+            if (health.getService().getId().equals(serviceId)) {
+                found = true;
+                assertThat(health.getChecks().size(), is(3));
+            }
+        }
+
+        assertTrue(found);
+        client.agentClient().deregister(serviceId);
+    }
+
+    // This is apparently valid
+    // to register a single "Check"
+    // and multiple "Checks" in one call
+    @Test
+    public void shouldRegisterMultipleChecks2() throws UnknownHostException, InterruptedException, MalformedURLException {
+        Consul client = Consul.newClient();
+        String serviceName = UUID.randomUUID().toString();
+        String serviceId = UUID.randomUUID().toString();
+
+        Registration.RegCheck single= Registration.RegCheck.script("/usr/bin/echo \"sup\"", 10);
+
+        List<Registration.RegCheck> regChecks = ImmutableList.of(
+                Registration.RegCheck.http("http://localhost:8080/health", 10));
+
+        Registration reg = ImmutableRegistration.builder()
+                .check(single)
+                .checks(regChecks)
+                .address("localhost")
+                .port(8080)
+                .name(serviceName)
+                .id(serviceId)
+                .build();
+        client.agentClient().register(reg);
+
+        Thread.sleep(100);
+
+        boolean found = false;
+
+        for (ServiceHealth health : client.healthClient().getAllServiceInstances(serviceName).getResponse()) {
+            if (health.getService().getId().equals(serviceId)) {
+                found = true;
+                assertThat(health.getChecks().size(), is(3));
             }
         }
 
