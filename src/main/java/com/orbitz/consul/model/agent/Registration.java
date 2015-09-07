@@ -1,6 +1,7 @@
 package com.orbitz.consul.model.agent;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
@@ -16,6 +17,7 @@ import static com.google.common.base.Preconditions.checkState;
 @JsonSerialize(as = ImmutableRegistration.class)
 @JsonDeserialize(as = ImmutableRegistration.class)
 @JsonIgnoreProperties(ignoreUnknown = true)
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public abstract class Registration {
 
     @JsonProperty("Name")
@@ -33,13 +35,16 @@ public abstract class Registration {
     @JsonProperty("Check")
     public abstract Optional<RegCheck> getCheck();
 
+    @JsonProperty("Checks")
+    public abstract List<RegCheck> getChecks();
+
     @JsonProperty("Tags")
     public abstract List<String> getTags();
-
 
     @Value.Immutable
     @JsonSerialize(as = ImmutableRegCheck.class)
     @JsonDeserialize(as = ImmutableRegCheck.class)
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     public abstract static class RegCheck {
 
         @JsonProperty("Script")

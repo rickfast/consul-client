@@ -82,8 +82,7 @@ public class AgentClient {
     }
 
     /**
-     * Registers the client as a service with Consul.  Registration enables
-     * the use of checks.
+     * Registers the client as a service with Consul with a ttl check.
      *
      * @param port The public facing port of the service to register with Consul.
      * @param ttl  Time to live for the Consul dead man's switch.
@@ -97,8 +96,7 @@ public class AgentClient {
     }
 
     /**
-     * Registers the client as a service with Consul.  Registration enables
-     * the use of checks.
+     * Registers the client as a service with Consul with a script based check.
      *
      * @param port     The public facing port of the service to register with Consul.
      * @param script   Health script for Consul to use.
@@ -113,8 +111,7 @@ public class AgentClient {
     }
 
     /**
-     * Registers the client as a service with Consul.  Registration enables
-     * the use of checks.
+     * Registers the client as a service with Consul with an http based check
      *
      * @param port     The public facing port of the service to register with Consul.
      * @param http     Health check URL.
@@ -129,8 +126,7 @@ public class AgentClient {
     }
 
     /**
-     * Registers the client as a service with Consul.  Registration enables
-     * the use of checks.
+     * Registers the client as a service with Consul with an existing {@link com.orbitz.consul.model.agent.Registration.RegCheck}
      *
      * @param port  The public facing port of the service to register with Consul.
      * @param check The health check to run periodically.  Can be null.
@@ -143,6 +139,28 @@ public class AgentClient {
                 .builder()
                 .port(port)
                 .check(Optional.fromNullable(check))
+                .name(name)
+                .id(id)
+                .addTags(tags)
+                .build();
+
+        register(registration);
+    }
+
+    /**
+     * Registers the client as a service with Consul with multiple checks
+     *
+     * @param port  The public facing port of the service to register with Consul.
+     * @param checks The health checks to run periodically.
+     * @param name  Service name to register.
+     * @param id    Service id to register.
+     * @param tags  Tags to register with.
+     */
+    public void register(int port, List<Registration.RegCheck> checks, String name, String id, String... tags) {
+        Registration registration = ImmutableRegistration
+                .builder()
+                .port(port)
+                .checks(checks)
                 .name(name)
                 .id(id)
                 .addTags(tags)
