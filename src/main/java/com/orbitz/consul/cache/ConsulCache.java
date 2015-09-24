@@ -1,5 +1,6 @@
 package com.orbitz.consul.cache;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Function;
 import com.google.common.collect.ImmutableMap;
 import com.orbitz.consul.async.ConsulResponseCallback;
@@ -17,8 +18,9 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
+
+import static com.google.common.base.Preconditions.checkState;
 
 /**
  * A cache structure that can provide an up-to-date read-only
@@ -28,11 +30,13 @@ import java.util.concurrent.atomic.AtomicReference;
  */
 public class ConsulCache<K, V> {
 
+    enum State {latent, starting, started, stopped }
+
     private final static Logger LOGGER = LoggerFactory.getLogger(ConsulCache.class);
 
     private final AtomicReference<BigInteger> latestIndex = new AtomicReference<BigInteger>(null);
-    private final AtomicReference<ImmutableMap<K, V>> lastState = new AtomicReference<ImmutableMap<K, V>>(ImmutableMap.<K, V>of());
-    private final AtomicBoolean initialized = new AtomicBoolean(false);
+    private final AtomicReference<ImmutableMap<K, V>> lastResponse = new AtomicReference<ImmutableMap<K, V>>(ImmutableMap.<K, V>of());
+    private final AtomicReference<State> state = new AtomicReference<State>(State.latent);
     private final CountDownLatch initLatch = new CountDownLatch(1);
     private final ScheduledExecutorService executorService = Executors.newSingleThreadScheduledExecutor();
     private final CopyOnWriteArrayList<Listener<K, V>> listeners = new CopyOnWriteArrayList<Listener<K, V>>();
@@ -60,15 +64,18 @@ public class ConsulCache<K, V> {
             @Override
             public void onComplete(ConsulResponse<List<V>> consulResponse) {
 
+                if (!isRunning()) {
+                    return;
+                }
                 updateIndex(consulResponse);
                 ImmutableMap<K, V> full = convertToMap(consulResponse);
 
-                boolean changed = !full.equals(lastState.get());
+                boolean changed = !full.equals(lastResponse.get());
                 if (changed) {
                     // changes
-                    lastState.set(full);
+                    lastResponse.set(full);
                 }
-                if (initialized.compareAndSet(false, true)) {
+                if (state.compareAndSet(State.starting, State.started)) {
                     initLatch.countDown();
                 }
 
@@ -83,6 +90,9 @@ public class ConsulCache<K, V> {
             @Override
             public void onFailure(Throwable throwable) {
 
+                if (!isRunning()) {
+                    return;
+                }
                 LOGGER.error(String.format("Error getting response from consul. will retry in %d %s", backoffDelayQty, backoffDelayUnit), throwable);
 
                 executorService.schedule(new Runnable() {
@@ -96,11 +106,25 @@ public class ConsulCache<K, V> {
     }
 
     public void start() throws Exception {
+        checkState(state.compareAndSet(State.latent, State.starting),"Cannot transition from state %s to %s", state.get(), State.starting);
         runCallback();
     }
 
+    public void stop() throws Exception {
+        State previous = state.getAndSet(State.stopped);
+        if (previous != State.stopped) {
+            executorService.shutdownNow();
+        }
+    }
+
     private void runCallback() {
-        callBackConsumer.consume(latestIndex.get(), responseCallback);
+        if (isRunning()) {
+            callBackConsumer.consume(latestIndex.get(), responseCallback);
+        }
+    }
+
+    private boolean isRunning() {
+        return state.get() == State.started || state.get() == State.starting;
     }
 
     public boolean awaitInitialized(long timeout, TimeUnit unit) throws InterruptedException {
@@ -108,7 +132,7 @@ public class ConsulCache<K, V> {
     }
 
     public ImmutableMap<K, V> getMap() {
-        return lastState.get();
+        return lastResponse.get();
     }
 
     private ImmutableMap<K, V> convertToMap(ConsulResponse<List<V>> response) {
@@ -161,8 +185,8 @@ public class ConsulCache<K, V> {
 
     public boolean addListener(Listener<K, V> listener) {
         boolean added = listeners.add(listener);
-        if (initialized.get()) {
-            listener.notify(lastState.get());
+        if (state.get() == State.started) {
+            listener.notify(lastResponse.get());
         }
         return added;
     }
@@ -171,4 +195,8 @@ public class ConsulCache<K, V> {
         return listeners.remove(listener);
     }
 
+    @VisibleForTesting
+    protected State getState() {
+        return state.get();
+    }
 }

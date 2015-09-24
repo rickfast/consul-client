@@ -183,4 +183,74 @@ public class ConsulCacheTest {
         }
         kvClient.deleteKeys(root);
     }
+
+    @Test(expected = IllegalStateException.class)
+    public void testLifeCycleDoubleStart() throws Exception {
+        Consul consul = Consul.newClient();
+        KeyValueClient kvClient = consul.keyValueClient();
+        String root = UUID.randomUUID().toString();
+
+        KVCache nc = KVCache.newCache(
+                kvClient, root, 10
+        );
+
+        assertEquals(ConsulCache.State.latent, nc.getState());
+        nc.start();
+        assertEquals(ConsulCache.State.starting, nc.getState());
+
+        if (!nc.awaitInitialized(1, TimeUnit.SECONDS)) {
+            fail("cache initialization failed");
+        }
+        assertEquals(ConsulCache.State.started, nc.getState());
+        nc.start();
+
+    }
+
+    @Test
+    public void testLifeCycle() throws Exception {
+        Consul consul = Consul.newClient();
+        KeyValueClient kvClient = consul.keyValueClient();
+        String root = UUID.randomUUID().toString();
+
+        KVCache nc = KVCache.newCache(
+                kvClient, root, 10
+        );
+
+        final List<Map<String, Value>> events = new ArrayList<Map<String, Value>>();
+        nc.addListener(new ConsulCache.Listener<String, Value>() {
+            @Override
+            public void notify(Map<String, Value> newValues) {
+                events.add(newValues);
+            }
+        });
+
+        assertEquals(ConsulCache.State.latent, nc.getState());
+        nc.start();
+        assertEquals(ConsulCache.State.starting, nc.getState());
+
+        if (!nc.awaitInitialized(1, TimeUnit.SECONDS)) {
+            fail("cache initialization failed");
+        }
+        assertEquals(ConsulCache.State.started, nc.getState());
+
+
+        for (int i = 0; i < 5; i++) {
+            kvClient.putValue(root + "/" + i, String.valueOf(i));
+            Thread.sleep(100);
+        }
+        assertEquals(5, events.size());
+        nc.stop();
+        assertEquals(ConsulCache.State.stopped, nc.getState());
+
+        // now assert that we get no more update to the listener
+        for (int i = 0; i < 5; i++) {
+            kvClient.putValue(root + "/" + i + "-again", String.valueOf(i));
+            Thread.sleep(100);
+        }
+
+        assertEquals(5, events.size());
+
+        kvClient.deleteKeys(root);
+
+    }
 }
