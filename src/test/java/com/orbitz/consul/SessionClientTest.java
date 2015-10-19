@@ -41,6 +41,34 @@ public class SessionClientTest {
     }
 
     @Test
+    public void testCreateEmptySession() throws Exception {
+        Consul client = Consul.newClient();
+        SessionClient sessionClient = client.sessionClient();
+        SessionCreatedResponse session = sessionClient.createSession(ImmutableSession.builder().build());
+
+        assertNotNull(session);
+
+        sessionClient.destroySession(session.getId());
+    }
+
+    @Test(expected = ConsulException.class)
+    public void testRenewSession() throws Exception {
+        Consul client = Consul.newClient();
+        SessionClient sessionClient = client.sessionClient();
+        final Session value = ImmutableSession.builder().name("session_" + UUID.randomUUID().toString()).build();
+
+        SessionCreatedResponse session = sessionClient.createSession(value);
+
+        assertNotNull(session);
+
+        SessionInfo info = sessionClient.renewSession(session.getId()).get();
+
+        assertEquals(session.getId(), info.getId());
+
+        sessionClient.renewSession("doesn't exist!");
+    }
+
+    @Test
     public void testGetSessionInfo() throws Exception {
         Consul client = Consul.newClient();
         KeyValueClient keyValueClient = client.keyValueClient();

@@ -10,7 +10,7 @@ import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.GenericType;
 import javax.ws.rs.core.MediaType;
-import java.util.Arrays;
+import javax.ws.rs.core.Response;
 import java.util.List;
 
 import static com.orbitz.consul.util.ClientUtil.addParams;
@@ -38,18 +38,6 @@ public class SessionClient {
      */
     SessionClient(WebTarget webTarget) {
         this.webTarget = webTarget;
-    }
-
-    /**
-     * Retrieves the host/port of the Consul leader.
-     * 
-     * GET /v1/status/leader
-     *
-     * @return The host/port of the leader.
-     */
-    public String getLeader() {
-        return webTarget.path("leader").request().get(String.class)
-                .replace("\"", "").trim();
     }
 
     /**
@@ -104,8 +92,14 @@ public class SessionClient {
             target = webTarget.queryParam("dc", dc);
         }
 
-        List<SessionInfo> sessionInfo = target.path("renew").path(sessionId).request().put(Entity.entity("{}",
-                MediaType.APPLICATION_JSON_TYPE), SESSION_INFO_LIST_TYPE);
+        Response response = target.path("renew").path(sessionId).request().put(Entity.entity("{}",
+                MediaType.APPLICATION_JSON_TYPE));
+
+        if (response.getStatus() != Response.Status.OK.getStatusCode()) {
+            throw new ConsulException(response.readEntity(String.class));
+        }
+
+        List<SessionInfo> sessionInfo = response.readEntity(SESSION_INFO_LIST_TYPE);
 
         return sessionInfo != null && sessionInfo.isEmpty() ? Optional.<SessionInfo>absent() :
                 Optional.of(sessionInfo.get(0));
@@ -171,8 +165,9 @@ public class SessionClient {
 
         target = addParams(target.path("info").path(sessionId), QueryOptions.BLANK);
 
-        List<SessionInfo> sessionInfo = Arrays.asList(target
-                .request().accept(MediaType.APPLICATION_JSON_TYPE).get(SessionInfo[].class));
+        List<SessionInfo> sessionInfo = target
+                .request().accept(MediaType.APPLICATION_JSON_TYPE)
+                .get(SESSION_INFO_LIST_TYPE);
 
         return sessionInfo != null && sessionInfo.isEmpty() ? Optional.<SessionInfo>absent() :
                 Optional.of(sessionInfo.get(0));
