@@ -38,9 +38,7 @@ public abstract class SessionInfo {
     public abstract String getBehavior();
 
     @JsonProperty("TTL")
-    @JsonSerialize(using = SecondsSerializer.class)
-    @JsonDeserialize(using = SecondsDeserializer.class)
-    public abstract Optional<Long> getTtl();
+    public abstract Optional<String> getTtl();
 
     @JsonProperty("ID")
     public abstract String getId();

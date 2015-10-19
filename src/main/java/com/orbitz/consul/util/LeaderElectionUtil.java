@@ -4,6 +4,8 @@ import com.google.common.base.Optional;
 import com.orbitz.consul.Consul;
 import com.orbitz.consul.KeyValueClient;
 import com.orbitz.consul.model.kv.Value;
+import com.orbitz.consul.model.session.ImmutableSession;
+import com.orbitz.consul.model.session.Session;
 
 public class LeaderElectionUtil {
 
@@ -47,8 +49,8 @@ public class LeaderElectionUtil {
 
 
     private String createSession(String serviceName) {
-        final String value = "{\"Name\":\"" + serviceName + "\"}";
-        return client.sessionClient().createSession(value).get();
+        final Session session = ImmutableSession.builder().name(serviceName).build();
+        return client.sessionClient().createSession(session).getId();
     }
 
     private static String getServiceKey(String serviceName) {

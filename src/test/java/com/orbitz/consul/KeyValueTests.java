@@ -4,6 +4,8 @@ import com.google.common.base.Optional;
 import com.orbitz.consul.async.ConsulResponseCallback;
 import com.orbitz.consul.model.ConsulResponse;
 import com.orbitz.consul.model.kv.Value;
+import com.orbitz.consul.model.session.ImmutableSession;
+import com.orbitz.consul.model.session.SessionCreatedResponse;
 import com.orbitz.consul.option.QueryOptions;
 import org.junit.Test;
 
@@ -15,7 +17,9 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 public class KeyValueTests {
 
@@ -144,15 +148,16 @@ public class KeyValueTests {
         KeyValueClient keyValueClient = client.keyValueClient();
         SessionClient sessionClient = client.sessionClient();
         String key = UUID.randomUUID().toString();
+        String value = "session_" + UUID.randomUUID().toString();
+        SessionCreatedResponse response = sessionClient.createSession(ImmutableSession.builder().name(value).build());
 
-        final String value = "{\"Name\":\"myservice\"}";
-        String session = sessionClient.createSession(value).get();
+        String sessionId = response.getId();
 
-        assertTrue(keyValueClient.acquireLock(key, value, session));
-        assertFalse(keyValueClient.acquireLock(key, value, session));
+        assertTrue(keyValueClient.acquireLock(key, value, sessionId));
+        assertFalse(keyValueClient.acquireLock(key, value, sessionId));
 
         assertTrue("SessionId must be present.", keyValueClient.getValue(key).get().getSession().isPresent());
-        assertTrue(keyValueClient.releaseLock(key, session));
+        assertTrue(keyValueClient.releaseLock(key, sessionId));
         assertFalse("SessionId in the key value should be absent.", keyValueClient.getValue(key).get().getSession().isPresent());
         keyValueClient.deleteKey(key);
 
@@ -170,12 +175,14 @@ public class KeyValueTests {
 
         assertEquals(false, keyValueClient.getSession(key).isPresent());
 
-        final String sessionValue = "{\"Name\":\"myservice\"}";
-        String session = sessionClient.createSession(sessionValue).get();
+        String sessionValue = "session_" + UUID.randomUUID().toString();
+        SessionCreatedResponse response = sessionClient.createSession(ImmutableSession.builder().name(sessionValue).build());
 
-        assertTrue(keyValueClient.acquireLock(key, sessionValue, session));
-        assertFalse(keyValueClient.acquireLock(key, sessionValue, session));
-        assertEquals(session, keyValueClient.getSession(key).get());
+        String sessionId = response.getId();
+
+        assertTrue(keyValueClient.acquireLock(key, sessionValue, sessionId));
+        assertFalse(keyValueClient.acquireLock(key, sessionValue, sessionId));
+        assertEquals(sessionId, keyValueClient.getSession(key).get());
         keyValueClient.deleteKey(key);
 
     }
