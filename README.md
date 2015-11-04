@@ -61,7 +61,7 @@ Basic Usage
 Note that you need to continually check in before the TTL expires, otherwise your service's state will be marked as "critical".
 
 ```java
-Consul consul = Consul.newClient(); // connect to Consul on localhost
+Consul consul = Consul.builder.build(); // connect to Consul on localhost
 AgentClient agentClient = consul.agentClient();
 
 String serviceName = "MyService";
@@ -74,7 +74,7 @@ agentClient.pass(serviceId); // check in with Consul, serviceId required only.  
 ### Example 2: Find available (healthy) services.
 
 ```java
-Consul consul = Consul.newClient(); // connect to Consul on localhost
+Consul consul = Consul.builder.build(); // connect to Consul on localhost
 HealthClient healthClient = consul.healthClient();
 
 List<ServiceHealth> nodes = healthClient.getHealthyServiceInstances("DataService").getResponse(); // discover only "passing" nodes
@@ -83,7 +83,7 @@ List<ServiceHealth> nodes = healthClient.getHealthyServiceInstances("DataService
 ### Example 3: Store key/values.
 
 ```java
-Consul consul = Consul.newClient(); // connect to Consul on localhost
+Consul consul = Consul.builder.build(); // connect to Consul on localhost
 KeyValueClient kvClient = consul.keyValueClient();
 
 kvClient.putValue("foo", "bar");
@@ -96,7 +96,7 @@ String value = kvClient.getValueAsString("foo").get(); // bar
 ```java
 import static com.orbitz.consul.option.QueryOptionsBuilder.builder;
 
-Consul consul = Consul.newClient();
+Consul consul = Consul.builder.build();
 KeyValueClient kvClient = consul.keyValueClient();
 
 kvClient.putValue("foo", "bar");
@@ -154,7 +154,7 @@ svHealth.start();
 ### Example 7: Find Raft peers.
 
 ```java
-StatusClient statusClient = Consul.newClient().statusClient();
+StatusClient statusClient = Consul.builder.build().statusClient();
 
 for(String peer : statusClient.getPeers()) {
 	System.out.println(peer); // 127.0.0.1:8300
@@ -164,7 +164,7 @@ for(String peer : statusClient.getPeers()) {
 ### Example 8: Find Raft leader.
 
 ```java
-StatusClient statusClient = Consul.newClient().statusClient();
+StatusClient statusClient = Consul.builder.build().statusClient();
 
 System.out.println(statusClient.getLeader()); // 127.0.0.1:8300
 ```
