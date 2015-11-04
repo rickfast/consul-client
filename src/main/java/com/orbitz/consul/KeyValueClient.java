@@ -329,13 +329,4 @@ public class KeyValueClient {
     public boolean releaseLock(final String key, final String sessionId) {
         return putValue(key, "", 0, ImmutablePutOptions.builder().release(sessionId).build());
     }
-
-    public static void main(String... args) {
-        SSLContext context = SSLContext.getInstance("TLSv1");
-        TrustManager[] trustManagerArray = {
-                NullX509TrustManager.INSTANCE
-        };
-        context.init(null, trustManagerArray, null);
-        Consul.builder().withUrl("https://your-secure-host:8500").withSslContext(sslContext).build();
-    }
 }
