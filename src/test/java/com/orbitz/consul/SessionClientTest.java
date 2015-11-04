@@ -29,7 +29,7 @@ public class SessionClientTest {
 
     @Test
     public void testCreateAndDestroySession() throws Exception {
-        Consul client = Consul.newClient();
+        Consul client = Consul.builder().build();
         SessionClient sessionClient = client.sessionClient();
         final Session value = ImmutableSession.builder().name("session_" + UUID.randomUUID().toString()).build();
 
@@ -42,7 +42,7 @@ public class SessionClientTest {
 
     @Test
     public void testCreateEmptySession() throws Exception {
-        Consul client = Consul.newClient();
+        Consul client = Consul.builder().build();
         SessionClient sessionClient = client.sessionClient();
         SessionCreatedResponse session = sessionClient.createSession(ImmutableSession.builder().build());
 
@@ -53,7 +53,7 @@ public class SessionClientTest {
 
     @Test(expected = ConsulException.class)
     public void testRenewSession() throws Exception {
-        Consul client = Consul.newClient();
+        Consul client = Consul.builder().build();
         SessionClient sessionClient = client.sessionClient();
         final Session value = ImmutableSession.builder().name("session_" + UUID.randomUUID().toString()).build();
 
@@ -70,7 +70,7 @@ public class SessionClientTest {
 
     @Test
     public void testGetSessionInfo() throws Exception {
-        Consul client = Consul.newClient();
+        Consul client = Consul.builder().build();
         KeyValueClient keyValueClient = client.keyValueClient();
         SessionClient sessionClient = client.sessionClient();
         String key = UUID.randomUUID().toString();
@@ -89,7 +89,7 @@ public class SessionClientTest {
 
     @Test
     public void testListSessions() throws Exception {
-        Consul client = Consul.newClient();
+        Consul client = Consul.builder().build();
         KeyValueClient keyValueClient = client.keyValueClient();
         SessionClient sessionClient = client.sessionClient();
         String key = UUID.randomUUID().toString();

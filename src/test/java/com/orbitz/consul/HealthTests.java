@@ -21,7 +21,7 @@ import static org.junit.Assert.assertTrue;
 public class HealthTests {
     @Test
     public void shouldFetchPassingNode() throws UnknownHostException, NotRegisteredException {
-        Consul client = Consul.newClient();
+        Consul client = Consul.builder().build();
         String serviceName = UUID.randomUUID().toString();
         String serviceId = UUID.randomUUID().toString();
 
@@ -44,7 +44,7 @@ public class HealthTests {
 
     @Test
     public void shouldFetchNode() throws UnknownHostException, NotRegisteredException {
-        Consul client = Consul.newClient();
+        Consul client = Consul.builder().build();
         String serviceName = UUID.randomUUID().toString();
         String serviceId = UUID.randomUUID().toString();
 
@@ -59,7 +59,7 @@ public class HealthTests {
 
     @Test
     public void shouldFetchNodeDatacenter() throws UnknownHostException, NotRegisteredException {
-        Consul client = Consul.newClient();
+        Consul client = Consul.builder().build();
         String serviceName = UUID.randomUUID().toString();
         String serviceId = UUID.randomUUID().toString();
 
@@ -75,7 +75,7 @@ public class HealthTests {
 
     @Test
     public void shouldFetchNodeBlock() throws UnknownHostException, NotRegisteredException {
-        Consul client = Consul.newClient();
+        Consul client = Consul.builder().build();
         String serviceName = UUID.randomUUID().toString();
         String serviceId = UUID.randomUUID().toString();
 
@@ -92,7 +92,7 @@ public class HealthTests {
 
     @Test
     public void shouldFetchChecksForServiceBlock() throws UnknownHostException, NotRegisteredException {
-        Consul client = Consul.newClient();
+        Consul client = Consul.builder().build();
         String serviceName = UUID.randomUUID().toString();
         String serviceId = UUID.randomUUID().toString();
 
@@ -126,7 +126,7 @@ public class HealthTests {
 
     @Test
     public void shouldFetchByState() throws UnknownHostException, NotRegisteredException {
-        Consul client = Consul.newClient();
+        Consul client = Consul.builder().build();
         String serviceName = UUID.randomUUID().toString();
         String serviceId = UUID.randomUUID().toString();
 

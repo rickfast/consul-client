@@ -25,7 +25,7 @@ public class KeyValueTests {
 
     @Test
     public void shouldPutAndReceiveString() throws UnknownHostException {
-        Consul client = Consul.newClient();
+        Consul client = Consul.builder().build();
         KeyValueClient keyValueClient = client.keyValueClient();
         String key = UUID.randomUUID().toString();
         String value = UUID.randomUUID().toString();
@@ -36,7 +36,7 @@ public class KeyValueTests {
 
     @Test
     public void shouldPutAndReceiveValue() throws UnknownHostException {
-        Consul client = Consul.newClient();
+        Consul client = Consul.builder().build();
         KeyValueClient keyValueClient = client.keyValueClient();
         String key = UUID.randomUUID().toString();
         String value = UUID.randomUUID().toString();
@@ -51,7 +51,7 @@ public class KeyValueTests {
 
     @Test
     public void shouldPutAndReceiveWithFlags() throws UnknownHostException {
-        Consul client = Consul.newClient();
+        Consul client = Consul.builder().build();
         KeyValueClient keyValueClient = client.keyValueClient();
         String key = UUID.randomUUID().toString();
         String value = UUID.randomUUID().toString();
@@ -68,7 +68,7 @@ public class KeyValueTests {
     @Test
     public void putNullValue() {
 
-        Consul client = Consul.newClient();
+        Consul client = Consul.builder().build();
         KeyValueClient keyValueClient = client.keyValueClient();
         String key = UUID.randomUUID().toString();
 
@@ -82,7 +82,7 @@ public class KeyValueTests {
 
     @Test
     public void shouldPutAndReceiveStrings() throws UnknownHostException {
-        Consul client = Consul.newClient();
+        Consul client = Consul.builder().build();
         KeyValueClient keyValueClient = client.keyValueClient();
         String key = UUID.randomUUID().toString();
         String key2 = key + "/" + UUID.randomUUID().toString();
@@ -105,7 +105,7 @@ public class KeyValueTests {
 
     @Test
     public void shouldDelete() throws Exception {
-        Consul client = Consul.newClient();
+        Consul client = Consul.builder().build();
         KeyValueClient keyValueClient = client.keyValueClient();
         String key = UUID.randomUUID().toString();
         final String value = UUID.randomUUID().toString();
@@ -123,7 +123,7 @@ public class KeyValueTests {
     @Test
     public void shouldDeleteRecursively() throws Exception {
 
-        Consul client = Consul.newClient();
+        Consul client = Consul.builder().build();
         KeyValueClient keyValueClient = client.keyValueClient();
         String key = UUID.randomUUID().toString();
         String childKEY = key + "/" + UUID.randomUUID().toString();
@@ -144,7 +144,7 @@ public class KeyValueTests {
 
     @Test
     public void acquireAndReleaseLock() throws Exception {
-        Consul client = Consul.newClient();
+        Consul client = Consul.builder().build();
         KeyValueClient keyValueClient = client.keyValueClient();
         SessionClient sessionClient = client.sessionClient();
         String key = UUID.randomUUID().toString();
@@ -165,7 +165,7 @@ public class KeyValueTests {
 
     @Test
     public void testGetSession() throws Exception {
-        Consul client = Consul.newClient();
+        Consul client = Consul.builder().build();
         KeyValueClient keyValueClient = client.keyValueClient();
         SessionClient sessionClient = client.sessionClient();
 
@@ -189,7 +189,7 @@ public class KeyValueTests {
 
     @Test
     public void testGetValuesAsync() throws InterruptedException {
-        Consul client = Consul.newClient();
+        Consul client = Consul.builder().build();
         KeyValueClient keyValueClient = client.keyValueClient();
         String key = UUID.randomUUID().toString();
         String value = UUID.randomUUID().toString();
@@ -218,7 +218,7 @@ public class KeyValueTests {
 
     @Test
     public void testGetValueNotFoundAsync() throws InterruptedException {
-        Consul client = Consul.newClient();
+        Consul client = Consul.builder().build();
         KeyValueClient keyValueClient = client.keyValueClient();
         String key = UUID.randomUUID().toString();
 

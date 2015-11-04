@@ -11,7 +11,7 @@ public class EventTests {
 
     @Test
     public void shouldFire() throws InterruptedException {
-        Consul client = Consul.newClient();
+        Consul client = Consul.builder().build();
         EventClient eventClient = client.eventClient();
 
         String name = RandomStringUtils.random(10);
@@ -32,7 +32,7 @@ public class EventTests {
 
     @Test
     public void shouldFireWithPayload() throws InterruptedException {
-        Consul client = Consul.newClient();
+        Consul client = Consul.builder().build();
         EventClient eventClient = client.eventClient();
 
         String payload = RandomStringUtils.random(20);

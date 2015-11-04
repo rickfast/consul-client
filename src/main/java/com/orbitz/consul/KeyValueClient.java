@@ -219,7 +219,7 @@ public class KeyValueClient {
      * @param putOptions PUT options (e.g. wait, acquire).
      * @return <code>true</code> if the value was successfully indexed.
      */
-    private boolean putValue(String key, String value, long flags, PutOptions putOptions) {
+    public boolean putValue(String key, String value, long flags, PutOptions putOptions) {
 
         checkArgument(StringUtils.isNotEmpty(key), "Key must be defined");
         WebTarget target = putOptions.apply(webTarget).path(key);

@@ -27,7 +27,7 @@ public class AgentTests {
 
     @Test
     public void shouldRetrieveAgentInformation() throws UnknownHostException {
-        Consul client = Consul.newClient();
+        Consul client = Consul.builder().build();
         Agent agent = client.agentClient().getAgent();
 
         assertNotNull(agent);
@@ -36,7 +36,7 @@ public class AgentTests {
 
     @Test
     public void shouldRegisterTtlCheck() throws UnknownHostException, InterruptedException {
-        Consul client = Consul.newClient();
+        Consul client = Consul.builder().build();
         String serviceName = UUID.randomUUID().toString();
         String serviceId = UUID.randomUUID().toString();
 
@@ -59,7 +59,7 @@ public class AgentTests {
 
     @Test
     public void shouldRegisterHttpCheck() throws UnknownHostException, InterruptedException, MalformedURLException {
-        Consul client = Consul.newClient();
+        Consul client = Consul.builder().build();
         String serviceName = UUID.randomUUID().toString();
         String serviceId = UUID.randomUUID().toString();
 
@@ -82,7 +82,7 @@ public class AgentTests {
 
     @Test
     public void shouldRegisterMultipleChecks() throws UnknownHostException, InterruptedException, MalformedURLException {
-        Consul client = Consul.newClient();
+        Consul client = Consul.builder().build();
         String serviceName = UUID.randomUUID().toString();
         String serviceId = UUID.randomUUID().toString();
 
@@ -112,7 +112,7 @@ public class AgentTests {
     // and multiple "Checks" in one call
     @Test
     public void shouldRegisterMultipleChecks2() throws UnknownHostException, InterruptedException, MalformedURLException {
-        Consul client = Consul.newClient();
+        Consul client = Consul.builder().build();
         String serviceName = UUID.randomUUID().toString();
         String serviceId = UUID.randomUUID().toString();
 
@@ -148,7 +148,7 @@ public class AgentTests {
 
     @Test
     public void shouldDeregister() throws UnknownHostException, InterruptedException {
-        Consul client = Consul.newClient();
+        Consul client = Consul.builder().build();
         String serviceName = UUID.randomUUID().toString();
         String serviceId = UUID.randomUUID().toString();
 
@@ -168,7 +168,7 @@ public class AgentTests {
 
     @Test
     public void shouldGetChecks() {
-        Consul client = Consul.newClient();
+        Consul client = Consul.builder().build();
         String id = UUID.randomUUID().toString();
         client.agentClient().register(8080, 20L, UUID.randomUUID().toString(), id);
 
@@ -186,7 +186,7 @@ public class AgentTests {
 
     @Test
     public void shouldGetServices() {
-        Consul client = Consul.newClient();
+        Consul client = Consul.builder().build();
         String id = UUID.randomUUID().toString();
         client.agentClient().register(8080, 20L, UUID.randomUUID().toString(), id);
 
@@ -205,7 +205,7 @@ public class AgentTests {
 
     @Test
     public void shouldSetWarning() throws UnknownHostException, NotRegisteredException {
-        Consul client = Consul.newClient();
+        Consul client = Consul.builder().build();
         String serviceName = UUID.randomUUID().toString();
         String serviceId = UUID.randomUUID().toString();
         String note = UUID.randomUUID().toString();
@@ -219,7 +219,7 @@ public class AgentTests {
 
     @Test
     public void shouldSetFailing() throws UnknownHostException, NotRegisteredException {
-        Consul client = Consul.newClient();
+        Consul client = Consul.builder().build();
         String serviceName = UUID.randomUUID().toString();
         String serviceId = UUID.randomUUID().toString();
         String note = UUID.randomUUID().toString();
@@ -233,7 +233,7 @@ public class AgentTests {
 
     @Test
     public void shouldRegisterNodeScriptCheck() throws InterruptedException {
-        Consul client = Consul.newClient();
+        Consul client = Consul.builder().build();
         String checkId = UUID.randomUUID().toString();
 
         client.agentClient().registerCheck(checkId, "test-validate", "/usr/bin/echo \"sup\"", 30);
@@ -249,7 +249,7 @@ public class AgentTests {
 
     @Test
     public void shouldRegisterNodeHttpCheck() throws InterruptedException, MalformedURLException {
-        Consul client = Consul.newClient();
+        Consul client = Consul.builder().build();
         String checkId = UUID.randomUUID().toString();
 
         client.agentClient().registerCheck(checkId, "test-validate", new URL("http://foo.local:1337/check"), 30);
@@ -264,7 +264,7 @@ public class AgentTests {
 
     @Test
     public void shouldRegisterNodeTtlCheck() throws InterruptedException, MalformedURLException {
-        Consul client = Consul.newClient();
+        Consul client = Consul.builder().build();
         String checkId = UUID.randomUUID().toString();
 
         client.agentClient().registerCheck(checkId, "test-validate", 30);
