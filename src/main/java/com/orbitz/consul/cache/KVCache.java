@@ -30,7 +30,7 @@ public class KVCache extends ConsulCache<String, Value> {
         final Function<Value, String> keyExtractor = new Function<Value, String>() {
             @Override
             public String apply(Value input) {
-                return input.getKey().substring(rootPath.length() + 1);
+                return input.getKey().substring(rootPath.length() - 1);
             }
         };
 
