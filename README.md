@@ -94,40 +94,38 @@ String value = kvClient.getValueAsString("foo").get(); // bar
 ### Example 4: Blocking call for value.
 
 ```java
-import static com.orbitz.consul.option.QueryOptionsBuilder.builder;
+        Consul consul = Consul.builder().build();
+        final KeyValueClient kvClient = consul.keyValueClient();
 
-Consul consul = Consul.builder().build();
-KeyValueClient kvClient = consul.keyValueClient();
+        kvClient.putValue("foo", "bar");
 
-kvClient.putValue("foo", "bar");
+        ConsulResponseCallback<Optional<Value>> callback = new ConsulResponseCallback<Optional<Value>>() {
 
-ConsulResponseCallback<Optional<Value>> callback = new ConsulResponseCallback<Optional<Value>>() {
+            AtomicReference<BigInteger> index = new AtomicReference<BigInteger>(null);
 
-    AtomicReference<BigInteger> index = new AtomicReference<>(null);
+            @Override
+            public void onComplete(ConsulResponse<Optional<Value>> consulResponse) {
 
-    @Override
-    public void onComplete(ConsulResponse<Optional<Value>> consulResponse) {
+                if (consulResponse.getResponse().isPresent()) {
+                    Value v = consulResponse.getResponse().get();
+                    LOGGER.info("Value is: {}", new String(BaseEncoding.base64().decode(v.getValue().toString())));
+                }
+                index.set(consulResponse.getIndex());
+                watch();
+            }
 
-        if (consulResponse.getResponse().isPresent()) {
-            Value v = consulResponse.getResponse().get();
-            LOGGER.info("Value is: {}", new String(BaseEncoding.base64().decode(v.getValue())));
-        }
-        index.set(consulResponse.getIndex());
-        watch();
-    }
+            void watch() {
+                kvClient.getValue("foo", QueryOptions.blockMinutes(5, index.get()).build(), this);
+            }
 
-    void watch() {
-        kvClient.getValue("foo", builder().blockMinutes(5, index.get()).build(), this);
-    }
+            @Override
+            public void onFailure(Throwable throwable) {
+                LOGGER.error("Error encountered", throwable);
+                watch();
+            }
+        };
 
-    @Override
-    public void onFailure(Throwable throwable) {
-        LOGGER.error("Error encountered", throwable);
-        watch();
-    }
-};
-
-kvClient.getValue("foo", QueryOptionsBuilder.builder().blockMinutes(5, new BigInteger("0")).build(), callback);
+        kvClient.getValue("foo", QueryOptions.blockMinutes(5, new BigInteger("0")).build(), callback);
         
 ```
 
