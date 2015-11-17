@@ -48,7 +48,7 @@ public abstract class QueryOptions implements ParamAdder {
     }
 
     public static ImmutableQueryOptions.Builder blockMinutes(int minutes, BigInteger index) {
-        return blockBuilder("n", minutes, index);
+        return blockBuilder("m", minutes, index);
     }
 
     private static ImmutableQueryOptions.Builder blockBuilder(String identifier, int qty, BigInteger index) {
