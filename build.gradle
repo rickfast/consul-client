@@ -4,7 +4,7 @@ apply plugin: 'maven'
 apply plugin: 'signing'
 apply from: 'gradle/maven.gradle'
 
-version = '0.9.12'
+version = '0.9.13'
 group = 'com.orbitz.consul'
 
 repositories {
