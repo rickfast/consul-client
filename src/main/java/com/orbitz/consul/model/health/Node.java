@@ -13,9 +13,8 @@ import org.immutables.value.Value;
 public abstract class Node {
 
     @JsonProperty("Node")
-    public abstract  String getNode();
+    public abstract String getNode();
 
     @JsonProperty("Address")
     public abstract String getAddress();
-
 }

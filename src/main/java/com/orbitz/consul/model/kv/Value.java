@@ -22,14 +22,14 @@ public abstract class Value {
     public abstract long getModifyIndex();
 
     @JsonProperty("LockIndex")
-    public abstract  long getLockIndex();
+    public abstract long getLockIndex();
 
     @JsonProperty("Key")
-    public abstract  String getKey();
+    public abstract String getKey();
 
     @JsonProperty("Flags")
-    @JsonDeserialize(using=UnsignedLongDeserializer.class)
-    public abstract  long getFlags();
+    @JsonDeserialize(using = UnsignedLongDeserializer.class)
+    public abstract long getFlags();
 
     @JsonProperty("Value")
     public abstract Optional<String> getValue();

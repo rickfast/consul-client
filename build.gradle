@@ -21,12 +21,12 @@ buildscript {
 }
 
 dependencies {
-    compile 'com.fasterxml.jackson.core:jackson-core:2.5.3'
-    compile 'com.fasterxml.jackson.core:jackson-databind:2.5.3'
-    compile 'com.fasterxml.jackson.core:jackson-annotations:2.5.3'
-    compile 'com.fasterxml.jackson.jaxrs:jackson-jaxrs-json-provider:2.5.3'
-    compile 'com.fasterxml.jackson.datatype:jackson-datatype-guava:2.5.3'
-    compile 'com.fasterxml.jackson.jaxrs:jackson-jaxrs-base:2.5.3'
+    compile 'com.fasterxml.jackson.core:jackson-core:2.6.3'
+    compile 'com.fasterxml.jackson.core:jackson-databind:2.6.3'
+    compile 'com.fasterxml.jackson.core:jackson-annotations:2.6.3'
+    compile 'com.fasterxml.jackson.jaxrs:jackson-jaxrs-json-provider:2.6.3'
+    compile 'com.fasterxml.jackson.datatype:jackson-datatype-guava:2.6.3'
+    compile 'com.fasterxml.jackson.jaxrs:jackson-jaxrs-base:2.6.3'
     compile 'com.google.guava:guava:18.0'
     compile 'org.apache.commons:commons-lang3:3.0'
     compile 'org.immutables:value:2.0.16'

@@ -26,13 +26,13 @@ public abstract class SessionInfo {
     public abstract Long getLockDelay();
 
     @JsonProperty("Name")
-    public abstract  Optional<String> getName();
+    public abstract Optional<String> getName();
 
     @JsonProperty("Node")
-    public abstract  String getNode();
+    public abstract String getNode();
 
     @JsonProperty("Checks")
-    public abstract  List<String> getChecks();
+    public abstract List<String> getChecks();
 
     @JsonProperty("Behavior")
     public abstract String getBehavior();

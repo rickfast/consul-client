@@ -4,9 +4,9 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.google.common.collect.ImmutableList;
 import org.immutables.value.Value;
 
-import java.util.ArrayList;
 import java.util.List;
 @Value.Immutable
 @JsonSerialize(as = ImmutableServiceHealth.class)
@@ -21,7 +21,7 @@ public abstract class ServiceHealth {
     public abstract Service getService();
 
     @JsonProperty("Checks")
-    @JsonDeserialize(as = ArrayList.class, contentAs = HealthCheck.class)
+    @JsonDeserialize(as = ImmutableList.class, contentAs = HealthCheck.class)
     public abstract List<HealthCheck> getChecks();
     
 }
