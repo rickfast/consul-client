@@ -20,6 +20,7 @@ public abstract class QueryOptions implements ParamAdder {
     public abstract Optional<String> getWait();
     public abstract Optional<String> getToken();
     public abstract Optional<BigInteger> getIndex();
+    public abstract Optional<String> getNear();
 
     @Value.Default
     public ConsistencyMode getConsistencyMode() {
@@ -63,10 +64,10 @@ public abstract class QueryOptions implements ParamAdder {
         WebTarget added = input;
         switch (getConsistencyMode()) {
             case CONSISTENT:
-                added = added.queryParam("consistent");
+                added = added.queryParam("consistent", "");
                 break;
             case STALE:
-                added = added.queryParam("stale");
+                added = added.queryParam("stale", "");
                 break;
         }
 
@@ -76,6 +77,8 @@ public abstract class QueryOptions implements ParamAdder {
         }
 
         added = optionallyAdd(added, "token", getToken());
+        added = optionallyAdd(added, "near", getToken());
+
         return added;
     }
 }
