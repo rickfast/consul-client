@@ -252,10 +252,20 @@ public class KeyValueClient {
      * @param key The key to delete.
      */
     public void deleteKey(String key) {
-        Response response = webTarget.path(key).request().delete();
+        Response response = null;
 
-        if(response.getStatus() != 200) {
-            throw new ConsulException(response.readEntity(String.class));
+        try {
+            response = webTarget.path(key).request().delete();
+
+            if (response.getStatus() != 200) {
+                throw new ConsulException(response.readEntity(String.class));
+            }
+        } catch (Exception ex) {
+            throw new ConsulException(String.format("Error deleting %s key", key), ex);
+        } finally {
+            if(response != null) {
+                response.close();
+            }
         }
     }
 
