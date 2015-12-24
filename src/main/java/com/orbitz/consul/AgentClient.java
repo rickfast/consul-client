@@ -2,14 +2,10 @@ package com.orbitz.consul;
 
 import com.google.common.base.Optional;
 import com.orbitz.consul.model.State;
-import com.orbitz.consul.model.agent.Agent;
-import com.orbitz.consul.model.agent.Check;
-import com.orbitz.consul.model.agent.ImmutableCheck;
-import com.orbitz.consul.model.agent.ImmutableRegistration;
-import com.orbitz.consul.model.agent.Member;
-import com.orbitz.consul.model.agent.Registration;
+import com.orbitz.consul.model.agent.*;
 import com.orbitz.consul.model.health.HealthCheck;
 import com.orbitz.consul.model.health.Service;
+import com.orbitz.consul.option.QueryOptions;
 
 import javax.ws.rs.InternalServerErrorException;
 import javax.ws.rs.client.Entity;
@@ -174,14 +170,18 @@ public class AgentClient {
      * the use of checks.
      *
      * @param registration The registration payload.
+     * @param options An optional QueryOptions instance.
      */
-    public void register(Registration registration) {
-        Response response = webTarget.path("service").path("register").request()
+    public void register(Registration registration, QueryOptions options) {
+        Response response = options.apply(webTarget.path("service").path("register")).request()
                 .put(Entity.entity(registration, MediaType.APPLICATION_JSON_TYPE));
 
         if (response.getStatus() != Response.Status.OK.getStatusCode()) {
             throw new ConsulException(response.readEntity(String.class));
         }
+    }
+    public void register(Registration registration){
+        register(registration, QueryOptions.BLANK);
     }
 
     /**
