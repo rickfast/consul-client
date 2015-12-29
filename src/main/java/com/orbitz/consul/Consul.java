@@ -4,8 +4,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.guava.GuavaModule;
 import com.fasterxml.jackson.jaxrs.json.JacksonJaxbJsonProvider;
 import com.google.common.base.Optional;
+import com.google.common.collect.FluentIterable;
+import com.google.common.base.Predicate;
 import com.google.common.net.HostAndPort;
 import com.orbitz.consul.util.Jackson;
+import com.orbitz.consul.util.ObjectMapperContextResolver;
 
 import javax.net.ssl.SSLContext;
 import javax.ws.rs.client.Client;
@@ -46,11 +49,17 @@ public class Consul {
      */
     private Consul(String url, ClientBuilder builder, ObjectMapper mapper) {
 
-        JacksonJaxbJsonProvider provider = new JacksonJaxbJsonProvider();
-        provider.setMapper(mapper);
-
-        Client client = builder
-                .register(provider)
+        if (!FluentIterable.from(builder.getConfiguration().getClasses())
+                      .filter(new Predicate<Class<?>>() {
+                        @Override
+                        public boolean apply(final Class<?> clazz) {
+                            return JacksonJaxbJsonProvider.class.isAssignableFrom(clazz);
+                        }
+                    }).first().isPresent()) {
+            builder.register(JacksonJaxbJsonProvider.class);
+        }
+        final Client client = builder
+                .register(new ObjectMapperContextResolver(mapper))
                 .build();
 
         this.agentClient = new AgentClient(client.target(url).path("v1").path("agent"));

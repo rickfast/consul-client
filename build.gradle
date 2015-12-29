@@ -35,8 +35,10 @@ dependencies {
     compile 'javax.ws.rs:javax.ws.rs-api:2.0.1'
     compile 'javax.annotation:javax.annotation-api:1.2'
 
-    testCompile 'org.apache.cxf:cxf-rt-rs-client:3.0.3'
-    testCompile 'org.apache.cxf:cxf-rt-transports-http-hc:3.0.3'
+//    testCompile 'org.apache.cxf:cxf-rt-rs-client:3.0.3'
+//    testCompile 'org.apache.cxf:cxf-rt-transports-http-hc:3.0.3'
+    testCompile 'org.jboss.resteasy:resteasy-jackson2-provider:3.0.14.Final'
+    testCompile 'org.jboss.resteasy:resteasy-client:3.0.14.Final'
 
     testCompile 'junit:junit:4.12'
     testCompile 'org.mockito:mockito-all:1.9.5'
