@@ -1,16 +1,22 @@
 package com.orbitz.consul.cache;
 
+import com.google.common.base.Function;
+import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.net.HostAndPort;
 import com.orbitz.consul.Consul;
 import com.orbitz.consul.HealthClient;
 import com.orbitz.consul.KeyValueClient;
+import com.orbitz.consul.model.ConsulResponse;
 import com.orbitz.consul.model.agent.Agent;
 import com.orbitz.consul.model.health.ServiceHealth;
 import com.orbitz.consul.model.kv.Value;
 import org.junit.Test;
+import org.mockito.Mockito;
 
+import java.math.BigInteger;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -18,6 +24,7 @@ import java.util.concurrent.TimeUnit;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
 
 public class ConsulCacheTest {
@@ -252,5 +259,27 @@ public class ConsulCacheTest {
 
         kvClient.deleteKeys(root);
 
+    }
+    
+    /**
+     * Test that if Consul for some reason returns a duplicate service or keyvalue entry
+     * that we recover gracefully by taking the first value, ignoring duplicates, and warning
+     * user of the condition 
+     */
+    @Test
+    public void testDuplicateServicesDontCauseFailure() {
+        final Function<Value, String> keyExtractor = new Function<Value, String>() {
+            @Override
+            public String apply(final Value input) {
+                return "SAME_KEY";
+            }
+        };
+        final List<Value> response = Arrays.asList(Mockito.mock(Value.class), Mockito.mock(Value.class));
+        final ConsulCache<String, Value> consulCache = new ConsulCache<>(keyExtractor, null);
+        final ConsulResponse<List<Value>> consulResponse = new ConsulResponse<>(response, 0, false, BigInteger.ONE); 
+        final ImmutableMap<String, Value> map = consulCache.convertToMap(consulResponse);
+        assertNotNull(map);
+        // Second copy has been weeded out
+        assertEquals(1, map.size());
     }
 }
