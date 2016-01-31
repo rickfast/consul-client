@@ -11,8 +11,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.math.BigInteger;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executors;
@@ -135,17 +137,25 @@ public class ConsulCache<K, V> {
         return lastResponse.get();
     }
 
-    private ImmutableMap<K, V> convertToMap(ConsulResponse<List<V>> response) {
+    @VisibleForTesting
+    ImmutableMap<K, V> convertToMap(final ConsulResponse<List<V>> response) {
         if (response == null || response.getResponse() == null || response.getResponse().isEmpty()) {
             return ImmutableMap.of();
         }
 
-        ImmutableMap.Builder<K, V> builder = ImmutableMap.builder();
-        for (V v : response.getResponse()) {
-            K key = keyConversion.apply(v);
+        final ImmutableMap.Builder<K, V> builder = ImmutableMap.builder();
+        final Set<K> keySet = new HashSet<>();
+        for (final V v : response.getResponse()) {
+            final K key = keyConversion.apply(v);
             if (key != null) {
-                builder.put(key, v);
+                if (!keySet.contains(key)) {
+                    builder.put(key, v);
+                } else {
+                    System.out.println(key.toString());
+                    LOGGER.warn("Duplicate service encountered. May differ by tags. Try using more specific tags? " + key.toString());
+                }
             }
+            keySet.add(key);
         }
         return builder.build();
     }
