@@ -115,7 +115,7 @@ public class EventClient {
         WebTarget target = webTarget.path("list");
 
         if (StringUtils.isNotEmpty(name)) {
-            target.queryParam("name", name);
+            target = target.queryParam("name", name);
         }
 
         return response(target, queryOptions);
@@ -172,7 +172,7 @@ public class EventClient {
         WebTarget target = webTarget.path("list");
 
         if (StringUtils.isNotEmpty(name)) {
-            target.queryParam("name", name);
+            target = target.queryParam("name", name);
         }
 
         response(target, queryOptions, callback);
