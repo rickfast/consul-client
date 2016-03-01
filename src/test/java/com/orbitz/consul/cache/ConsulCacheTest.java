@@ -1,9 +1,7 @@
 package com.orbitz.consul.cache;
 
 import com.google.common.base.Function;
-import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.net.HostAndPort;
 import com.orbitz.consul.Consul;
 import com.orbitz.consul.HealthClient;
 import com.orbitz.consul.KeyValueClient;
@@ -23,8 +21,8 @@ import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.fail;
 
 public class ConsulCacheTest {
@@ -47,7 +45,7 @@ public class ConsulCacheTest {
         svHealth.start();
         svHealth.awaitInitialized(3, TimeUnit.SECONDS);
 
-        HostAndPort serviceKey = HostAndPort.fromParts(agent.getConfig().getAdvertiseAddr(), 8080);
+        ServiceHealthKey serviceKey = ServiceHealthKey.of(serviceId, agent.getConfig().getAdvertiseAddr(), 8080);
         ServiceHealth health = svHealth.getMap().get(serviceKey);
         assertEquals(serviceId, health.getService().getId());
 
@@ -57,6 +55,40 @@ public class ConsulCacheTest {
         health = svHealth.getMap().get(serviceKey);
         assertNull(health);
 
+    }
+
+    @Test
+    public void testServicesAreUniqueByID() throws Exception {
+        Consul client = Consul.newClient();
+        HealthClient healthClient = client.healthClient();
+        String serviceName = UUID.randomUUID().toString();
+        String serviceId = UUID.randomUUID().toString();
+        String serviceId2 = UUID.randomUUID().toString();
+
+        client.agentClient().register(8080, 20L, serviceName, serviceId);
+        client.agentClient().pass(serviceId);
+
+        client.agentClient().register(8080, 20L, serviceName, serviceId2);
+        client.agentClient().pass(serviceId2);
+
+        ServiceHealthCache svHealth = ServiceHealthCache.newCache(healthClient, serviceName);
+
+        svHealth.start();
+        svHealth.awaitInitialized(3, TimeUnit.SECONDS);
+
+        Agent agent = client.agentClient().getAgent();
+        Thread.sleep(100);
+
+        ServiceHealthKey serviceKey1 = ServiceHealthKey.of(serviceId, agent.getConfig().getAdvertiseAddr(), 8080);
+        ServiceHealthKey serviceKey2 = ServiceHealthKey.of(serviceId2, agent.getConfig().getAdvertiseAddr(), 8080);
+
+        ImmutableMap<ServiceHealthKey, ServiceHealth> healthMap = svHealth.getMap();
+        assertEquals(healthMap.size(), 2);
+        ServiceHealth health =healthMap.get(serviceKey1);
+        ServiceHealth health2 = healthMap.get(serviceKey2);
+
+        assertEquals(serviceId, health.getService().getId());
+        assertEquals(serviceId2, health2.getService().getId());
     }
 
     @Test

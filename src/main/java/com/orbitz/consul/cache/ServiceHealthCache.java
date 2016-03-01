@@ -10,9 +10,9 @@ import com.orbitz.consul.option.CatalogOptions;
 import java.math.BigInteger;
 import java.util.List;
 
-public class ServiceHealthCache extends ConsulCache<HostAndPort, ServiceHealth> {
+public class ServiceHealthCache extends ConsulCache<ServiceHealthKey, ServiceHealth> {
 
-    private ServiceHealthCache(Function<ServiceHealth, HostAndPort> keyConversion, CallbackConsumer<ServiceHealth> callbackConsumer) {
+    private ServiceHealthCache(Function<ServiceHealth, ServiceHealthKey> keyConversion, CallbackConsumer<ServiceHealth> callbackConsumer) {
         super(keyConversion, callbackConsumer);
     }
 
@@ -32,10 +32,10 @@ public class ServiceHealthCache extends ConsulCache<HostAndPort, ServiceHealth> 
             final boolean passing,
             final CatalogOptions catalogOptions,
             final int watchSeconds) {
-        Function<ServiceHealth, HostAndPort> keyExtractor = new Function<ServiceHealth, HostAndPort>() {
+        Function<ServiceHealth, ServiceHealthKey> keyExtractor = new Function<ServiceHealth, ServiceHealthKey>() {
             @Override
-            public HostAndPort apply(ServiceHealth input) {
-                return HostAndPort.fromParts(input.getNode().getAddress(), input.getService().getPort());
+            public ServiceHealthKey apply(ServiceHealth input) {
+                return ServiceHealthKey.fromServiceHealth(input);
             }
         };
 

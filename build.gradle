@@ -29,7 +29,7 @@ dependencies {
     compile 'com.fasterxml.jackson.jaxrs:jackson-jaxrs-base:2.6.3'
     compile 'com.google.guava:guava:18.0'
     compile 'org.apache.commons:commons-lang3:3.0'
-    compile 'org.immutables:value:2.0.16'
+    compile 'org.immutables:value:2.1.12'
     compile 'org.slf4j:slf4j-api:1.7.12'
 
     compile 'javax.ws.rs:javax.ws.rs-api:2.0.1'
