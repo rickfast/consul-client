@@ -1,6 +1,7 @@
 package com.orbitz.consul;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.net.HostAndPort;
 import com.orbitz.consul.model.agent.Agent;
 import com.orbitz.consul.model.agent.ImmutableRegistration;
 import com.orbitz.consul.model.agent.Registration;
@@ -64,6 +65,29 @@ public class AgentTests {
         String serviceId = UUID.randomUUID().toString();
 
         client.agentClient().register(8080, new URL("http://localhost:1337/health"), 1000L, serviceName, serviceId);
+
+        Thread.sleep(100);
+
+        boolean found = false;
+
+        for (ServiceHealth health : client.healthClient().getAllServiceInstances(serviceName).getResponse()) {
+            if (health.getService().getId().equals(serviceId)) {
+                found = true;
+                assertThat(health.getChecks().size(), is(2));
+            }
+        }
+
+        assertTrue(found);
+        client.agentClient().deregister(serviceId);
+    }
+
+    @Test
+    public void shouldRegisterTcpCheck() throws UnknownHostException, InterruptedException, MalformedURLException {
+        Consul client = Consul.builder().build();
+        String serviceName = UUID.randomUUID().toString();
+        String serviceId = UUID.randomUUID().toString();
+
+        client.agentClient().register(8080, HostAndPort.fromParts("localhost", 1337), 1000L, serviceName, serviceId);
 
         Thread.sleep(100);
 

@@ -7,6 +7,8 @@ import com.orbitz.consul.model.health.HealthCheck;
 import com.orbitz.consul.model.health.Service;
 import com.orbitz.consul.option.QueryOptions;
 
+import com.google.common.net.HostAndPort;
+
 import javax.ws.rs.InternalServerErrorException;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.WebTarget;
@@ -122,6 +124,21 @@ public class AgentClient {
     }
 
     /**
+     * Registers the client as a service with Consul with a TCP based check
+     *
+     * @param port     The public facing port of the service to register with Consul.
+     * @param tcp      Health check TCP host and port.
+     * @param interval Health script run interval in seconds.
+     * @param name     Service name to register.
+     * @param id       Service id to register.
+     * @param tags     Tags to register with.
+     */
+    public void register(int port, HostAndPort tcp, long interval, String name, String id, String... tags) {
+        Registration.RegCheck check = Registration.RegCheck.tcp(tcp.toString(), interval);
+        register(port, check, name, id, tags);
+    }
+
+    /**
      * Registers the client as a service with Consul with an existing {@link com.orbitz.consul.model.agent.Registration.RegCheck}
      *
      * @param port  The public facing port of the service to register with Consul.
@@ -197,7 +214,7 @@ public class AgentClient {
     }
 
     /**
-     * Registers a Health Check with the Agent.
+     * Registers a script Health Check with the Agent.
      *
      * @param checkId  The Check ID to use.  Must be unique for the Agent.
      * @param name     The Check Name.
@@ -209,7 +226,7 @@ public class AgentClient {
     }
 
     /**
-     * Registers a Health Check with the Agent.
+     * Registers an HTTP Health Check with the Agent.
      *
      * @param checkId  The Check ID to use.  Must be unique for the Agent.
      * @param name     The Check Name.
@@ -221,7 +238,19 @@ public class AgentClient {
     }
 
     /**
-     * Registers a Health Check with the Agent.
+     * Registers a TCP Health Check with the Agent.
+     *
+     * @param checkId  The Check ID to use.  Must be unique for the Agent.
+     * @param name     The Check Name.
+     * @param tcp      Health check TCP host and port.
+     * @param interval Health script run interval in seconds.
+     */
+    public void registerCheck(String checkId, String name, HostAndPort tcp, long interval) {
+        registerCheck(checkId, name, tcp, interval, null);
+    }
+
+    /**
+     * Registers a script Health Check with the Agent.
      *
      * @param checkId  The Check ID to use.  Must be unique for the Agent.
      * @param name     The Check Name.
@@ -242,7 +271,7 @@ public class AgentClient {
     }
 
     /**
-     * Registers a Health Check with the Agent.
+     * Registers a HTTP Health Check with the Agent.
      *
      * @param checkId  The Check ID to use.  Must be unique for the Agent.
      * @param name     The Check Name.
@@ -256,6 +285,28 @@ public class AgentClient {
                 .id(checkId)
                 .name(name)
                 .http(http.toExternalForm())
+                .interval(String.format("%ss", interval))
+                .notes(Optional.fromNullable(notes))
+                .build();
+
+        registerCheck(check);
+    }
+
+    /**
+     * Registers a TCP Health Check with the Agent.
+     *
+     * @param checkId  The Check ID to use.  Must be unique for the Agent.
+     * @param name     The Check Name.
+     * @param tcp      Health check TCP host and port.
+     * @param interval Health script run interval in seconds.
+     * @param notes    Human readable notes.  Not used by Consul.
+     */
+    public void registerCheck(String checkId, String name, HostAndPort tcp, long interval, String notes) {
+
+        Check check = ImmutableCheck.builder()
+                .id(checkId)
+                .name(name)
+                .tcp(tcp.toString())
                 .interval(String.format("%ss", interval))
                 .notes(Optional.fromNullable(notes))
                 .build();

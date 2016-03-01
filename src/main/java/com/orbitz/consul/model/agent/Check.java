@@ -39,20 +39,24 @@ public abstract class Check {
     @JsonProperty("HTTP")
     public abstract Optional<String> getHttp();
 
+    @JsonProperty("TCP")
+    public abstract Optional<String> getTcp();
+
     @JsonProperty("ServiceID")
     public abstract Optional<String> getServiceId();
 
     @Value.Check
     protected void validate() {
 
-        checkState(getHttp().isPresent() || getTtl().isPresent() || getScript().isPresent(),
-                "Check must specify either http, ttl, or script");
+        checkState(getHttp().isPresent() || getTtl().isPresent()
+            || getScript().isPresent() || getTcp().isPresent(),
+                "Check must specify either http, tcp, ttl, or script");
 
-        if (getHttp().isPresent() || getScript().isPresent()) {
+        if (getHttp().isPresent() || getScript().isPresent() || getTcp().isPresent()) {
             checkState(getInterval().isPresent(),
-                    "Interval must be set if check type is http or script");
+                    "Interval must be set if check type is http, tcp or script");
         }
 
     }
-    
+
 }
