@@ -32,7 +32,7 @@ public class ServiceHealthCache extends ConsulCache<HostAndPort, ServiceHealth> 
             final boolean passing,
             final CatalogOptions catalogOptions,
             final int watchSeconds) {
-        Function<ServiceHealth, HostAndPort > keyExtractor = new Function<ServiceHealth, HostAndPort>() {
+        Function<ServiceHealth, HostAndPort> keyExtractor = new Function<ServiceHealth, HostAndPort>() {
             @Override
             public HostAndPort apply(ServiceHealth input) {
                 return HostAndPort.fromParts(input.getNode().getAddress(), input.getService().getPort());

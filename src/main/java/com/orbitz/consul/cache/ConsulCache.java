@@ -77,14 +77,15 @@ public class ConsulCache<K, V> {
                     // changes
                     lastResponse.set(full);
                 }
-                if (state.compareAndSet(State.starting, State.started)) {
-                    initLatch.countDown();
-                }
 
                 if (changed) {
                     for (Listener<K, V> l : listeners) {
                         l.notify(full);
                     }
+                }
+
+                if (state.compareAndSet(State.starting, State.started)) {
+                    initLatch.countDown();
                 }
                 runCallback();
             }
