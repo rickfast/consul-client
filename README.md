@@ -12,7 +12,7 @@ Installation
 
 ###Bintray:
 
-Grab the latest binary (0.9.16) [here](http://dl.bintray.com/orbitz/consul-client/com/orbitz/consul/consul-client/0.9.16/#consul-client-0.9.16.jar).
+Grab the latest binary (0.10.0) [here](http://dl.bintray.com/orbitz/consul-client/com/orbitz/consul/consul-client/0.10.0/#consul-client-0.10.0.jar).
 
 ###Gradle:
 
@@ -22,7 +22,7 @@ repositories {
 }
 
 dependencies {
-    compile 'com.orbitz.consul:consul-client:0.9.16'
+    compile 'com.orbitz.consul:consul-client:0.10.0'
     // include your preferred javax.ws.rs-api implementation, for example:
     compile 'org.apache.cxf:cxf-rt-rs-client:3.0.3'
     compile 'org.apache.cxf:cxf-rt-transports-http-hc:3.0.3'
@@ -36,7 +36,7 @@ dependencies {
     <dependency>
         <groupId>com.orbitz.consul</groupId>
         <artifactId>consul-client</artifactId>
-        <version>0.9.16</version>
+        <version>0.10.0</version>
     </dependency>
     <!-- include your preferred javax.ws.rs-api implementation -->
 </dependencies>
@@ -126,7 +126,7 @@ String value = kvClient.getValueAsString("foo").get(); // bar
         };
 
         kvClient.getValue("foo", QueryOptions.blockMinutes(5, new BigInteger("0")).build(), callback);
-        
+
 ```
 
 ### Example 6: Subscribe to healthy services
@@ -183,10 +183,9 @@ Their instructions for eclipse a bit difficult to grok, but I was able to get ec
 
 ### IntelliJ-specific notes
 
-One caveat found using IntelliJ is that you must mark your source directory as a "Generated sources root" 
-for IntelliJ to add the contents to your classpath. For example, if you setup your target directory as 
-"generated/source/apt/main", right-click on the 'main' subfolde and click "Mark Directory as -> Generated sources root". 
+One caveat found using IntelliJ is that you must mark your source directory as a "Generated sources root"
+for IntelliJ to add the contents to your classpath. For example, if you setup your target directory as
+"generated/source/apt/main", right-click on the 'main' subfolde and click "Mark Directory as -> Generated sources root".
 
-Another issue is that upon changes to the build.gradle file or reimporting the gradle project, the "sources root" designation 
+Another issue is that upon changes to the build.gradle file or reimporting the gradle project, the "sources root" designation
 may be cleared, and it will need to be re-marked.
-
