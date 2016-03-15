@@ -120,8 +120,24 @@ public class KeyValueClient {
      * @return A list of zero to many {@link com.orbitz.consul.model.kv.Value} objects.
      */
     public List<Value> getValues(String key) {
-        WebTarget target = webTarget.path(key).queryParam("recurse", "true");
+        return getValues(key, null);
+    }
 
+    /**
+     * Retrieves a list of {@link com.orbitz.consul.model.kv.Value} objects for a specific key
+     * from the key/value store.
+     *
+     * GET /v1/kv/{key}?recurse
+     *
+     * @param key The key to retrieve.
+     * @param queryOptions The query options.
+     * @return A list of zero to many {@link com.orbitz.consul.model.kv.Value} objects.
+     */
+    public List<Value> getValues(String key, QueryOptions queryOptions) {
+        WebTarget target = webTarget.path(key).queryParam("recurse", "true");
+        if (queryOptions != null) {
+            queryOptions.apply(webTarget);
+        }
         return Arrays.asList(target
                 .request().accept(MediaType.APPLICATION_JSON_TYPE).get(Value[].class));
     }
