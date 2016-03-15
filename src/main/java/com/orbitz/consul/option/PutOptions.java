@@ -12,7 +12,7 @@ public abstract class PutOptions implements ParamAdder {
     
     public static final PutOptions BLANK = ImmutablePutOptions.builder().build();
     
-    public abstract Optional<Integer> getCas();
+    public abstract Optional<Long> getCas();
     public abstract Optional<String> getAcquire();
     public abstract Optional<String> getRelease();
     public abstract Optional<String> getDc();
