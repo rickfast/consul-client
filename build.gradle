@@ -4,8 +4,11 @@ apply plugin: 'maven'
 apply plugin: 'signing'
 apply from: 'gradle/maven.gradle'
 
-version = '0.10.0'
+version = '0.10.1'
 group = 'com.orbitz.consul'
+
+targetCompatibility = "1.7"
+sourceCompatibility = "1.7"
 
 repositories {
     mavenCentral()
