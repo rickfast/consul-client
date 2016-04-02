@@ -79,3 +79,12 @@ artifacts {
 task wrapper(type: Wrapper) {
     gradleVersion = '2.0'
 }
+
+sourceSets {
+    main {
+        java.srcDirs += "generated"
+    }
+    test {
+        java.srcDirs += "generated"
+    }
+}
