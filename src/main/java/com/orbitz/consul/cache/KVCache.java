@@ -1,12 +1,17 @@
 package com.orbitz.consul.cache;
 
 import com.google.common.base.Function;
+import com.google.common.collect.Sets;
 import com.orbitz.consul.KeyValueClient;
 import com.orbitz.consul.async.ConsulResponseCallback;
 import com.orbitz.consul.model.kv.Value;
+import org.apache.commons.lang3.StringUtils;
 
 import java.math.BigInteger;
+import java.util.Arrays;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 
 public class KVCache extends ConsulCache<String, Value> {
 
@@ -27,10 +32,16 @@ public class KVCache extends ConsulCache<String, Value> {
             final String rootPath,
             final int watchSeconds) {
 
+        final Set<String> rootPathSegments =
+                new LinkedHashSet<>(Arrays.asList(rootPath.split("/")));
+
         final Function<Value, String> keyExtractor = new Function<Value, String>() {
             @Override
             public String apply(Value input) {
-                return input.getKey().substring(rootPath.length() + 1);
+                final Set<String> inputPathSegments =
+                        new LinkedHashSet<>(Arrays.asList(input.getKey().split("/")));
+
+                return StringUtils.join(Sets.difference(inputPathSegments, rootPathSegments), "/");
             }
         };
 
@@ -43,5 +54,4 @@ public class KVCache extends ConsulCache<String, Value> {
 
         return new KVCache(keyExtractor, callbackConsumer);
     }
-
 }
