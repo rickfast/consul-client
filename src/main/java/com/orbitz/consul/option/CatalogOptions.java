@@ -3,7 +3,8 @@ package com.orbitz.consul.option;
 import com.google.common.base.Optional;
 import org.immutables.value.Value;
 
-import javax.ws.rs.client.WebTarget;
+import java.util.HashMap;
+import java.util.Map;
 
 import static com.orbitz.consul.option.Options.optionallyAdd;
 
@@ -16,9 +17,12 @@ public abstract class CatalogOptions implements ParamAdder {
     public static final CatalogOptions BLANK = ImmutableCatalogOptions.builder().build();
 
     @Override
-    public final WebTarget apply(final WebTarget input) {
-        WebTarget added = optionallyAdd(input, "dc", getDatacenter());
-        added = optionallyAdd(added, "tag", getTag());
-        return added;
+    public final Map<String, Object> toQuery() {
+        Map<String, Object> result = new HashMap<>();
+
+        optionallyAdd(result, "dc", getDatacenter());
+        optionallyAdd(result, "tag", getTag());
+
+        return result;
     }
 }

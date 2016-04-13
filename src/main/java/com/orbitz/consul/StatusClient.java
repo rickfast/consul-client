@@ -1,23 +1,24 @@
 package com.orbitz.consul;
 
-import javax.ws.rs.client.WebTarget;
-import javax.ws.rs.core.GenericType;
-import javax.ws.rs.core.MediaType;
+import retrofit2.Call;
+import retrofit2.Retrofit;
+import retrofit2.http.GET;
+
 import java.util.List;
+
+import static com.orbitz.consul.util.Http.extract;
 
 public class StatusClient {
 
-    public static final GenericType<List<String>> TYPE_STRING_LIST =
-            new GenericType<List<String>>() {};
-    private final WebTarget webTarget;
+    private final Api api;
 
     /**
      * Constructs an instance of this class.
      *
-     * @param webTarget The {@link javax.ws.rs.client.WebTarget} to base requests from.
+     * @param retrofit The {@link Retrofit} to build a client from.
      */
-    StatusClient(WebTarget webTarget) {
-        this.webTarget = webTarget;
+    StatusClient(Retrofit retrofit) {
+        this.api = retrofit.create(Api.class);
     }
 
     /**
@@ -28,8 +29,7 @@ public class StatusClient {
      * @return The host/port of the leader.
      */
     public String getLeader() {
-        return webTarget.path("leader").request().get(String.class)
-                .replace("\"", "").trim();
+        return extract(api.getLeader()).replace("\"", "").trim();
     }
 
     /**
@@ -40,7 +40,18 @@ public class StatusClient {
      * @return List of host/ports for raft peers.
      */
     public List<String> getPeers() {
-        return webTarget.path("peers").request().accept(MediaType.APPLICATION_JSON_TYPE)
-                .get(TYPE_STRING_LIST);
+        return extract(api.getPeers());
+    }
+
+    /**
+     * Retrofit API interface.
+     */
+    interface Api {
+
+        @GET("status/leader")
+        Call<String> getLeader();
+
+        @GET("status/peers")
+        Call<List<String>> getPeers();
     }
 }

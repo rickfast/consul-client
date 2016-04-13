@@ -15,7 +15,6 @@ public class ServiceTest {
 
     @Test
     public void testNullTags(){
-
         Service sv = tagged();
         assertTrue(sv.getTags().isEmpty());
     }

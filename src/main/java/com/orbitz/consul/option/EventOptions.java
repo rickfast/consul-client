@@ -3,7 +3,8 @@ package com.orbitz.consul.option;
 import com.google.common.base.Optional;
 import org.immutables.value.Value;
 
-import javax.ws.rs.client.WebTarget;
+import java.util.HashMap;
+import java.util.Map;
 
 import static com.orbitz.consul.option.Options.optionallyAdd;
 
@@ -18,13 +19,13 @@ public abstract class EventOptions implements ParamAdder {
     public abstract Optional<String> getTagFilter();
 
     @Override
-    public final WebTarget apply(final WebTarget input) {
-        WebTarget added = optionallyAdd(input, "dc", getDatacenter());
+    public Map<String, Object> toQuery() {
+        Map<String, Object> result = new HashMap<>();
 
-        added = optionallyAdd(added, "node", getNodeFilter());
-        added = optionallyAdd(added, "service", getServiceFilter());
-        added = optionallyAdd(added, "tag", getTagFilter());
+        optionallyAdd(result, "node", getNodeFilter());
+        optionallyAdd(result, "service", getServiceFilter());
+        optionallyAdd(result, "tag", getTagFilter());
 
-        return added;
+        return result;
     }
 }

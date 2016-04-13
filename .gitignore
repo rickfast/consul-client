@@ -1,3 +1,4 @@
+dependency-reduced-pom.xml
 data
 .DS_Store
 build
@@ -6,7 +7,7 @@ build
 .gradle
 out
 generated
-
+target
 src/gradlew
 src/gradlew.bat
 gradle/gradlew

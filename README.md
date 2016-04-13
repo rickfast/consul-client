@@ -1,4 +1,4 @@
-[ ![Codeship Status for OrbitzWorldwide/consul-client](https://codeship.com/projects/d1bec4e0-fff2-0132-2c7a-62f74f018091/status?branch=master)](https://codeship.com/projects/88244)
+[![Build Status](https://travis-ci.org/OrbitzWorldwide/consul-client.svg?branch=master)](https://travis-ci.org/OrbitzWorldwide/consul-client)
 [ ![Download](https://api.bintray.com/packages/orbitz/consul-client/consul-client/images/download.svg) ](https://bintray.com/orbitz/consul-client/consul-client/_latestVersion)
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.orbitz.consul/consul-client/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.orbitz.consul/consul-client)
 
@@ -12,7 +12,7 @@ Installation
 
 ###Bintray:
 
-Grab the latest binary (0.10.2) [here](http://dl.bintray.com/orbitz/consul-client/com/orbitz/consul/consul-client/0.10.2/#consul-client-0.10.2.jar).
+Grab the latest binary (0.11.0) [here](http://dl.bintray.com/orbitz/consul-client/com/orbitz/consul/consul-client/0.11.0/#consul-client-0.11.0.jar).
 
 ###Gradle:
 
@@ -22,10 +22,7 @@ repositories {
 }
 
 dependencies {
-    compile 'com.orbitz.consul:consul-client:0.10.2'
-    // include your preferred javax.ws.rs-api implementation, for example:
-    compile 'org.apache.cxf:cxf-rt-rs-client:3.0.3'
-    compile 'org.apache.cxf:cxf-rt-transports-http-hc:3.0.3'
+    compile 'com.orbitz.consul:consul-client:0.11.0'
 }
 ```
 
@@ -36,9 +33,8 @@ dependencies {
     <dependency>
         <groupId>com.orbitz.consul</groupId>
         <artifactId>consul-client</artifactId>
-        <version>0.10.2</version>
+        <version>0.11.0</version>
     </dependency>
-    <!-- include your preferred javax.ws.rs-api implementation -->
 </dependencies>
 
 <repositories>

@@ -12,8 +12,6 @@ public class CheckTest {
                 .interval("10s")
                 .name("name")
                 .build();
-
-
     }
 
     @Test(expected = IllegalStateException.class)
@@ -24,8 +22,6 @@ public class CheckTest {
                 .http("http://foo.local:1337/health")
                 .name("name")
                 .build();
-
-
     }
 
     @Test(expected = IllegalStateException.class)
@@ -36,7 +32,5 @@ public class CheckTest {
                 .script("/bin/echo \"hi\"")
                 .name("name")
                 .build();
-
-
     }
 }

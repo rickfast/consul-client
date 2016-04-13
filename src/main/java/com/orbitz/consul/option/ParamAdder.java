@@ -1,7 +1,8 @@
 package com.orbitz.consul.option;
 
-import com.google.common.base.Function;
+import java.util.Map;
 
-import javax.ws.rs.client.WebTarget;
+public interface ParamAdder {
 
-public interface ParamAdder extends Function<WebTarget, WebTarget> {}
+    Map<String, Object> toQuery();
+}

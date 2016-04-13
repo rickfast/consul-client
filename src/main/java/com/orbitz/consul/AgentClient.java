@@ -1,23 +1,24 @@
 package com.orbitz.consul;
 
 import com.google.common.base.Optional;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.net.HostAndPort;
 import com.orbitz.consul.model.State;
 import com.orbitz.consul.model.agent.*;
 import com.orbitz.consul.model.health.HealthCheck;
 import com.orbitz.consul.model.health.Service;
 import com.orbitz.consul.option.QueryOptions;
+import retrofit2.Call;
+import retrofit2.Retrofit;
+import retrofit2.http.*;
 
-import com.google.common.net.HostAndPort;
-
-import javax.ws.rs.InternalServerErrorException;
-import javax.ws.rs.client.Entity;
-import javax.ws.rs.client.WebTarget;
-import javax.ws.rs.core.GenericType;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
 import java.net.URL;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+
+import static com.orbitz.consul.util.Http.extract;
+import static com.orbitz.consul.util.Http.handle;
 
 /**
  * HTTP Client for /v1/agent/ endpoints.
@@ -26,22 +27,15 @@ import java.util.Map;
  */
 public class AgentClient {
 
-    private static final GenericType<Map<String, HealthCheck>> TYPE_HEALTH_CHECK_MAP =
-            new GenericType<Map<String, HealthCheck>>() {};
-    private static final GenericType<Map<String, Service>> TYPE_SERVICE_MAP =
-            new GenericType<Map<String, Service>>() {};
-    private static final GenericType<List<Member>> TYPE_MEMBER_LIST =
-            new GenericType<List<Member>>() {};
-
-    private final WebTarget webTarget;
+    private final Api api;
 
     /**
      * Constructs an instance of this class.
      *
-     * @param webTarget The {@link javax.ws.rs.client.WebTarget} to base requests from.
+     * @param retrofit The {@link Retrofit} to build a client from.
      */
-    AgentClient(WebTarget webTarget) {
-        this.webTarget = webTarget;
+    AgentClient(Retrofit retrofit) {
+        this.api = retrofit.create(Api.class);
     }
 
     /**
@@ -60,22 +54,15 @@ public class AgentClient {
      * Pings the Consul Agent.
      */
     public void ping() {
-        Response response = null;
-
         try {
-            response = webTarget.path("self").request().get();
-            Response.StatusType status = response.getStatusInfo();
+            retrofit2.Response<Void> response = api.ping().execute();
 
-            if (status.getStatusCode() != Response.Status.OK.getStatusCode()) {
+            if (!response.isSuccessful()) {
                 throw new ConsulException(String.format("Error pinging Consul: %s",
-                        status.getReasonPhrase()));
+                        response.message()));
             }
         } catch (Exception ex) {
             throw new ConsulException("Error connecting to Consul", ex);
-        } finally {
-            if(response != null) {
-                response.close();
-            }
         }
     }
 
@@ -190,14 +177,10 @@ public class AgentClient {
      * @param options An optional QueryOptions instance.
      */
     public void register(Registration registration, QueryOptions options) {
-        Response response = options.apply(webTarget.path("service").path("register")).request()
-                .put(Entity.entity(registration, MediaType.APPLICATION_JSON_TYPE));
-
-        if (response.getStatus() != Response.Status.OK.getStatusCode()) {
-            throw new ConsulException(response.readEntity(String.class));
-        }
+        handle(api.register(registration, options.toQuery()));
     }
-    public void register(Registration registration){
+
+    public void register(Registration registration) {
         register(registration, QueryOptions.BLANK);
     }
 
@@ -205,12 +188,7 @@ public class AgentClient {
      * De-register a particular service from the Consul Agent.
      */
     public void deregister(String serviceId) {
-        Response response = webTarget.path("service").path("deregister").path(serviceId)
-                .request().get();
-
-        if (response.getStatus() != Response.Status.OK.getStatusCode()) {
-            throw new ConsulException(response.readEntity(String.class));
-        }
+        handle(api.deregister(serviceId));
     }
 
     /**
@@ -345,20 +323,13 @@ public class AgentClient {
         registerCheck(check);
     }
 
-
-
     /**
      * Registers a Health Check with the Agent.
      *
      * @param check The Check to register.
      */
     public void registerCheck(Check check) {
-        Response response = webTarget.path("check").path("register").request()
-                .put(Entity.entity(check, MediaType.APPLICATION_JSON_TYPE));
-
-        if (response.getStatus() != Response.Status.OK.getStatusCode()) {
-            throw new ConsulException(response.readEntity(String.class));
-        }
+        handle(api.registerCheck(check));
     }
 
     /**
@@ -367,12 +338,7 @@ public class AgentClient {
      * @param checkId the id of the Check to deregister
      */
     public void deregisterCheck(String checkId) {
-        Response response = webTarget.path("check").path("deregister").path(checkId)
-                .request().get();
-
-        if (response.getStatus() != Response.Status.OK.getStatusCode()) {
-            throw new ConsulException(response.readEntity(String.class));
-        }
+        handle(api.deregisterCheck(checkId));
     }
 
     /**
@@ -383,8 +349,7 @@ public class AgentClient {
      * @return The Agent information.
      */
     public Agent getAgent() {
-        return webTarget.path("self").request().accept(MediaType.APPLICATION_JSON_TYPE)
-                .get(Agent.class);
+        return extract(api.getAgent());
     }
 
     /**
@@ -395,8 +360,7 @@ public class AgentClient {
      * @return Map of Check ID to Checks.
      */
     public Map<String, HealthCheck> getChecks() {
-        return webTarget.path("checks").request().accept(MediaType.APPLICATION_JSON_TYPE)
-                .get(TYPE_HEALTH_CHECK_MAP);
+        return extract(api.getChecks());
     }
 
     /**
@@ -407,8 +371,7 @@ public class AgentClient {
      * @return Map of Service ID to Services.
      */
     public Map<String, Service> getServices() {
-        return webTarget.path("services").request().accept(MediaType.APPLICATION_JSON_TYPE)
-                .get(TYPE_SERVICE_MAP);
+        return extract(api.getServices());
     }
 
     /**
@@ -419,8 +382,7 @@ public class AgentClient {
      * @return List of Members.
      */
     public List<Member> getMembers() {
-        return webTarget.path("members").request().accept(MediaType.APPLICATION_JSON_TYPE)
-                .get(TYPE_MEMBER_LIST);
+        return extract(api.getMembers());
     }
 
     /**
@@ -431,7 +393,7 @@ public class AgentClient {
      * @param node
      */
     public void forceLeave(String node) {
-        webTarget.path("force-leave").path(node).request().get();
+        handle(api.forceLeave());
     }
 
     /**
@@ -442,16 +404,15 @@ public class AgentClient {
      * @param note    Any note to associate with the Check.
      */
     public void check(String checkId, State state, String note) throws NotRegisteredException {
-        WebTarget resource = webTarget.path("check").path(state.getPath());
-
-        if (note != null) {
-            resource = resource.queryParam("note", note);
-        }
-
         try {
-            resource.path(checkId).request()
-                    .get(String.class);
-        } catch (InternalServerErrorException ex) {
+            Map<String, String> query = Collections.emptyMap();
+
+            if (note != null) {
+                query = ImmutableMap.of("note", note);
+            }
+
+            handle(api.check(state.getPath(), checkId, query));
+        } catch (Exception ex) {
             throw new NotRegisteredException();
         }
     }
@@ -577,26 +538,64 @@ public class AgentClient {
      * @return <code>true</code> if successful, otherwise <code>false</code>.
      */
     public boolean join(String address, boolean wan) {
-        WebTarget resource = webTarget.path("join").path(address);
-        Response response = null;
+        Map<String, String> query = Collections.emptyMap();
         boolean result = true;
 
         if (wan) {
-            resource = resource.queryParam("wan", "1");
+            query = ImmutableMap.of("wan", "1");
         }
 
         try {
-            response = resource.request().get();
-
-            result = response.getStatus() == Response.Status.OK.getStatusCode();
-        } catch (InternalServerErrorException ex) {
+            handle(api.join(address, query));
+        } catch(Exception ex) {
             result = false;
-        } finally {
-            if(response != null) {
-                response.close();
-            }
         }
 
         return result;
+    }
+
+    /**
+     * Retrofit API interface.
+     */
+    interface Api {
+
+        @PUT("agent/service/register")
+        Call<Void> register(@Body Registration registration,
+                            @QueryMap Map<String, Object> options);
+
+        @GET("agent/service/deregister/{serviceId}")
+        Call<Void> deregister(@Path("serviceId") String serviceId);
+
+        @PUT("agent/check/register")
+        Call<Void> registerCheck(@Body Check check);
+
+        @GET("agent/check/deregister/{checkId}")
+        Call<Void> deregisterCheck(@Path("checkId") String checkId);
+
+        @GET("agent/self")
+        Call<Void> ping();
+
+        @GET("agent/self")
+        Call<Agent> getAgent();
+
+        @GET("agent/checks")
+        Call<Map<String, HealthCheck>> getChecks();
+
+        @GET("agent/services")
+        Call<Map<String, Service>> getServices();
+
+        @GET("agent/members")
+        Call<List<Member>> getMembers();
+
+        @GET("agent/force-leave")
+        Call<Void> forceLeave();
+
+        @GET("agent/check/{state}/{checkId}")
+        Call<Void> check(@Path("state") String state,
+                         @Path("checkId") String checkId,
+                         @QueryMap Map<String, String> query);
+
+        @GET("agent/join/{address}")
+        Call<Void> join(String address, Map<String, String> query);
     }
 }

@@ -1,19 +1,20 @@
 package com.orbitz.consul;
 
 import com.google.common.base.Optional;
+import com.google.common.collect.ImmutableMap;
 import com.orbitz.consul.model.session.Session;
 import com.orbitz.consul.model.session.SessionCreatedResponse;
 import com.orbitz.consul.model.session.SessionInfo;
-import com.orbitz.consul.option.QueryOptions;
+import retrofit2.Call;
+import retrofit2.Retrofit;
+import retrofit2.http.*;
 
-import javax.ws.rs.client.Entity;
-import javax.ws.rs.client.WebTarget;
-import javax.ws.rs.core.GenericType;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
-import static com.orbitz.consul.util.ClientUtil.addParams;
+import static com.orbitz.consul.util.Http.extract;
+import static com.orbitz.consul.util.Http.handle;
 
 /**
  * HTTP Client for /v1/session/ endpoints.
@@ -22,27 +23,20 @@ import static com.orbitz.consul.util.ClientUtil.addParams;
  */
 public class SessionClient {
 
-    private static final GenericType<SessionCreatedResponse> SESSION_CREATED_RESPONSE_TYPE =
-            new GenericType<SessionCreatedResponse>() {
-            };
-    private static final GenericType<List<SessionInfo>> SESSION_INFO_LIST_TYPE =
-            new GenericType<List<SessionInfo>>() {
-            };
-
-    private final WebTarget webTarget;
+    private final Api api;
 
     /**
      * Constructs an instance of this class.
      *
-     * @param webTarget The {@link WebTarget} to base requests from.
+     * @param retrofit The {@link Retrofit} to build a client from.
      */
-    SessionClient(WebTarget webTarget) {
-        this.webTarget = webTarget;
+    SessionClient(Retrofit retrofit) {
+        this.api = retrofit.create(Api.class);
     }
 
     /**
      * Create Session.
-     * 
+     *
      * PUT /v1/session/create
      *
      * @param value The session to create.
@@ -54,7 +48,7 @@ public class SessionClient {
 
     /**
      * Create Session.
-     * 
+     *
      * PUT /v1/session/create
      *
      * @param value The session to create.
@@ -62,16 +56,16 @@ public class SessionClient {
      * @return Response containing the session ID.
      */
     public SessionCreatedResponse createSession(final Session value, final String dc) {
-        WebTarget target = webTarget;
+        return extract(api.createSession(value, dcQuery(dc)));
+    }
+
+    private Map<String, String> dcQuery(String dc) {
+        Map<String, String> query = Collections.emptyMap();
 
         if (dc != null) {
-            target = webTarget.queryParam("dc", dc);
+            query = ImmutableMap.of("dc", dc);
         }
-
-        SessionCreatedResponse session = target.path("create").request().put(Entity.entity(value,
-                MediaType.APPLICATION_JSON_TYPE), SESSION_CREATED_RESPONSE_TYPE);
-
-        return session;
+        return query;
     }
 
     public Optional<SessionInfo> renewSession(final String sessionId) {
@@ -86,20 +80,8 @@ public class SessionClient {
      * @return The {@link SessionInfo} object for the renewed session.
      */
     public Optional<SessionInfo> renewSession(final String dc, final String sessionId) {
-        WebTarget target = webTarget;
-
-        if (dc != null) {
-            target = webTarget.queryParam("dc", dc);
-        }
-
-        Response response = target.path("renew").path(sessionId).request().put(Entity.entity("{}",
-                MediaType.APPLICATION_JSON_TYPE));
-
-        if (response.getStatus() != Response.Status.OK.getStatusCode()) {
-            throw new ConsulException(response.readEntity(String.class));
-        }
-
-        List<SessionInfo> sessionInfo = response.readEntity(SESSION_INFO_LIST_TYPE);
+        List<SessionInfo> sessionInfo = extract(api.renewSession(sessionId,
+                ImmutableMap.<String, String>of(), dcQuery(dc)));
 
         return sessionInfo != null && sessionInfo.isEmpty() ? Optional.<SessionInfo>absent() :
                 Optional.of(sessionInfo.get(0));
@@ -107,7 +89,7 @@ public class SessionClient {
 
     /**
      * Destroys a session.
-     * 
+     *
      * PUT /v1/session/destroy/{sessionId}
      *
      * @param sessionId The session ID to destroy.
@@ -118,26 +100,19 @@ public class SessionClient {
 
     /**
      * Destroys a session.
-     * 
+     *
      * PUT /v1/session/destroy/{sessionId}
      *
      * @param sessionId The session ID to destroy.
      * @param dc        The data center.
      */
     public void destroySession(final String sessionId, final String dc) {
-        WebTarget target = webTarget;
-
-        if (dc != null) {
-            target = webTarget.queryParam("dc", dc);
-        }
-
-        target.path("destroy").path(sessionId).request().put(Entity.entity("",
-                MediaType.TEXT_PLAIN_TYPE));
+        handle(api.destroySession(sessionId, dcQuery(dc)));
     }
 
     /**
      * Retrieves session info.
-     * 
+     *
      * GET /v1/session/info/{sessionId}
      *
      * @param sessionId
@@ -149,7 +124,7 @@ public class SessionClient {
 
     /**
      * Retrieves session info.
-     * 
+     *
      * GET /v1/session/info/{sessionId}
      *
      * @param sessionId
@@ -157,17 +132,7 @@ public class SessionClient {
      * @return {@link SessionInfo}.
      */
     public Optional<SessionInfo> getSessionInfo(final String sessionId, final String dc) {
-        WebTarget target = webTarget;
-
-        if (dc != null) {
-            target = target.queryParam("dc", dc);
-        }
-
-        target = addParams(target.path("info").path(sessionId), QueryOptions.BLANK);
-
-        List<SessionInfo> sessionInfo = target
-                .request().accept(MediaType.APPLICATION_JSON_TYPE)
-                .get(SESSION_INFO_LIST_TYPE);
+        List<SessionInfo> sessionInfo = extract(api.getSessionInfo(sessionId, dcQuery(dc)));
 
         return sessionInfo != null && sessionInfo.isEmpty() ? Optional.<SessionInfo>absent() :
                 Optional.of(sessionInfo.get(0));
@@ -175,32 +140,51 @@ public class SessionClient {
 
     /**
      * Lists all sessions.
-     * 
+     *
      * GET /v1/session/list
      *
      * @param dc The data center.
      * @return A list of available sessions.
      */
     public List<SessionInfo> listSessions(final String dc) {
-        WebTarget target = webTarget.path("list");
-
-        if (dc != null) {
-            target = target.queryParam("dc", dc);
-        }
-
-        return target.request()
-                .accept(MediaType.APPLICATION_JSON_TYPE)
-                .get(SESSION_INFO_LIST_TYPE);
+        return extract(api.listSessions(dcQuery(dc)));
     }
 
     /**
      * Lists all sessions.
-     * 
+     *
      * GET /v1/session/list
      *
      * @return A list of available sessions.
      */
     public List<SessionInfo> listSessions() {
         return listSessions(null);
+    }
+
+    /**
+     * Retrofit API interface.
+     */
+    interface Api {
+
+        @PUT("session/create")
+        Call<SessionCreatedResponse> createSession(@Body Session value,
+                                                   @QueryMap Map<String, String> query);
+
+        @PUT("session/renew/{sessionId}")
+        Call<List<SessionInfo>> renewSession(@Path("sessionId") String sessionId,
+                                             @Body Map<String, String> body,
+                                             @QueryMap Map<String, String> query);
+
+        @PUT("session/destroy/{sessionId}")
+        Call<Void> destroySession(@Path("sessionId") String sessionId,
+                                  @QueryMap Map<String, String> query);
+
+        @GET("session/info/{sessionId}")
+        Call<List<SessionInfo>> getSessionInfo(@Path("sessionId") String sessionId,
+                                               @QueryMap Map<String, String> query);
+
+        @GET("session/list")
+        Call<List<SessionInfo>> listSessions(@QueryMap Map<String, String> query);
+
     }
 }

@@ -3,8 +3,9 @@ package com.orbitz.consul.option;
 import com.google.common.base.Optional;
 import org.immutables.value.Value;
 
-import javax.ws.rs.client.WebTarget;
 import java.math.BigInteger;
+import java.util.HashMap;
+import java.util.Map;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.orbitz.consul.option.Options.optionallyAdd;
@@ -59,26 +60,26 @@ public abstract class QueryOptions implements ParamAdder {
     }
 
     @Override
-    public WebTarget apply(WebTarget input) {
+    public Map<String, Object> toQuery() {
+        Map<String, Object> result = new HashMap<>();
 
-        WebTarget added = input;
         switch (getConsistencyMode()) {
             case CONSISTENT:
-                added = added.queryParam("consistent", "");
+                result.put("consistent", "");
                 break;
             case STALE:
-                added = added.queryParam("stale", "");
+                result.put("stale", "");
                 break;
         }
 
         if (isBlocking()) {
-            added = added.queryParam("wait", getWait().get())
-                    .queryParam("index", String.valueOf(getIndex().get()));
+            optionallyAdd(result, "wait", getWait());
+            optionallyAdd(result, "index", getIndex());
         }
 
-        added = optionallyAdd(added, "token", getToken());
-        added = optionallyAdd(added, "near", getToken());
+        optionallyAdd(result, "token", getToken());
+        optionallyAdd(result, "near", getNear());
 
-        return added;
+        return result;
     }
 }

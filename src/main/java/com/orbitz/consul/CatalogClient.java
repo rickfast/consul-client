@@ -5,36 +5,34 @@ import com.orbitz.consul.model.catalog.CatalogNode;
 import com.orbitz.consul.model.catalog.CatalogService;
 import com.orbitz.consul.model.health.Node;
 import com.orbitz.consul.option.CatalogOptions;
+import com.orbitz.consul.option.Options;
 import com.orbitz.consul.option.QueryOptions;
+import com.orbitz.consul.util.Http;
+import retrofit2.Call;
+import retrofit2.Retrofit;
+import retrofit2.http.GET;
+import retrofit2.http.Path;
+import retrofit2.http.QueryMap;
 
-import javax.ws.rs.client.WebTarget;
-import javax.ws.rs.core.GenericType;
-import javax.ws.rs.core.MediaType;
 import java.util.List;
 import java.util.Map;
 
-import static com.orbitz.consul.util.ClientUtil.response;
+import static com.orbitz.consul.util.Http.extractConsulResponse;
 
 /**
  * HTTP Client for /v1/catalog/ endpoints.
  */
 public class CatalogClient {
 
-    private static final GenericType<List<String>> TYPE_STRING_LIST = new GenericType<List<String>>() {};
-    private static final GenericType<List<Node>> TYPE_NODE_LIST = new GenericType<List<Node>>() {};
-    private static final GenericType<Map<String, List<String>>> TYPE_SERVICES_MAP = new GenericType<Map<String, List<String>>>() {};
-    private static final GenericType<List<CatalogService>> TYPE_CATALOG_SERVICE_LIST = new GenericType<List<CatalogService>>() {};
-    private static final GenericType<CatalogNode> TYPE_CATALOG_NODE = new GenericType<CatalogNode>() {};
-    
-    private final WebTarget webTarget;
+    private final Api api;
     
     /**
      * Constructs an instance of this class.
      *
-     * @param webTarget The {@link javax.ws.rs.client.WebTarget} to base requests from.
+     * @param retrofit The {@link Retrofit} to build a client from.
      */
-    CatalogClient(WebTarget webTarget) {
-        this.webTarget = webTarget;        
+    CatalogClient(Retrofit retrofit) {
+        this.api = retrofit.create(Api.class);
     }
 
     /**
@@ -45,8 +43,7 @@ public class CatalogClient {
      * @return A list of datacenter names.
      */
     public List<String> getDatacenters() {
-        return webTarget.path("datacenters").request()
-                .accept(MediaType.APPLICATION_JSON_TYPE).get(TYPE_STRING_LIST);
+        return Http.extract(api.getDatacenters());
     }
 
     /**
@@ -66,7 +63,7 @@ public class CatalogClient {
      *
      * GET /v1/catalog/nodes?dc={datacenter}
      *
-     * @param catalogOptions Catalog specific options to use.      
+     * @param catalogOptions Catalog specific options to use.
      * @return A {@link com.orbitz.consul.model.ConsulResponse} containing a list of
      * {@link com.orbitz.consul.model.health.Node} objects.
      */
@@ -92,13 +89,13 @@ public class CatalogClient {
      *
      * GET /v1/catalog/nodes?dc={datacenter}
      *
-     * @param catalogOptions Catalog specific options to use.      
+     * @param catalogOptions Catalog specific options to use.
      * @param queryOptions The Query Options to use.
      * @return A {@link com.orbitz.consul.model.ConsulResponse} containing a list of
      * {@link com.orbitz.consul.model.health.Node} objects.
      */
     public ConsulResponse<List<Node>> getNodes(CatalogOptions catalogOptions, QueryOptions queryOptions) {
-        return response(webTarget.path("nodes"), catalogOptions, queryOptions, TYPE_NODE_LIST);
+        return extractConsulResponse(api.getNodes(Options.from(catalogOptions, queryOptions)));
     }
 
     /**
@@ -117,7 +114,7 @@ public class CatalogClient {
      *
      * GET /v1/catalog/services?dc={datacenter}
      *
-     * @param catalogOptions Catalog specific options to use.      
+     * @param catalogOptions Catalog specific options to use.
      * @return A {@link com.orbitz.consul.model.ConsulResponse} containing a map of service name to list of tags.
      */
     public ConsulResponse<Map<String, List<String>>> getServices(CatalogOptions catalogOptions) {
@@ -141,12 +138,12 @@ public class CatalogClient {
      *
      * GET /v1/catalog/services?dc={datacenter}
      *
-     * @param catalogOptions Catalog specific options to use.      
+     * @param catalogOptions Catalog specific options to use.
      * @param queryOptions The Query Options to use.
      * @return A {@link com.orbitz.consul.model.ConsulResponse} containing a map of service name to list of tags.
      */
     public ConsulResponse<Map<String, List<String>>> getServices(CatalogOptions catalogOptions, QueryOptions queryOptions) {
-        return response(webTarget.path("services"), catalogOptions, queryOptions, TYPE_SERVICES_MAP);
+        return extractConsulResponse(api.getServices(Options.from(catalogOptions, queryOptions)));
     }
 
     /**
@@ -166,7 +163,7 @@ public class CatalogClient {
      *
      * GET /v1/catalog/service/{service}?dc={datacenter}
      *
-     * @param catalogOptions Catalog specific options to use.      
+     * @param catalogOptions Catalog specific options to use.
      * @return A {@link com.orbitz.consul.model.ConsulResponse} containing
      * {@link com.orbitz.consul.model.catalog.CatalogService} objects.
      */
@@ -192,15 +189,14 @@ public class CatalogClient {
      *
      * GET /v1/catalog/service/{service}?dc={datacenter}
      *
-     * @param catalogOptions Catalog specific options to use.      
+     * @param catalogOptions Catalog specific options to use.
      * @param queryOptions The Query Options to use.
      * @return A {@link com.orbitz.consul.model.ConsulResponse} containing
      * {@link com.orbitz.consul.model.catalog.CatalogService} objects.
      */
     public ConsulResponse<List<CatalogService>> getService(String service, CatalogOptions catalogOptions,
                                                            QueryOptions queryOptions) {
-        return response(webTarget.path("service").path(service), catalogOptions, queryOptions,
-                TYPE_CATALOG_SERVICE_LIST);
+        return extractConsulResponse(api.getService(service, Options.from(catalogOptions, queryOptions)));
     }
 
     /**
@@ -219,7 +215,7 @@ public class CatalogClient {
      *
      * GET /v1/catalog/node/{node}?dc={datacenter}
      *
-     * @param catalogOptions Catalog specific options to use.      
+     * @param catalogOptions Catalog specific options to use.
      * @return A list of matching {@link com.orbitz.consul.model.catalog.CatalogService} objects.
      */
     public ConsulResponse<CatalogNode> getNode(String node, CatalogOptions catalogOptions) {
@@ -243,12 +239,34 @@ public class CatalogClient {
      *
      * GET /v1/catalog/node/{node}?dc={datacenter}
      *
-     * @param catalogOptions Catalog specific options to use.      
+     * @param catalogOptions Catalog specific options to use.
      * @param queryOptions The Query Options to use.
      * @return A list of matching {@link com.orbitz.consul.model.catalog.CatalogService} objects.
      */
     public ConsulResponse<CatalogNode> getNode(String node, CatalogOptions catalogOptions, QueryOptions queryOptions) {
-        return response(webTarget.path("node").path(node), catalogOptions, queryOptions,
-                TYPE_CATALOG_NODE);
+        return extractConsulResponse(api.getNode(node, Options.from(catalogOptions, queryOptions)));
+    }
+
+    /**
+     * Retrofit API interface.
+     */
+    interface Api {
+
+        @GET("catalog/datacenters")
+        Call<List<String>> getDatacenters();
+
+        @GET("catalog/nodes")
+        Call<List<Node>> getNodes(@QueryMap Map<String, Object> query);
+
+        @GET("catalog/node/{node}")
+        Call<CatalogNode> getNode(@Path("node") String node,
+                                  @QueryMap Map<String, Object> query);
+
+        @GET("catalog/services")
+        Call<Map<String, List<String>>> getServices(@QueryMap Map<String, Object> query);
+
+        @GET("catalog/service/{service}")
+        Call<List<CatalogService>> getService(@Path("service") String service,
+                                              @QueryMap Map<String, Object> query);
     }
 }

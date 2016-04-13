@@ -1,47 +1,43 @@
 package com.orbitz.consul;
 
+import com.google.common.base.Function;
 import com.google.common.base.Optional;
+import com.google.common.collect.FluentIterable;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.primitives.UnsignedLongs;
 import com.orbitz.consul.async.ConsulResponseCallback;
 import com.orbitz.consul.model.ConsulResponse;
 import com.orbitz.consul.model.kv.Value;
 import com.orbitz.consul.model.session.SessionInfo;
-import com.orbitz.consul.option.CatalogOptions;
 import com.orbitz.consul.option.ImmutablePutOptions;
 import com.orbitz.consul.option.PutOptions;
 import com.orbitz.consul.option.QueryOptions;
 import org.apache.commons.lang3.StringUtils;
+import retrofit2.Call;
+import retrofit2.Retrofit;
+import retrofit2.http.*;
 
-import javax.ws.rs.NotFoundException;
-import javax.ws.rs.client.Entity;
-import javax.ws.rs.client.WebTarget;
-import javax.ws.rs.core.GenericType;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 import static com.google.common.base.Preconditions.checkArgument;
-import static com.orbitz.consul.util.ClientUtil.addParams;
-import static com.orbitz.consul.util.ClientUtil.response;
+import static com.orbitz.consul.util.Http.*;
 
 /**
  * HTTP Client for /v1/kv/ endpoints.
  */
 public class KeyValueClient {
 
-    private static final GenericType<List<Value>> TYPE_VALUE_LIST =
-            new GenericType<List<Value>>() {};
-    private static final Entity<String> EMPTY_ENTITY = Entity.text("");
-
-    private final WebTarget webTarget;
+    private final Api api;
 
     /**
      * Constructs an instance of this class.
      *
-     * @param webTarget The {@link javax.ws.rs.client.WebTarget} to base requests from.
+     * @param retrofit The {@link Retrofit} to build a client from.
      */
-    KeyValueClient(WebTarget webTarget) {
-        this.webTarget = webTarget;
+    KeyValueClient(Retrofit retrofit) {
+        this.api = retrofit.create(Api.class);
     }
 
     /**
@@ -68,11 +64,13 @@ public class KeyValueClient {
      * @return An {@link Optional} containing the value or {@link Optional#absent()}
      */
     public Optional<Value> getValue(String key, QueryOptions queryOptions) {
-        WebTarget target = addParams(webTarget.path(key), queryOptions);
         try {
-            return getSingleValue(target.request().accept(MediaType.APPLICATION_JSON_TYPE)
-                    .get(new GenericType<List<Value>>() {}));
-        } catch (NotFoundException ignored) {}
+            return getSingleValue(extract(api.getValue(key, queryOptions.toQuery())));
+        } catch (ConsulException ignored) {
+            if(ignored.getCode() != 404) {
+                throw ignored;
+            }
+        }
 
         return Optional.absent();
     }
@@ -102,8 +100,8 @@ public class KeyValueClient {
                 callback.onFailure(throwable);
             }
         };
-        response(webTarget.path(key), CatalogOptions.BLANK, queryOptions,
-                TYPE_VALUE_LIST, wrapper);
+
+        extractConsulResponse(api.getValue(key, queryOptions.toQuery()), wrapper);
     }
 
     private Optional<Value> getSingleValue(List<Value> values){
@@ -120,7 +118,7 @@ public class KeyValueClient {
      * @return A list of zero to many {@link com.orbitz.consul.model.kv.Value} objects.
      */
     public List<Value> getValues(String key) {
-        return getValues(key, null);
+        return getValues(key, QueryOptions.BLANK);
     }
 
     /**
@@ -134,12 +132,11 @@ public class KeyValueClient {
      * @return A list of zero to many {@link com.orbitz.consul.model.kv.Value} objects.
      */
     public List<Value> getValues(String key, QueryOptions queryOptions) {
-        WebTarget target = webTarget.path(key).queryParam("recurse", "true");
-        if (queryOptions != null) {
-            queryOptions.apply(webTarget);
-        }
-        return Arrays.asList(target
-                .request().accept(MediaType.APPLICATION_JSON_TYPE).get(Value[].class));
+        Map<String, Object> query = queryOptions.toQuery();
+
+        query.put("recurse", "true");
+
+        return extract(api.getValue(key, query));
     }
 
     /**
@@ -153,8 +150,11 @@ public class KeyValueClient {
      * @param callback Callback implemented by callee to handle results.
      */
     public void getValues(String key, QueryOptions queryOptions, ConsulResponseCallback<List<Value>> callback) {
-        response(webTarget.path(key).queryParam("recurse", "true"), CatalogOptions.BLANK,
-                queryOptions, TYPE_VALUE_LIST, callback);
+        Map<String, Object> query = queryOptions.toQuery();
+
+        query.put("recurse", "true");
+
+        extractConsulResponse(api.getValue(key, query), callback);
     }
 
     /**
@@ -238,13 +238,17 @@ public class KeyValueClient {
     public boolean putValue(String key, String value, long flags, PutOptions putOptions) {
 
         checkArgument(StringUtils.isNotEmpty(key), "Key must be defined");
-        WebTarget target = putOptions.apply(webTarget).path(key);
+        Map<String, Object> query = putOptions.toQuery();
 
         if (flags != 0) {
-            target = target.queryParam("flags", UnsignedLongs.toString(flags));
+            query.put("flags", UnsignedLongs.toString(flags));
         }
 
-        return target.request().put(value == null ? EMPTY_ENTITY : Entity.text(value), Boolean.class);
+        if (value == null) {
+            return extract(api.putValue(key, query));
+        } else {
+            return extract(api.putValue(key, value, query));
+        }
     }
 
     /**
@@ -256,8 +260,14 @@ public class KeyValueClient {
      * @return A list of zero to many keys.
      */
     public List<String> getKeys(String key) {
-        return Arrays.asList(webTarget.path(key).queryParam("keys", "true").request()
-                .accept(MediaType.APPLICATION_JSON_TYPE).get(String[].class));
+        List<Value> values = extract(api.getValue(key, ImmutableMap.<String, Object>of("keys", "true")));
+
+        return FluentIterable.from(values).transform(new Function<Value, String>() {
+            @Override
+            public String apply(Value input) {
+                return input.getValue().get();
+            }
+        }).toList();
     }
 
     /**
@@ -268,21 +278,7 @@ public class KeyValueClient {
      * @param key The key to delete.
      */
     public void deleteKey(String key) {
-        Response response = null;
-
-        try {
-            response = webTarget.path(key).request().delete();
-
-            if (response.getStatus() != 200) {
-                throw new ConsulException(response.readEntity(String.class));
-            }
-        } catch (Exception ex) {
-            throw new ConsulException(String.format("Error deleting %s key", key), ex);
-        } finally {
-            if(response != null) {
-                response.close();
-            }
-        }
+        handle(api.deleteValue(key));
     }
 
     /**
@@ -293,11 +289,7 @@ public class KeyValueClient {
      * @param key The key to delete.
      */
     public void deleteKeys(String key) {
-        Response response = webTarget.path(key).queryParam("recurse", "true").request().delete();
-
-        if(response.getStatus() != 200) {
-            throw new ConsulException(response.readEntity(String.class));
-        }
+        handle(api.deleteValues(key, ImmutableMap.of("recurse", "true")));
     }
 
     /**
@@ -341,7 +333,6 @@ public class KeyValueClient {
         return value.isPresent() ? value.get().getSession() : Optional.<String>absent();
     }
 
-
     /**
      * Releases the lock for a given service and session.
      *
@@ -354,5 +345,30 @@ public class KeyValueClient {
      */
     public boolean releaseLock(final String key, final String sessionId) {
         return putValue(key, "", 0, ImmutablePutOptions.builder().release(sessionId).build());
+    }
+
+    /**
+     * Retrofit API interface.
+     */
+    interface Api {
+
+        @GET("kv/{key}")
+        Call<List<Value>> getValue(@Path("key") String key,
+                                   @QueryMap Map<String, Object> query);
+
+        @PUT("kv/{key}")
+        Call<Boolean> putValue(@Path("key") String key,
+                               @QueryMap Map<String, Object> query);
+        @PUT("kv/{key}")
+        Call<Boolean> putValue(@Path("key") String key,
+                               @Body String data,
+                               @QueryMap Map<String, Object> query);
+
+        @DELETE("kv/{key}")
+        Call<Void> deleteValue(@Path("key") String key);
+
+        @DELETE("kv/{key}")
+        Call<Void> deleteValues(@Path("key") String key,
+                                @QueryMap Map<String, String> query);
     }
 }

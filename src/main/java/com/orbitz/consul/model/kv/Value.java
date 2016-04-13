@@ -44,6 +44,7 @@ public abstract class Value {
         if (getValue().isPresent()) {
             return Optional.of(
                     new String(BaseEncoding.base64().decode(getValue().get()))
+                        .replaceAll("^\"|\"$", "")
             );
         } else {
             return Optional.absent();

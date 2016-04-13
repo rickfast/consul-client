@@ -35,8 +35,8 @@ public class EventTests {
         Consul client = Consul.builder().build();
         EventClient eventClient = client.eventClient();
 
-        String payload = RandomStringUtils.random(20);
-        String name = RandomStringUtils.random(10);
+        String payload = RandomStringUtils.randomAlphabetic(20);
+        String name = RandomStringUtils.randomAlphabetic(10);
         Event fired = eventClient.fireEvent(name, payload);
 
         Thread.sleep(100);
@@ -47,7 +47,7 @@ public class EventTests {
             if (event.getName().equals(name) && event.getId().equals(fired.getId())) {
                 found = true;
 
-                assertEquals(payload, event.getPayload().get());
+                assertEquals(String.format("\"%s\"", payload), event.getPayload().get());
             }
         }
 

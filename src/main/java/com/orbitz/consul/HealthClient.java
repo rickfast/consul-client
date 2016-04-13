@@ -1,42 +1,45 @@
 package com.orbitz.consul;
 
+import com.google.common.collect.ImmutableMap;
 import com.orbitz.consul.async.ConsulResponseCallback;
 import com.orbitz.consul.model.ConsulResponse;
 import com.orbitz.consul.model.State;
 import com.orbitz.consul.model.health.HealthCheck;
 import com.orbitz.consul.model.health.ServiceHealth;
 import com.orbitz.consul.option.CatalogOptions;
+import com.orbitz.consul.option.Options;
 import com.orbitz.consul.option.QueryOptions;
+import retrofit2.Call;
+import retrofit2.Retrofit;
+import retrofit2.http.GET;
+import retrofit2.http.Path;
+import retrofit2.http.QueryMap;
 
-import javax.ws.rs.client.WebTarget;
-import javax.ws.rs.core.GenericType;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
-import static com.orbitz.consul.util.ClientUtil.response;
+import static com.orbitz.consul.util.Http.extractConsulResponse;
 
 /**
  * HTTP Client for /v1/health/ endpoints.
  */
 public class HealthClient {
 
-    private static final GenericType<List<HealthCheck>> TYPE_HEALTH_CHECK_LIST =
-            new GenericType<List<HealthCheck>>() {};
-    private static final GenericType<List<ServiceHealth>> TYPE_SERVICE_HEALTH_LIST =
-            new GenericType<List<ServiceHealth>>() {};
-    private final WebTarget webTarget;
+    private final Api api;
 
     /**
      * Constructs an instance of this class.
      *
-     * @param webTarget The {@link javax.ws.rs.client.WebTarget} to base requests from.
+     * @param retrofit The {@link Retrofit} to build a client from.
      */
-    HealthClient(WebTarget webTarget) {
-        this.webTarget = webTarget;
+    HealthClient(Retrofit retrofit) {
+        this.api = retrofit.create(Api.class);
     }
 
     /**
      * Retrieves the healthchecks for a node.
-     * 
+     *
      * GET /v1/health/node/{node}
      *
      * @param node The node to return checks for
@@ -49,7 +52,7 @@ public class HealthClient {
 
     /**
      * Retrieves the healthchecks for a node in a given datacenter.
-     * 
+     *
      * GET /v1/health/node/{node}?dc={datacenter}
      *
      * @param node The node to return checks for
@@ -63,7 +66,7 @@ public class HealthClient {
 
     /**
      * Retrieves the healthchecks for a node with {@link com.orbitz.consul.option.QueryOptions}.
-     * 
+     *
      * GET /v1/health/node/{node}
      *
      * @param node The node to return checks for
@@ -86,14 +89,14 @@ public class HealthClient {
      * @return A {@link com.orbitz.consul.model.ConsulResponse} containing a list of
      * {@link com.orbitz.consul.model.health.HealthCheck} objects.
      */
-    public ConsulResponse<List<HealthCheck>> getNodeChecks(String node, CatalogOptions catalogOptions, QueryOptions queryOptions) {
-        return response(webTarget.path("node").path(node), catalogOptions, queryOptions,
-                TYPE_HEALTH_CHECK_LIST);
+    public ConsulResponse<List<HealthCheck>> getNodeChecks(String node, CatalogOptions catalogOptions,
+                                                           QueryOptions queryOptions) {
+        return extractConsulResponse(api.getNodeChecks(node, Options.from(catalogOptions, queryOptions)));
     }
 
     /**
      * Retrieves the healthchecks for a service.
-     * 
+     *
      * GET /v1/health/checks/{service}
      *
      * @return A {@link com.orbitz.consul.model.ConsulResponse} containing a list of
@@ -141,10 +144,8 @@ public class HealthClient {
      */
     public ConsulResponse<List<HealthCheck>> getServiceChecks(String service, CatalogOptions catalogOptions,
                                                               QueryOptions queryOptions) {
-        return response(webTarget.path("checks").path(service), catalogOptions, queryOptions,
-                TYPE_HEALTH_CHECK_LIST);
+        return extractConsulResponse(api.getServiceChecks(service, Options.from(catalogOptions, queryOptions)));
     }
-
 
     /**
      * Asynchronously retrieves the healthchecks for a service in a given
@@ -160,8 +161,9 @@ public class HealthClient {
     public void getServiceChecks(String service,
                                  QueryOptions queryOptions,
                                  ConsulResponseCallback<List<HealthCheck>> callback) {
-        response(webTarget.path("checks").path(service), CatalogOptions.BLANK, queryOptions, TYPE_HEALTH_CHECK_LIST, callback);
+        extractConsulResponse(api.getServiceChecks(service, queryOptions.toQuery()), callback);
     }
+
 
     /**
      * Asynchronously retrieves the healthchecks for a service in a given
@@ -179,12 +181,12 @@ public class HealthClient {
                                  CatalogOptions catalogOptions,
                                  QueryOptions queryOptions,
                                  ConsulResponseCallback<List<HealthCheck>> callback) {
-        response(webTarget.path("checks").path(service), catalogOptions, queryOptions, TYPE_HEALTH_CHECK_LIST, callback);
+        extractConsulResponse(api.getServiceChecks(service, Options.from(queryOptions, catalogOptions)), callback);
     }
 
     /**
      * Retrieves the healthchecks for a state.
-     * 
+     *
      * GET /v1/health/state/{state}
      *
      * @param state The state to query.
@@ -197,7 +199,7 @@ public class HealthClient {
 
     /**
      * Retrieves the healthchecks for a state in a given datacenter.
-     * 
+     *
      * GET /v1/health/state/{state}?dc={datacenter}
      *
      * @param state          The state to query.
@@ -211,7 +213,7 @@ public class HealthClient {
 
     /**
      * Retrieves the healthchecks for a state with {@link com.orbitz.consul.option.QueryOptions}.
-     * 
+     *
      * GET /v1/health/state/{state}
      *
      * @param state        The state to query.
@@ -225,7 +227,7 @@ public class HealthClient {
 
     /**
      * Retrieves the healthchecks for a state in a given datacenter with {@link com.orbitz.consul.option.QueryOptions}.
-     * 
+     *
      * GET /v1/health/state/{state}?dc={datacenter}
      *
      * @param state          The state to query.
@@ -236,13 +238,12 @@ public class HealthClient {
      */
     public ConsulResponse<List<HealthCheck>> getChecksByState(State state, CatalogOptions catalogOptions,
                                                               QueryOptions queryOptions) {
-        return response(webTarget.path("state").path(state.getName()), catalogOptions, queryOptions,
-                TYPE_HEALTH_CHECK_LIST);
+        return extractConsulResponse(api.getChecksByState(state.getName(), Options.from(catalogOptions, queryOptions)));
     }
 
     /**
      * Retrieves the healthchecks for all healthy service instances.
-     * 
+     *
      * GET /v1/health/service/{service}?passing
      *
      * @param service The service to query.
@@ -255,7 +256,7 @@ public class HealthClient {
 
     /**
      * Retrieves the healthchecks for all healthy service instances in a given datacenter.
-     * 
+     *
      * GET /v1/health/service/{service}?dc={datacenter}&amp;passing
      *
      * @param service        The service to query.
@@ -269,7 +270,7 @@ public class HealthClient {
 
     /**
      * Retrieves the healthchecks for all healthy service instances with {@link com.orbitz.consul.option.QueryOptions}.
-     * 
+     *
      * GET /v1/health/service/{service}?passing
      *
      * @param service      The service to query.
@@ -284,7 +285,7 @@ public class HealthClient {
     /**
      * Retrieves the healthchecks for all healthy service instances in a given datacenter with
      * {@link com.orbitz.consul.option.QueryOptions}.
-     * 
+     *
      * GET /v1/health/service/{service}?dc={datacenter}&amp;passing
      *
      * @param service        The service to query.
@@ -295,16 +296,18 @@ public class HealthClient {
      */
     public ConsulResponse<List<ServiceHealth>> getHealthyServiceInstances(String service, CatalogOptions catalogOptions,
                                                                           QueryOptions queryOptions) {
-        return response(webTarget.path("service").path(service).queryParam("passing", "true"),
-                catalogOptions, queryOptions, TYPE_SERVICE_HEALTH_LIST);
+        return extractConsulResponse(api.getServiceInstances(service,
+                optionsFrom(ImmutableMap.of("passing", "true"), Options.from(catalogOptions, queryOptions))));
     }
+
+
 
     /**
      * Asynchronously retrieves the healthchecks for all healthy service instances in a given
      * datacenter with {@link com.orbitz.consul.option.QueryOptions}.
-     * 
+     *
      * GET /v1/health/service/{service}?dc={datacenter}&amp;passing
-     * 
+     *
      * Experimental.
      *
      * @param service        The service to query.
@@ -315,16 +318,17 @@ public class HealthClient {
     public void getHealthyServiceInstances(String service, CatalogOptions catalogOptions,
                                            QueryOptions queryOptions,
                                            ConsulResponseCallback<List<ServiceHealth>> callback) {
-        response(webTarget.path("service").path(service).queryParam("passing", "true"),
-                catalogOptions, queryOptions, TYPE_SERVICE_HEALTH_LIST, callback);
+        extractConsulResponse(api.getServiceInstances(service,
+                optionsFrom(ImmutableMap.of("passing", "true"), Options.from(catalogOptions, queryOptions))),
+                callback);
     }
 
     /**
      * Asynchronously retrieves the healthchecks for all healthy service instances in a given
      * datacenter with {@link com.orbitz.consul.option.QueryOptions}.
-     * 
+     *
      * GET /v1/health/service/{service}?dc={datacenter}&amp;passing
-     * 
+     *
      * Experimental.
      *
      * @param service      The service to query.
@@ -333,13 +337,13 @@ public class HealthClient {
      */
     public void getHealthyServiceInstances(String service, QueryOptions queryOptions,
                                            ConsulResponseCallback<List<ServiceHealth>> callback) {
-        response(webTarget.path("service").path(service).queryParam("passing", "true"),
-                CatalogOptions.BLANK, queryOptions, TYPE_SERVICE_HEALTH_LIST, callback);
+        extractConsulResponse(api.getServiceInstances(service,
+                optionsFrom(ImmutableMap.of("passing", "true"), queryOptions.toQuery())), callback);
     }
 
     /**
      * Retrieves the healthchecks for all nodes.
-     * 
+     *
      * GET /v1/health/service/{service}
      *
      * @param service The service to query.
@@ -352,7 +356,7 @@ public class HealthClient {
 
     /**
      * Retrieves the healthchecks for all nodes in a given datacenter.
-     * 
+     *
      * GET /v1/health/service/{service}?dc={datacenter}
      *
      * @param service        The service to query.
@@ -366,7 +370,7 @@ public class HealthClient {
 
     /**
      * Retrieves the healthchecks for all nodes with {@link com.orbitz.consul.option.QueryOptions}.
-     * 
+     *
      * GET /v1/health/service/{service}
      *
      * @param service      The service to query.
@@ -381,7 +385,7 @@ public class HealthClient {
     /**
      * Retrieves the healthchecks for all nodes in a given datacenter with
      * {@link com.orbitz.consul.option.QueryOptions}.
-     * 
+     *
      * GET /v1/health/service/{service}?dc={datacenter}
      *
      * @param service        The service to query.
@@ -392,16 +396,15 @@ public class HealthClient {
      */
     public ConsulResponse<List<ServiceHealth>> getAllServiceInstances(String service, CatalogOptions catalogOptions,
                                                                       QueryOptions queryOptions) {
-        return response(webTarget.path("service").path(service), catalogOptions, queryOptions,
-                TYPE_SERVICE_HEALTH_LIST);
+        return extractConsulResponse(api.getServiceInstances(service, Options.from(catalogOptions, queryOptions)));
     }
 
     /**
      * Asynchronously retrieves the healthchecks for all nodes in a given
      * datacenter with {@link com.orbitz.consul.option.QueryOptions}.
-     * 
+     *
      * GET /v1/health/service/{service}?dc={datacenter}
-     * 
+     *
      * Experimental.
      *
      * @param service        The service to query.
@@ -412,16 +415,16 @@ public class HealthClient {
     public void getAllServiceInstances(String service, CatalogOptions catalogOptions,
                                        QueryOptions queryOptions,
                                        ConsulResponseCallback<List<ServiceHealth>> callback) {
-        response(webTarget.path("service").path(service), catalogOptions, queryOptions,
-                TYPE_SERVICE_HEALTH_LIST, callback);
+        extractConsulResponse(api.getServiceInstances(service, Options.from(catalogOptions, queryOptions)),
+                callback);
     }
 
     /**
      * Asynchronously retrieves the healthchecks for all nodes in a given
      * datacenter with {@link com.orbitz.consul.option.QueryOptions}.
-     * 
+     *
      * GET /v1/health/service/{service}?dc={datacenter}
-     * 
+     *
      * Experimental.
      *
      * @param service      The service to query.
@@ -430,7 +433,38 @@ public class HealthClient {
      */
     public void getAllServiceInstances(String service, QueryOptions queryOptions,
                                        ConsulResponseCallback<List<ServiceHealth>> callback) {
-        response(webTarget.path("service").path(service), CatalogOptions.BLANK,
-                queryOptions, TYPE_SERVICE_HEALTH_LIST, callback);
+        extractConsulResponse(api.getServiceInstances(service, queryOptions.toQuery()), callback);
+    }
+
+    private static Map<String, Object> optionsFrom(Map<String, ?>... options) {
+        Map<String, Object> result = new HashMap<>();
+
+        for (Map<String, ?> option : options) {
+            result.putAll(option);
+        }
+
+        return result;
+    }
+
+    /**
+     * Retrofit API interface.
+     */
+    interface Api {
+
+        @GET("health/node/{node}")
+        Call<List<HealthCheck>> getNodeChecks(@Path("node") String node,
+                                              @QueryMap Map<String, Object> query);
+
+        @GET("health/checks/{service}")
+        Call<List<HealthCheck>> getServiceChecks(@Path("service") String service,
+                                                 @QueryMap Map<String, Object> query);
+
+        @GET("health/state/{state}")
+        Call<List<HealthCheck>> getChecksByState(@Path("state") String state,
+                                                 @QueryMap Map<String, Object> query);
+
+        @GET("health/service/{service}")
+        Call<List<ServiceHealth>> getServiceInstances(@Path("service") String service,
+                                                      @QueryMap Map<String, Object> query);
     }
 }

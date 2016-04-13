@@ -2,17 +2,14 @@ package com.orbitz.consul;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.guava.GuavaModule;
-import com.fasterxml.jackson.jaxrs.json.JacksonJaxbJsonProvider;
-import com.google.common.base.Optional;
-import com.google.common.collect.FluentIterable;
-import com.google.common.base.Predicate;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.net.HostAndPort;
 import com.orbitz.consul.util.Jackson;
-import com.orbitz.consul.util.ObjectMapperContextResolver;
+import okhttp3.OkHttpClient;
+import retrofit2.Retrofit;
+import retrofit2.converter.jackson.JacksonConverterFactory;
 
 import javax.net.ssl.SSLContext;
-import javax.ws.rs.client.Client;
-import javax.ws.rs.client.ClientBuilder;
 import java.net.MalformedURLException;
 import java.net.URL;
 
@@ -40,96 +37,44 @@ public class Consul {
     private final StatusClient statusClient;
     private final SessionClient sessionClient;
     private final EventClient eventClient;
+    private final PreparedQueryClient preparedQueryClient;
 
     /**
      * Private constructor.
      *
      * @param url     The full URL of a running Consul instance.
-     * @param builder JAX-RS client builder instance.
+     * @param mapper  A Jackson {@link ObjectMapper}
      */
-    private Consul(String url, ClientBuilder builder, ObjectMapper mapper) {
+    private Consul(String url, SSLContext sslContext, ObjectMapper mapper) {
 
-        if (!FluentIterable.from(builder.getConfiguration().getClasses())
-                      .filter(new Predicate<Class<?>>() {
-                        @Override
-                        public boolean apply(final Class<?> clazz) {
-                            return JacksonJaxbJsonProvider.class.isAssignableFrom(clazz);
-                        }
-                    }).first().isPresent()) {
-            builder.register(JacksonJaxbJsonProvider.class);
+        final OkHttpClient.Builder builder = new OkHttpClient.Builder();
+        try {
+            final URL consulUrl = new URL(url);
+
+            if (sslContext != null) {
+                builder.sslSocketFactory(sslContext.getSocketFactory());
+            }
+
+            final Retrofit retrofit = new Retrofit.Builder()
+                    .baseUrl(new URL(consulUrl.getProtocol(), consulUrl.getHost(),
+                            consulUrl.getPort(), "/v1/").toExternalForm())
+                    .addConverterFactory(JacksonConverterFactory.create(mapper))
+                    .client(builder.build())
+                    .build();
+
+            this.agentClient = new AgentClient(retrofit);
+            this.healthClient = new HealthClient(retrofit);
+            this.keyValueClient = new KeyValueClient(retrofit);
+            this.catalogClient = new CatalogClient(retrofit);
+            this.statusClient = new StatusClient(retrofit);
+            this.sessionClient = new SessionClient(retrofit);
+            this.eventClient = new EventClient(retrofit);
+            this.preparedQueryClient = new PreparedQueryClient(retrofit);
+        } catch (MalformedURLException e) {
+            throw new RuntimeException(e);
         }
-        final Client client = builder
-                .register(new ObjectMapperContextResolver(mapper))
-                .build();
-
-        this.agentClient = new AgentClient(client.target(url).path("v1").path("agent"));
-        this.healthClient = new HealthClient(client.target(url).path("v1").path("health"));
-        this.keyValueClient = new KeyValueClient(client.target(url).path("v1").path("kv"));
-        this.catalogClient = new CatalogClient(client.target(url).path("v1").path("catalog"));
-        this.statusClient = new StatusClient(client.target(url).path("v1").path("status"));
-        this.sessionClient = new SessionClient(client.target(url).path("v1").path("session"));
-        this.eventClient = new EventClient(client.target(url).path("v1").path("event"));
 
         agentClient.ping();
-    }
-
-    /**
-     * Creates a new client given a complete URL.
-     *
-     * @deprecated Use {@link Consul.Builder}
-     *
-     * @param url     The Consul API URL.
-     * @param builder The JAX-RS client builder instance.
-     * @return A new client.
-     */
-    @Deprecated
-    public static Consul newClient(String url, ClientBuilder builder, ObjectMapper mapper) {
-        return new Consul(url, builder, mapper);
-    }
-
-    /**
-     * Creates a new client given a host and a port.
-     *
-     * @deprecated Use {@link Consul.Builder}
-     *
-     * @param host    The Consul API hostname or IP.
-     * @param port    The Consul port.
-     * @param builder The JAX-RS client builder instance.
-     * @return A new client.
-     */
-    @Deprecated
-    public static Consul newClient(String host, int port, ClientBuilder builder, ObjectMapper mapper) {
-        try {
-            return new Consul(new URL("http", host, port, "").toString(), builder, mapper);
-        } catch (MalformedURLException e) {
-            throw new ConsulException("Bad Consul URL", e);
-        }
-    }
-
-    /**
-     * Creates a new client given a host and a port.
-     *
-     * @deprecated Use {@link Consul.Builder}
-     *
-     * @param host The Consul API hostname or IP.
-     * @param port The Consul port.
-     * @return A new client.
-     */
-    @Deprecated
-    public static Consul newClient(String host, int port) {
-        return newClient(host, port, ClientBuilder.newBuilder(), Jackson.MAPPER);
-    }
-
-    /**
-     * Creates a new client given a host and a port.
-     *
-     * @deprecated Use {@link Consul.Builder}
-     *
-     * @return A new client.
-     */
-    @Deprecated
-    public static Consul newClient() {
-        return newClient(DEFAULT_HTTP_HOST, DEFAULT_HTTP_PORT);
     }
 
     /**
@@ -210,6 +155,17 @@ public class Consul {
     }
 
     /**
+     * Get the Prepared Query HTTP client.
+     * <p>
+     * /v1/query
+     *
+     * @return The Prepared Query HTTP client.
+     */
+    public PreparedQueryClient preparedQueryClient() {
+        return preparedQueryClient;
+    }
+
+    /**
      * Creates a new {@link Builder} object.
      *
      * @return A new Consul builder.
@@ -219,13 +175,22 @@ public class Consul {
     }
 
     /**
+     * Used to create a default Consul client.
+     *
+     * @return A default {@link Consul} client.
+     */
+    @VisibleForTesting
+    public static Consul newClient() {
+        return builder().build();
+    }
+
+    /**
      * Builder for {@link Consul} client objects.
      */
     public static class Builder {
         private URL url;
-        private Optional<SSLContext> sslContext = Optional.absent();
+        private SSLContext sslContext;
         private ObjectMapper objectMapper = Jackson.MAPPER;
-        private ClientBuilder clientBuilder = ClientBuilder.newBuilder();
 
         {
             try {
@@ -293,7 +258,7 @@ public class Consul {
          * @return The builder.
          */
         public Builder withSslContext(SSLContext sslContext) {
-            this.sslContext = Optional.of(sslContext);
+            this.sslContext = sslContext;
 
             return this;
         }
@@ -313,28 +278,12 @@ public class Consul {
         }
 
         /**
-         * Sets the JAX-RS {@link ClientBuilder} to use.
-         *
-         * @param clientBuilder The JAX-RS builder.
-         * @return This builder.
-         */
-        public Builder withClientBuilder(ClientBuilder clientBuilder) {
-            this.clientBuilder = clientBuilder;
-
-            return this;
-        }
-
-        /**
          * Constructs a new {@link Consul} client.
          *
          * @return A new Consul client.
          */
         public Consul build() {
-            if (this.sslContext.isPresent()) {
-                this.clientBuilder.sslContext(this.sslContext.get());
-            }
-
-            return new Consul(this.url.toExternalForm(), this.clientBuilder, this.objectMapper);
+            return new Consul(this.url.toExternalForm(), this.sslContext, this.objectMapper);
         }
     }
 }

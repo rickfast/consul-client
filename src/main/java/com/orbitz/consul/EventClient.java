@@ -1,5 +1,6 @@
 package com.orbitz.consul;
 
+import com.google.common.collect.ImmutableMap;
 import com.orbitz.consul.async.EventResponseCallback;
 import com.orbitz.consul.model.EventResponse;
 import com.orbitz.consul.model.ImmutableEventResponse;
@@ -7,18 +8,19 @@ import com.orbitz.consul.model.event.Event;
 import com.orbitz.consul.option.EventOptions;
 import com.orbitz.consul.option.QueryOptions;
 import org.apache.commons.lang3.StringUtils;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+import retrofit2.Retrofit;
+import retrofit2.http.*;
 
-import javax.ws.rs.client.Entity;
-import javax.ws.rs.client.InvocationCallback;
-import javax.ws.rs.client.WebTarget;
-import javax.ws.rs.core.GenericType;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
+import java.io.IOException;
 import java.math.BigInteger;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
-import static com.orbitz.consul.util.ClientUtil.addParams;
-import static com.orbitz.consul.util.ClientUtil.handleErrors;
+import static com.orbitz.consul.util.Http.extract;
 
 /**
  * HTTP Client for /v1/event/ endpoints.
@@ -27,20 +29,15 @@ import static com.orbitz.consul.util.ClientUtil.handleErrors;
  */
 public class EventClient {
 
-    private static final GenericType<Event> TYPE_EVENT =
-            new GenericType<Event>() {};
-    private static final GenericType<List<Event>> TYPE_EVENT_LIST =
-            new GenericType<List<Event>>() {};
-
-    private final WebTarget webTarget;
+    private final Api api;
 
     /**
      * Constructs an instance of this class.
      *
-     * @param webTarget The {@link javax.ws.rs.client.WebTarget} to base requests from.
+     * @param retrofit The {@link Retrofit} to build a client from.
      */
-    EventClient(WebTarget webTarget) {
-        this.webTarget = webTarget;
+    EventClient(Retrofit retrofit) {
+        this.api = retrofit.create(Api.class);
     }
 
     /**
@@ -54,13 +51,7 @@ public class EventClient {
      * @return The newly created {@link com.orbitz.consul.model.event.Event}.
      */
     public Event fireEvent(String name, EventOptions eventOptions, String payload) {
-        WebTarget target = webTarget.path("fire").path(name);
-
-        target = addParams(target, eventOptions);
-
-        return target.request()
-                .put(Entity.entity(StringUtils.isEmpty(payload) ? "" : payload, MediaType.WILDCARD_TYPE),
-                        TYPE_EVENT);
+        return extract(api.fireEvent(name, payload, eventOptions.toQuery()));
     }
 
     /**
@@ -72,7 +63,7 @@ public class EventClient {
      * @return The newly created {@link com.orbitz.consul.model.event.Event}.
      */
     public Event fireEvent(String name) {
-        return fireEvent(name, EventOptions.BLANK, null);
+        return fireEvent(name, EventOptions.BLANK);
     }
 
     /**
@@ -85,7 +76,7 @@ public class EventClient {
      * @return The newly created {@link com.orbitz.consul.model.event.Event}.
      */
     public Event fireEvent(String name, EventOptions eventOptions) {
-        return fireEvent(name, eventOptions, null);
+        return extract(api.fireEvent(name, eventOptions.toQuery()));
     }
 
     /**
@@ -112,13 +103,13 @@ public class EventClient {
      *  a list of {@link com.orbitz.consul.model.event.Event} objects.
      */
     public EventResponse listEvents(String name, QueryOptions queryOptions) {
-        WebTarget target = webTarget.path("list");
+        Map<String, String> query = Collections.emptyMap();
 
         if (StringUtils.isNotEmpty(name)) {
-            target = target.queryParam("name", name);
+            query = ImmutableMap.of("name", name);
         }
 
-        return response(target, queryOptions);
+        return response(api.listEvents(query));
     }
 
     /**
@@ -169,13 +160,13 @@ public class EventClient {
      * @param callback The callback to asynchronously process the result.
      */
     public void listEvents(String name, QueryOptions queryOptions, EventResponseCallback callback) {
-        WebTarget target = webTarget.path("list");
+        Map<String, String> query = Collections.emptyMap();
 
         if (StringUtils.isNotEmpty(name)) {
-            target = target.queryParam("name", name);
+            query = ImmutableMap.of("name", name);
         }
 
-        response(target, queryOptions, callback);
+        response(api.listEvents(query), callback);
     }
 
     /**
@@ -201,13 +192,11 @@ public class EventClient {
         listEvents(null, QueryOptions.BLANK, callback);
     }
 
-    private static void response(WebTarget target, QueryOptions queryOptions, final EventResponseCallback callback) {
-        target = addParams(target, queryOptions);
-
-        target.request().accept(MediaType.APPLICATION_JSON_TYPE).async().get(new InvocationCallback<Response>() {
+    private static void response(Call<List<Event>> call, final EventResponseCallback callback) {
+        call.enqueue(new Callback<List<Event>>() {
 
             @Override
-            public void completed(Response response) {
+            public void onResponse(Call<List<Event>> call, Response<List<Event>> response) {
                 try {
                     callback.onComplete(eventResponse(response));
                 } catch (Exception ex) {
@@ -216,29 +205,50 @@ public class EventClient {
             }
 
             @Override
-            public void failed(Throwable throwable) {
-                callback.onFailure(throwable);
+            public void onFailure(Call<List<Event>> call, Throwable t) {
+                callback.onFailure(t);
             }
         });
     }
 
-    private static EventResponse response(WebTarget target, QueryOptions queryOptions) {
-        target = addParams(target, queryOptions);
+    private static EventResponse response(Call<List<Event>> call) {
+        Response<List<Event>> response;
+        try {
+            response = call.execute();
+        } catch (IOException e) {
+            throw new ConsulException(e);
+        }
 
-        return eventResponse(target.request().accept(MediaType.APPLICATION_JSON_TYPE).get());
+        if(!response.isSuccessful()) {
+            throw new ConsulException(response.code(), response);
+        }
+
+        return eventResponse(response);
     }
 
-    private static EventResponse eventResponse(Response response) {
-        handleErrors(response);
-
-        String indexHeaderValue = response.getHeaderString("X-Consul-Index");
+    private static EventResponse eventResponse(Response<List<Event>> response) {
+        String indexHeaderValue = response.headers().get("X-Consul-Index");
 
         BigInteger index = new BigInteger(indexHeaderValue);
 
-        EventResponse eventResponse = ImmutableEventResponse.of(response.readEntity(TYPE_EVENT_LIST), index);
-        
-        response.close();
+        return ImmutableEventResponse.of(response.body(), index);
+    }
 
-        return eventResponse;
+    /**
+     * Retrofit API interface.
+     */
+    interface Api {
+
+        @PUT("event/fire/{name}")
+        Call<Event> fireEvent(@Path("name") String name,
+                              @Body String payload,
+                              @QueryMap Map<String, Object> query);
+
+        @PUT("event/fire/{name}")
+        Call<Event> fireEvent(@Path("name") String name,
+                              @QueryMap Map<String, Object> query);
+
+        @GET("event/list")
+        Call<List<Event>> listEvents(@QueryMap Map<String, String> query);
     }
 }

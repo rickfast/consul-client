@@ -144,7 +144,6 @@ public class HealthTests {
 
         assertTrue(found);
         client.agentClient().deregister(serviceId);
-
     }
 
     private void assertHealth(String serviceId, ConsulResponse<List<ServiceHealth>> response) {
