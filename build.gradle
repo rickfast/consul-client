@@ -1,4 +1,5 @@
 apply plugin: 'java'
+apply plugin: 'osgi'
 apply plugin: 'com.jfrog.bintray'
 apply plugin: 'maven'
 apply plugin: 'signing'
@@ -69,6 +70,12 @@ jar {
     metaInf {
         from "LICENSE"
     }
+
+
+    manifest.attributes['Bundle-Description' ] = "${project.name}"
+    manifest.attributes['Bundle-Name'        ] = "${project.name}"
+    manifest.attributes['Bundle-SymbolicName'] = "${project.group}-${project.name}"
+    manifest.attributes['Bundle-Version'     ] = project.version.replaceAll('-','.')
 }
 
 artifacts {
