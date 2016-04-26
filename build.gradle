@@ -5,7 +5,7 @@ apply plugin: 'maven'
 apply plugin: 'signing'
 apply from: 'gradle/maven.gradle'
 
-version = '0.10.1'
+version = '0.10.2'
 group = 'com.orbitz.consul'
 
 targetCompatibility = "1.7"
