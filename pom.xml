@@ -3,8 +3,8 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.orbitz.consul</groupId>
     <artifactId>consul-client</artifactId>
-    <packaging>jar</packaging>
-    <version>0.11.0</version>
+    <packaging>bundle</packaging>
+    <version>0.11.1-SNAPSHOT</version>
     <name>consul-client</name>
     <url>http://maven.apache.org</url>
     <description>Consul Client for Java</description>
@@ -27,6 +27,9 @@
             <email>rick.t.fast@gmail.com</email>
         </developer>
     </developers>
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    </properties>
     <distributionManagement>
         <snapshotRepository>
             <id>ossrh</id>
@@ -163,6 +166,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-source-plugin</artifactId>
+                <version>3.0.0</version>
                 <executions>
                     <execution>
                         <id>attach-sources</id>
@@ -175,6 +179,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-javadoc-plugin</artifactId>
+                <version>2.10.3</version>
                 <executions>
                     <execution>
                         <id>attach-javadocs</id>
@@ -261,6 +266,52 @@
                                 </relocation>
                             </relocations>
                         </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.felix</groupId>
+                <artifactId>maven-bundle-plugin</artifactId>
+                <version>3.0.1</version>
+                <extensions>true</extensions>
+                <configuration>
+                    <instructions>
+                        <Bundle-SymbolicName>${project.groupId}.${project.artifactId} </Bundle-SymbolicName>
+                        <Bundle-Name>OrbitzWorldwide :: ${project.artifactId}</Bundle-Name>
+                        <Bundle-Version>${project.version}</Bundle-Version>
+                        <Export-Package>
+                            com.orbitz.consul*;-noimport:=true,
+                            com.orbitz.google.common.base,
+                            !com.orbitz.retrofit*,
+                            !com.orbitz.squareup*,
+                            !com.orbitz.okio*,
+                            !com.orbitz.okhttp3*,                            
+                            !com.orbitz.fasterxml*,
+                            !com.orbitz.apache*
+                        </Export-Package>
+                        <Import-Package>
+                            !retrofit2*,
+                            !com.squareup*,
+                            !okio*,
+                            !okhttp3*,
+                            !com.google*,
+                            !com.fasterxml*,
+                            !org.apache*,
+                            javax.net,
+                            javax.net.ssl,
+                            *
+                        </Import-Package>
+                    </instructions>
+                </configuration>
+                <executions>
+                    <!--
+                      This execution makes sure that the manifest is available
+                      when the tests are executed
+                    -->
+                    <execution>
+                        <goals>
+                            <goal>manifest</goal>
+                        </goals>
                     </execution>
                 </executions>
             </plugin>
