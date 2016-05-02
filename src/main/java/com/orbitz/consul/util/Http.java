@@ -1,11 +1,11 @@
 package com.orbitz.consul.util;
 
 import com.orbitz.consul.ConsulException;
+import com.orbitz.consul.async.Callback;
 import com.orbitz.consul.async.ConsulResponseCallback;
 import com.orbitz.consul.model.ConsulResponse;
 import okhttp3.Headers;
 import retrofit2.Call;
-import retrofit2.Callback;
 import retrofit2.Response;
 
 import java.io.IOException;
@@ -57,10 +57,25 @@ public class Http {
     }
 
     public static <T> void extractConsulResponse(Call<T> call, final ConsulResponseCallback<T> callback) {
-        call.enqueue(new Callback<T>() {
+        call.enqueue(new retrofit2.Callback<T>() {
             @Override
             public void onResponse(Call<T> call, Response<T> response) {
                 callback.onComplete(consulResponse(response));
+            }
+
+            @Override
+            public void onFailure(Call<T> call, Throwable t) {
+                callback.onFailure(t);
+            }
+        });
+    }
+
+    public static <T> void extractBasicResponse(Call<T> call, final Callback<T> callback) {
+        call.enqueue(new retrofit2.Callback<T>() {
+
+            @Override
+            public void onResponse(Call<T> call, Response<T> response) {
+                callback.onResponse(response.body());
             }
 
             @Override

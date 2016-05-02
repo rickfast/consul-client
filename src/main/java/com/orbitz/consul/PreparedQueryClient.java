@@ -1,17 +1,22 @@
 package com.orbitz.consul;
 
 import com.google.common.base.Optional;
-import com.orbitz.consul.model.query.*;
+import com.orbitz.consul.async.Callback;
+import com.orbitz.consul.model.query.PreparedQuery;
+import com.orbitz.consul.model.query.QueryId;
+import com.orbitz.consul.model.query.QueryResults;
+import com.orbitz.consul.model.query.StoredQuery;
+import com.orbitz.consul.option.QueryOptions;
 import retrofit2.Call;
 import retrofit2.Retrofit;
-import retrofit2.http.Body;
-import retrofit2.http.GET;
-import retrofit2.http.POST;
-import retrofit2.http.Path;
+import retrofit2.http.*;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 import static com.orbitz.consul.util.Http.extract;
+import static com.orbitz.consul.util.Http.extractBasicResponse;
 
 public class PreparedQueryClient {
 
@@ -59,7 +64,18 @@ public class PreparedQueryClient {
      * @return A {@link QueryResults} object containing service instances.
      */
     public QueryResults execute(String nameOrId) {
-        return extract(api.execute(nameOrId));
+        return extract(api.execute(nameOrId, Collections.<String, Object>emptyMap()));
+    }
+
+    /**
+     * Executes a prepared query by its name or ID.
+     *
+     * @param nameOrId The query name or ID.
+     * @param options Query options.
+     * @param callback Basic callback for the response.
+     */
+    public void execute(String nameOrId, QueryOptions options, final Callback<QueryResults> callback) {
+        extractBasicResponse(api.execute(nameOrId, options.toQuery()), callback);
     }
 
     /**
@@ -74,6 +90,27 @@ public class PreparedQueryClient {
         Call<List<StoredQuery>> getPreparedQuery(@Path("id") String id);
 
         @GET("query/{nameOrId}/execute")
-        Call<QueryResults> execute(@Path("nameOrId") String nameOrId);
+        Call<QueryResults> execute(@Path("nameOrId") String nameOrId,
+                                   @QueryMap Map<String, Object> queryMap);
+    }
+
+    public static void main(String... args) {
+        Consul.newClient().preparedQueryClient().execute("failover-query", QueryOptions.BLANK, new Callback<QueryResults>() {
+            @Override
+            public void onResponse(QueryResults result) {
+                System.out.println(result.service());
+            }
+
+            @Override
+            public void onFailure(Throwable t) {
+                t.printStackTrace();
+            }
+        });
+
+        try {
+            Thread.sleep(20000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
     }
 }

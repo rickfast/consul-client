@@ -194,7 +194,7 @@ public class Consul {
 
         {
             try {
-                url = new URL("http", "localhost", 8500, "");
+                url = new URL("http", DEFAULT_HTTP_HOST, DEFAULT_HTTP_PORT, "");
             } catch (MalformedURLException e) {
                 throw new RuntimeException(e);
             }
