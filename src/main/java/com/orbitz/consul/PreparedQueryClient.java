@@ -93,24 +93,4 @@ public class PreparedQueryClient {
         Call<QueryResults> execute(@Path("nameOrId") String nameOrId,
                                    @QueryMap Map<String, Object> queryMap);
     }
-
-    public static void main(String... args) {
-        Consul.newClient().preparedQueryClient().execute("failover-query", QueryOptions.BLANK, new Callback<QueryResults>() {
-            @Override
-            public void onResponse(QueryResults result) {
-                System.out.println(result.service());
-            }
-
-            @Override
-            public void onFailure(Throwable t) {
-                t.printStackTrace();
-            }
-        });
-
-        try {
-            Thread.sleep(20000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-    }
 }
