@@ -23,6 +23,7 @@ import java.util.Map;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.orbitz.consul.util.Http.*;
+import static com.orbitz.consul.util.Strings.trimLeadingSlash;
 
 /**
  * HTTP Client for /v1/kv/ endpoints.
@@ -65,7 +66,7 @@ public class KeyValueClient {
      */
     public Optional<Value> getValue(String key, QueryOptions queryOptions) {
         try {
-            return getSingleValue(extract(api.getValue(key, queryOptions.toQuery())));
+            return getSingleValue(extract(api.getValue(trimLeadingSlash(key), queryOptions.toQuery())));
         } catch (ConsulException ignored) {
             if(ignored.getCode() != 404) {
                 throw ignored;
@@ -101,7 +102,7 @@ public class KeyValueClient {
             }
         };
 
-        extractConsulResponse(api.getValue(key, queryOptions.toQuery()), wrapper);
+        extractConsulResponse(api.getValue(trimLeadingSlash(key), queryOptions.toQuery()), wrapper);
     }
 
     private Optional<Value> getSingleValue(List<Value> values){
@@ -136,7 +137,7 @@ public class KeyValueClient {
 
         query.put("recurse", "true");
 
-        return extract(api.getValue(key, query));
+        return extract(api.getValue(trimLeadingSlash(key), query));
     }
 
     /**
@@ -154,7 +155,7 @@ public class KeyValueClient {
 
         query.put("recurse", "true");
 
-        extractConsulResponse(api.getValue(key, query), callback);
+        extractConsulResponse(api.getValue(trimLeadingSlash(key), query), callback);
     }
 
     /**
@@ -245,9 +246,9 @@ public class KeyValueClient {
         }
 
         if (value == null) {
-            return extract(api.putValue(key, query));
+            return extract(api.putValue(trimLeadingSlash(key), query));
         } else {
-            return extract(api.putValue(key, value, query));
+            return extract(api.putValue(trimLeadingSlash(key), value, query));
         }
     }
 
@@ -260,7 +261,7 @@ public class KeyValueClient {
      * @return A list of zero to many keys.
      */
     public List<String> getKeys(String key) {
-        List<Value> values = extract(api.getValue(key, ImmutableMap.<String, Object>of("keys", "true")));
+        List<Value> values = extract(api.getValue(trimLeadingSlash(key), ImmutableMap.<String, Object>of("keys", "true")));
 
         return FluentIterable.from(values).transform(new Function<Value, String>() {
             @Override
@@ -278,7 +279,7 @@ public class KeyValueClient {
      * @param key The key to delete.
      */
     public void deleteKey(String key) {
-        handle(api.deleteValue(key));
+        handle(api.deleteValue(trimLeadingSlash(key)));
     }
 
     /**
@@ -289,7 +290,7 @@ public class KeyValueClient {
      * @param key The key to delete.
      */
     public void deleteKeys(String key) {
-        handle(api.deleteValues(key, ImmutableMap.of("recurse", "true")));
+        handle(api.deleteValues(trimLeadingSlash(key), ImmutableMap.of("recurse", "true")));
     }
 
     /**
