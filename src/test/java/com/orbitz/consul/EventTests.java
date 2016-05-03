@@ -47,7 +47,7 @@ public class EventTests {
             if (event.getName().equals(name) && event.getId().equals(fired.getId())) {
                 found = true;
 
-                assertEquals(String.format("\"%s\"", payload), event.getPayload().get());
+                assertEquals(payload, event.getPayload().get());
             }
         }
 
