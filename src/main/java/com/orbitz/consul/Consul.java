@@ -42,40 +42,19 @@ public class Consul {
     /**
      * Private constructor.
      *
-     * @param url     The full URL of a running Consul instance.
-     * @param mapper  A Jackson {@link ObjectMapper}
      */
-    private Consul(String url, SSLContext sslContext, ObjectMapper mapper) {
-
-        final OkHttpClient.Builder builder = new OkHttpClient.Builder();
-        try {
-            final URL consulUrl = new URL(url);
-
-            if (sslContext != null) {
-                builder.sslSocketFactory(sslContext.getSocketFactory());
-            }
-
-            final Retrofit retrofit = new Retrofit.Builder()
-                    .baseUrl(new URL(consulUrl.getProtocol(), consulUrl.getHost(),
-                            consulUrl.getPort(), "/v1/").toExternalForm())
-                    .addConverterFactory(JacksonConverterFactory.create(mapper))
-                    .client(builder.build())
-                    .build();
-
-            this.agentClient = new AgentClient(retrofit);
-            this.healthClient = new HealthClient(retrofit);
-            this.keyValueClient = new KeyValueClient(retrofit);
-            this.catalogClient = new CatalogClient(retrofit);
-            this.statusClient = new StatusClient(retrofit);
-            this.sessionClient = new SessionClient(retrofit);
-            this.eventClient = new EventClient(retrofit);
-            this.preparedQueryClient = new PreparedQueryClient(retrofit);
-        } catch (MalformedURLException e) {
-            throw new RuntimeException(e);
-        }
-
-        agentClient.ping();
+    private Consul(AgentClient agentClient, HealthClient healthClient, KeyValueClient keyValueClient, CatalogClient catalogClient, StatusClient statusClient, SessionClient sessionClient, EventClient eventClient, PreparedQueryClient preparedQueryClient) {
+        this.agentClient = agentClient;
+        this.healthClient = healthClient;
+        this.keyValueClient = keyValueClient;
+        this.catalogClient = catalogClient;
+        this.statusClient = statusClient;
+        this.sessionClient = sessionClient;
+        this.eventClient = eventClient;
+        this.preparedQueryClient = preparedQueryClient;
     }
+
+
 
     /**
      * Get the Agent HTTP client.
@@ -191,6 +170,7 @@ public class Consul {
         private URL url;
         private SSLContext sslContext;
         private ObjectMapper objectMapper = Jackson.MAPPER;
+        private boolean ping = true;
 
         {
             try {
@@ -215,6 +195,18 @@ public class Consul {
          */
         public Builder withUrl(URL url) {
             this.url = url;
+
+            return this;
+        }
+
+        /**
+         * Instructs the builder that the AgentClient should attempt a ping before returning the Consul instance
+         *
+         * @param ping Whether the ping should be done or not
+         * @return The builder.
+         */
+        public Builder withPing(boolean ping) {
+            this.ping = ping;
 
             return this;
         }
@@ -283,7 +275,45 @@ public class Consul {
          * @return A new Consul client.
          */
         public Consul build() {
-            return new Consul(this.url.toExternalForm(), this.sslContext, this.objectMapper);
+            final Retrofit retrofit;
+            try {
+                retrofit = createRetrofit(this.url.toExternalForm(), this.sslContext, this.objectMapper);
+            } catch (MalformedURLException e) {
+                throw new RuntimeException(e);
+            }
+
+            AgentClient agentClient = new AgentClient(retrofit);
+            HealthClient healthClient = new HealthClient(retrofit);
+            KeyValueClient keyValueClient = new KeyValueClient(retrofit);
+            CatalogClient catalogClient = new CatalogClient(retrofit);
+            StatusClient statusClient = new StatusClient(retrofit);
+            SessionClient sessionClient = new SessionClient(retrofit);
+            EventClient eventClient = new EventClient(retrofit);
+            PreparedQueryClient preparedQueryClient = new PreparedQueryClient(retrofit);
+
+            if (ping) {
+                agentClient.ping();
+            }
+            return new Consul(agentClient, healthClient, keyValueClient, catalogClient, statusClient, sessionClient, eventClient, preparedQueryClient);
         }
+
+
+        private Retrofit createRetrofit(String url, SSLContext sslContext, ObjectMapper mapper) throws MalformedURLException {
+            final OkHttpClient.Builder builder = new OkHttpClient.Builder();
+
+            final URL consulUrl = new URL(url);
+
+            if (sslContext != null) {
+                builder.sslSocketFactory(sslContext.getSocketFactory());
+            }
+
+            return new Retrofit.Builder()
+                    .baseUrl(new URL(consulUrl.getProtocol(), consulUrl.getHost(),
+                            consulUrl.getPort(), "/v1/").toExternalForm())
+                    .addConverterFactory(JacksonConverterFactory.create(mapper))
+                    .client(builder.build())
+                    .build();
+        }
+
     }
 }
