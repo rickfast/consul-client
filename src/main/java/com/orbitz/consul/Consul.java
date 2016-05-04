@@ -3,6 +3,7 @@ package com.orbitz.consul;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.guava.GuavaModule;
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.io.BaseEncoding;
 import com.google.common.net.HostAndPort;
 import com.orbitz.consul.util.Jackson;
 import okhttp3.*;
@@ -223,7 +224,7 @@ public class Consul {
          */
         public Builder withBasicAuth(String username, String password) {
             String credentials = username + ":" + password;
-            final String basic = "Basic " + java.util.Base64.getEncoder().encodeToString(credentials.getBytes());
+            final String basic = "Basic " + BaseEncoding.base64().encode(credentials.getBytes());
             basicAuthInterceptor = new Interceptor() {
                 @Override
                 public Response intercept(Chain chain) throws IOException {
