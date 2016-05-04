@@ -5,11 +5,12 @@ import com.fasterxml.jackson.datatype.guava.GuavaModule;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.net.HostAndPort;
 import com.orbitz.consul.util.Jackson;
-import okhttp3.OkHttpClient;
+import okhttp3.*;
 import retrofit2.Retrofit;
 import retrofit2.converter.jackson.JacksonConverterFactory;
 
 import javax.net.ssl.SSLContext;
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 
@@ -171,6 +172,8 @@ public class Consul {
         private SSLContext sslContext;
         private ObjectMapper objectMapper = Jackson.MAPPER;
         private boolean ping = true;
+        private Interceptor basicAuthInterceptor;
+        private Interceptor aclTokenInterceptor;
 
         {
             try {
@@ -207,6 +210,65 @@ public class Consul {
          */
         public Builder withPing(boolean ping) {
             this.ping = ping;
+
+            return this;
+        }
+
+        /**
+         * Sets the username and password to be used for basic authentication
+         *
+         * @param username the value of the username
+         * @param password the value of the password
+         * @return The builder.
+         */
+        public Builder withBasicAuth(String username, String password) {
+            String credentials = username + ":" + password;
+            final String basic = "Basic " + java.util.Base64.getEncoder().encodeToString(credentials.getBytes());
+            basicAuthInterceptor = new Interceptor() {
+                @Override
+                public Response intercept(Chain chain) throws IOException {
+                    Request original = chain.request();
+
+                    Request.Builder requestBuilder = original.newBuilder()
+                            .header("Authorization", basic)
+                            .method(original.method(), original.body());
+
+                    Request request = requestBuilder.build();
+                    return chain.proceed(request);
+                }
+            };
+
+            return this;
+        }
+
+        /**
+         * Sets the ACL token to be used with Consul
+         *
+         * @param token the value of the token
+         * @return The builder.
+         */
+        public Builder withAclToken(final String token) {
+            aclTokenInterceptor = new Interceptor() {
+                @Override
+                public Response intercept(Chain chain) throws IOException {
+                    Request original = chain.request();
+
+                    HttpUrl originalUrl = original.url();
+                    String rewrittenUrl;
+                    if (originalUrl.queryParameterNames().isEmpty()) {
+                        rewrittenUrl = originalUrl.url().toExternalForm() + "?token=" + token;
+                    } else {
+                        rewrittenUrl = originalUrl.url().toExternalForm() + "&token=" + token;
+                    }
+
+                    Request.Builder requestBuilder = original.newBuilder()
+                            .url(rewrittenUrl)
+                            .method(original.method(), original.body());
+
+                    Request request = requestBuilder.build();
+                    return chain.proceed(request);
+                }
+            };
 
             return this;
         }
@@ -300,6 +362,13 @@ public class Consul {
 
         private Retrofit createRetrofit(String url, SSLContext sslContext, ObjectMapper mapper) throws MalformedURLException {
             final OkHttpClient.Builder builder = new OkHttpClient.Builder();
+
+            if (basicAuthInterceptor != null) {
+                builder.addInterceptor(basicAuthInterceptor);
+            }
+            if (aclTokenInterceptor != null) {
+                builder.addInterceptor(aclTokenInterceptor);
+            }
 
             final URL consulUrl = new URL(url);
 
