@@ -27,21 +27,4 @@ public class Base64EncodingDeserializerTests {
 
         assertEquals(value, klazz.getPayload().get());
     }
-
-    @Test
-    public void shouldStripQuotes() throws IOException {
-        String value = RandomStringUtils.randomAlphabetic(12);
-        String quoted = "\"" + value + "\"";
-        Event event = ImmutableEvent.builder()
-                .id("1")
-                .lTime(1L)
-                .name("name")
-                .version(1)
-                .payload(BaseEncoding.base64().encode(quoted.getBytes()))
-                .build();
-        String json = Jackson.MAPPER.writeValueAsString(event);
-        Event klazz = Jackson.MAPPER.readValue(json, Event.class);
-
-        assertEquals(value, klazz.getPayload().get());
-    }
 }
