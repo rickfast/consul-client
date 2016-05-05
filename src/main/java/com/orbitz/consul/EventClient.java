@@ -7,6 +7,8 @@ import com.orbitz.consul.model.ImmutableEventResponse;
 import com.orbitz.consul.model.event.Event;
 import com.orbitz.consul.option.EventOptions;
 import com.orbitz.consul.option.QueryOptions;
+import okhttp3.MediaType;
+import okhttp3.RequestBody;
 import org.apache.commons.lang3.StringUtils;
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -51,7 +53,9 @@ public class EventClient {
      * @return The newly created {@link com.orbitz.consul.model.event.Event}.
      */
     public Event fireEvent(String name, EventOptions eventOptions, String payload) {
-        return extract(api.fireEvent(name, payload, eventOptions.toQuery()));
+        return extract(api.fireEvent(name,
+                RequestBody.create(MediaType.parse("text/plain"), payload),
+                eventOptions.toQuery()));
     }
 
     /**
@@ -241,7 +245,7 @@ public class EventClient {
 
         @PUT("event/fire/{name}")
         Call<Event> fireEvent(@Path("name") String name,
-                              @Body String payload,
+                              @Body RequestBody payload,
                               @QueryMap Map<String, Object> query);
 
         @PUT("event/fire/{name}")

@@ -9,8 +9,6 @@ import com.google.common.base.Optional;
 import com.google.common.io.BaseEncoding;
 import com.orbitz.consul.util.UnsignedLongDeserializer;
 
-import static com.orbitz.consul.util.Strings.unquote;
-
 @org.immutables.value.Value.Immutable
 @JsonDeserialize(as = ImmutableValue.class)
 @JsonSerialize(as = ImmutableValue.class)
@@ -45,7 +43,7 @@ public abstract class Value {
 
         if (getValue().isPresent()) {
             return Optional.of(
-                    unquote(new String(BaseEncoding.base64().decode(getValue().get())))
+                    new String(BaseEncoding.base64().decode(getValue().get()))
             );
         } else {
             return Optional.absent();

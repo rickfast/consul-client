@@ -9,8 +9,6 @@ import org.apache.commons.lang3.StringUtils;
 
 import java.io.IOException;
 
-import static com.orbitz.consul.util.Strings.unquote;
-
 /**
  * For use with JSON fields that Consul Base 64 encodes.
  */
@@ -24,7 +22,7 @@ public class Base64EncodingDeserializer extends JsonDeserializer<Optional<String
         String value = p.getValueAsString();
 
         if (StringUtils.isNotEmpty(value)) {
-            return Optional.of(unquote(new String(BaseEncoding.base64().decode(value))));
+            return Optional.of(new String(BaseEncoding.base64().decode(value)));
         }
         return Optional.absent();
     }

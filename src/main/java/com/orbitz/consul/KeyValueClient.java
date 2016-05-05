@@ -12,6 +12,8 @@ import com.orbitz.consul.model.session.SessionInfo;
 import com.orbitz.consul.option.ImmutablePutOptions;
 import com.orbitz.consul.option.PutOptions;
 import com.orbitz.consul.option.QueryOptions;
+import okhttp3.MediaType;
+import okhttp3.RequestBody;
 import org.apache.commons.lang3.StringUtils;
 import retrofit2.Call;
 import retrofit2.Retrofit;
@@ -246,9 +248,11 @@ public class KeyValueClient {
         }
 
         if (value == null) {
-            return extract(api.putValue(trimLeadingSlash(key), query));
+            return extract(api.putValue(trimLeadingSlash(key),
+                    query));
         } else {
-            return extract(api.putValue(trimLeadingSlash(key), value, query));
+            return extract(api.putValue(trimLeadingSlash(key),
+                    RequestBody.create(MediaType.parse("text/plain"), value), query));
         }
     }
 
@@ -362,7 +366,7 @@ public class KeyValueClient {
                                @QueryMap Map<String, Object> query);
         @PUT("kv/{key}")
         Call<Boolean> putValue(@Path("key") String key,
-                               @Body String data,
+                               @Body RequestBody data,
                                @QueryMap Map<String, Object> query);
 
         @DELETE("kv/{key}")
