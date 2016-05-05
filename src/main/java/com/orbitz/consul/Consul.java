@@ -3,13 +3,15 @@ package com.orbitz.consul;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.guava.GuavaModule;
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.io.BaseEncoding;
 import com.google.common.net.HostAndPort;
 import com.orbitz.consul.util.Jackson;
-import okhttp3.OkHttpClient;
+import okhttp3.*;
 import retrofit2.Retrofit;
 import retrofit2.converter.jackson.JacksonConverterFactory;
 
 import javax.net.ssl.SSLContext;
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 
@@ -42,40 +44,19 @@ public class Consul {
     /**
      * Private constructor.
      *
-     * @param url     The full URL of a running Consul instance.
-     * @param mapper  A Jackson {@link ObjectMapper}
      */
-    private Consul(String url, SSLContext sslContext, ObjectMapper mapper) {
-
-        final OkHttpClient.Builder builder = new OkHttpClient.Builder();
-        try {
-            final URL consulUrl = new URL(url);
-
-            if (sslContext != null) {
-                builder.sslSocketFactory(sslContext.getSocketFactory());
-            }
-
-            final Retrofit retrofit = new Retrofit.Builder()
-                    .baseUrl(new URL(consulUrl.getProtocol(), consulUrl.getHost(),
-                            consulUrl.getPort(), "/v1/").toExternalForm())
-                    .addConverterFactory(JacksonConverterFactory.create(mapper))
-                    .client(builder.build())
-                    .build();
-
-            this.agentClient = new AgentClient(retrofit);
-            this.healthClient = new HealthClient(retrofit);
-            this.keyValueClient = new KeyValueClient(retrofit);
-            this.catalogClient = new CatalogClient(retrofit);
-            this.statusClient = new StatusClient(retrofit);
-            this.sessionClient = new SessionClient(retrofit);
-            this.eventClient = new EventClient(retrofit);
-            this.preparedQueryClient = new PreparedQueryClient(retrofit);
-        } catch (MalformedURLException e) {
-            throw new RuntimeException(e);
-        }
-
-        agentClient.ping();
+    private Consul(AgentClient agentClient, HealthClient healthClient, KeyValueClient keyValueClient, CatalogClient catalogClient, StatusClient statusClient, SessionClient sessionClient, EventClient eventClient, PreparedQueryClient preparedQueryClient) {
+        this.agentClient = agentClient;
+        this.healthClient = healthClient;
+        this.keyValueClient = keyValueClient;
+        this.catalogClient = catalogClient;
+        this.statusClient = statusClient;
+        this.sessionClient = sessionClient;
+        this.eventClient = eventClient;
+        this.preparedQueryClient = preparedQueryClient;
     }
+
+
 
     /**
      * Get the Agent HTTP client.
@@ -191,6 +172,9 @@ public class Consul {
         private URL url;
         private SSLContext sslContext;
         private ObjectMapper objectMapper = Jackson.MAPPER;
+        private boolean ping = true;
+        private Interceptor basicAuthInterceptor;
+        private Interceptor aclTokenInterceptor;
 
         {
             try {
@@ -215,6 +199,77 @@ public class Consul {
          */
         public Builder withUrl(URL url) {
             this.url = url;
+
+            return this;
+        }
+
+        /**
+         * Instructs the builder that the AgentClient should attempt a ping before returning the Consul instance
+         *
+         * @param ping Whether the ping should be done or not
+         * @return The builder.
+         */
+        public Builder withPing(boolean ping) {
+            this.ping = ping;
+
+            return this;
+        }
+
+        /**
+         * Sets the username and password to be used for basic authentication
+         *
+         * @param username the value of the username
+         * @param password the value of the password
+         * @return The builder.
+         */
+        public Builder withBasicAuth(String username, String password) {
+            String credentials = username + ":" + password;
+            final String basic = "Basic " + BaseEncoding.base64().encode(credentials.getBytes());
+            basicAuthInterceptor = new Interceptor() {
+                @Override
+                public Response intercept(Chain chain) throws IOException {
+                    Request original = chain.request();
+
+                    Request.Builder requestBuilder = original.newBuilder()
+                            .header("Authorization", basic)
+                            .method(original.method(), original.body());
+
+                    Request request = requestBuilder.build();
+                    return chain.proceed(request);
+                }
+            };
+
+            return this;
+        }
+
+        /**
+         * Sets the ACL token to be used with Consul
+         *
+         * @param token the value of the token
+         * @return The builder.
+         */
+        public Builder withAclToken(final String token) {
+            aclTokenInterceptor = new Interceptor() {
+                @Override
+                public Response intercept(Chain chain) throws IOException {
+                    Request original = chain.request();
+
+                    HttpUrl originalUrl = original.url();
+                    String rewrittenUrl;
+                    if (originalUrl.queryParameterNames().isEmpty()) {
+                        rewrittenUrl = originalUrl.url().toExternalForm() + "?token=" + token;
+                    } else {
+                        rewrittenUrl = originalUrl.url().toExternalForm() + "&token=" + token;
+                    }
+
+                    Request.Builder requestBuilder = original.newBuilder()
+                            .url(rewrittenUrl)
+                            .method(original.method(), original.body());
+
+                    Request request = requestBuilder.build();
+                    return chain.proceed(request);
+                }
+            };
 
             return this;
         }
@@ -283,7 +338,52 @@ public class Consul {
          * @return A new Consul client.
          */
         public Consul build() {
-            return new Consul(this.url.toExternalForm(), this.sslContext, this.objectMapper);
+            final Retrofit retrofit;
+            try {
+                retrofit = createRetrofit(this.url.toExternalForm(), this.sslContext, this.objectMapper);
+            } catch (MalformedURLException e) {
+                throw new RuntimeException(e);
+            }
+
+            AgentClient agentClient = new AgentClient(retrofit);
+            HealthClient healthClient = new HealthClient(retrofit);
+            KeyValueClient keyValueClient = new KeyValueClient(retrofit);
+            CatalogClient catalogClient = new CatalogClient(retrofit);
+            StatusClient statusClient = new StatusClient(retrofit);
+            SessionClient sessionClient = new SessionClient(retrofit);
+            EventClient eventClient = new EventClient(retrofit);
+            PreparedQueryClient preparedQueryClient = new PreparedQueryClient(retrofit);
+
+            if (ping) {
+                agentClient.ping();
+            }
+            return new Consul(agentClient, healthClient, keyValueClient, catalogClient, statusClient, sessionClient, eventClient, preparedQueryClient);
         }
+
+
+        private Retrofit createRetrofit(String url, SSLContext sslContext, ObjectMapper mapper) throws MalformedURLException {
+            final OkHttpClient.Builder builder = new OkHttpClient.Builder();
+
+            if (basicAuthInterceptor != null) {
+                builder.addInterceptor(basicAuthInterceptor);
+            }
+            if (aclTokenInterceptor != null) {
+                builder.addInterceptor(aclTokenInterceptor);
+            }
+
+            final URL consulUrl = new URL(url);
+
+            if (sslContext != null) {
+                builder.sslSocketFactory(sslContext.getSocketFactory());
+            }
+
+            return new Retrofit.Builder()
+                    .baseUrl(new URL(consulUrl.getProtocol(), consulUrl.getHost(),
+                            consulUrl.getPort(), "/v1/").toExternalForm())
+                    .addConverterFactory(JacksonConverterFactory.create(mapper))
+                    .client(builder.build())
+                    .build();
+        }
+
     }
 }
