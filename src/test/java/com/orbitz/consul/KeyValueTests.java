@@ -154,7 +154,7 @@ public class KeyValueTests {
         String sessionId = response.getId();
 
         assertTrue(keyValueClient.acquireLock(key, value, sessionId));
-        assertFalse(keyValueClient.acquireLock(key, value, sessionId));
+        assertTrue(keyValueClient.acquireLock(key, value, sessionId)); // No ideas why there was an assertFalse
 
         assertTrue("SessionId must be present.", keyValueClient.getValue(key).get().getSession().isPresent());
         assertTrue(keyValueClient.releaseLock(key, sessionId));
@@ -181,10 +181,46 @@ public class KeyValueTests {
         String sessionId = response.getId();
 
         assertTrue(keyValueClient.acquireLock(key, sessionValue, sessionId));
-        assertFalse(keyValueClient.acquireLock(key, sessionValue, sessionId));
+        assertTrue(keyValueClient.acquireLock(key, sessionValue, sessionId)); // No ideas why there was an assertFalse
         assertEquals(sessionId, keyValueClient.getSession(key).get());
         keyValueClient.deleteKey(key);
 
+    }
+
+    @Test
+    public void testAcquireLock() throws Exception {
+        Consul client = Consul.builder().build();
+        KeyValueClient keyValueClient = client.keyValueClient();
+        SessionClient sessionClient = client.sessionClient();
+
+        String key = UUID.randomUUID().toString();
+        String value = UUID.randomUUID().toString();
+        keyValueClient.putValue(key, value);
+
+        assertEquals(false, keyValueClient.getSession(key).isPresent());
+
+        String sessionValue = "session_" + UUID.randomUUID().toString();
+        SessionCreatedResponse response = sessionClient.createSession(ImmutableSession.builder().name(sessionValue).build());
+        String sessionId = response.getId();
+
+        String sessionValue2 = "session_" + UUID.randomUUID().toString();
+        SessionCreatedResponse response2 = sessionClient.createSession(ImmutableSession.builder().name(sessionValue).build());
+        String sessionId2 = response2.getId();
+
+        assertTrue(keyValueClient.acquireLock(key, sessionValue, sessionId));
+        // session-2 can't acquire the lock
+        assertFalse(keyValueClient.acquireLock(key, sessionValue2, sessionId2));
+        assertEquals(sessionId, keyValueClient.getSession(key).get());
+
+        keyValueClient.releaseLock(key, sessionId);
+
+        // session-2 now can acquire the lock
+        assertTrue(keyValueClient.acquireLock(key, sessionValue2, sessionId2));
+        // session-1 can't acquire the lock anymore
+        assertFalse(keyValueClient.acquireLock(key, sessionValue, sessionId));
+        assertEquals(sessionId2, keyValueClient.getSession(key).get());
+
+        keyValueClient.deleteKey(key);
     }
 
     @Test
