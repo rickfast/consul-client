@@ -177,7 +177,6 @@ public class Consul {
         private boolean ping = true;
         private Interceptor basicAuthInterceptor;
         private Interceptor aclTokenInterceptor;
-        private OkHttpClient.Builder httpClientBuilder;
         private Long connectTimeoutMillis;
         private Long readTimeoutMillis;
         private Long writeTimeoutMillis;
@@ -325,19 +324,6 @@ public class Consul {
         }
 
         /**
-         * Sets the {@link OkHttpClient.Builder} for the client.
-         * @param builder OoHttpClient builder instance
-         * @return The builder
-         */
-        public Builder withHttpClientBuilder(OkHttpClient.Builder builder) {
-            Preconditions.checkNotNull(builder);
-            this.httpClientBuilder = builder;
-
-            return this;
-        }
-
-
-        /**
          * Connect timeout for OkHttpClient
          * @param timeoutMillis timeout values in milliseconds
          * @return The builder
@@ -398,8 +384,7 @@ public class Consul {
                 retrofit = createRetrofit(
                         this.url.toExternalForm(),
                         this.sslContext,
-                        this.objectMapper,
-                        this.httpClientBuilder);
+                        this.objectMapper);
             } catch (MalformedURLException e) {
                 throw new RuntimeException(e);
             }
@@ -420,35 +405,30 @@ public class Consul {
         }
 
 
-        private Retrofit createRetrofit(String url, SSLContext sslContext, ObjectMapper mapper, OkHttpClient.Builder httpClientBuilder) throws MalformedURLException {
-            final OkHttpClient.Builder builder;
-            if (null != httpClientBuilder) {
-                builder = httpClientBuilder;
-            } else {
-                builder = new OkHttpClient.Builder();
+        private Retrofit createRetrofit(String url, SSLContext sslContext, ObjectMapper mapper) throws MalformedURLException {
+            final OkHttpClient.Builder builder = new OkHttpClient.Builder();
 
-                if (basicAuthInterceptor != null) {
-                    builder.addInterceptor(basicAuthInterceptor);
-                }
-                if (aclTokenInterceptor != null) {
-                    builder.addInterceptor(aclTokenInterceptor);
-                }
+            if (basicAuthInterceptor != null) {
+                builder.addInterceptor(basicAuthInterceptor);
+            }
+            if (aclTokenInterceptor != null) {
+                builder.addInterceptor(aclTokenInterceptor);
+            }
 
-                if (sslContext != null) {
-                    builder.sslSocketFactory(sslContext.getSocketFactory());
-                }
+            if (sslContext != null) {
+                builder.sslSocketFactory(sslContext.getSocketFactory());
+            }
 
-                if (connectTimeoutMillis != null) {
-                    builder.connectTimeout(connectTimeoutMillis, TimeUnit.MILLISECONDS);
-                }
+            if (connectTimeoutMillis != null) {
+                builder.connectTimeout(connectTimeoutMillis, TimeUnit.MILLISECONDS);
+            }
 
-                if (readTimeoutMillis != null) {
-                    builder.readTimeout(readTimeoutMillis, TimeUnit.MILLISECONDS);
-                }
+            if (readTimeoutMillis != null) {
+                builder.readTimeout(readTimeoutMillis, TimeUnit.MILLISECONDS);
+            }
 
-                if (writeTimeoutMillis != null) {
-                    builder.writeTimeout(writeTimeoutMillis, TimeUnit.MILLISECONDS);
-                }
+            if (writeTimeoutMillis != null) {
+                builder.writeTimeout(writeTimeoutMillis, TimeUnit.MILLISECONDS);
             }
 
             final URL consulUrl = new URL(url);
