@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
 import org.immutables.value.Value;
 
@@ -57,8 +58,13 @@ public abstract class Config {
     @JsonProperty("SkipLeaveOnInt")
     public abstract boolean getSkipLeaveOnInt();
 
+    /**
+     *
+     * @deprecated GET /v1/agent/self of Consul v0.6.4 dose not have that field
+     */
+    @Deprecated
     @JsonProperty("StatsiteAddr")
-    public abstract String getStatsiteAddr();
+    public abstract Optional<String> getStatsiteAddr();
 
     @JsonProperty("Protocol")
     public abstract int getProtocol();
@@ -96,4 +102,11 @@ public abstract class Config {
 
     @JsonProperty("RejoinAfterLeave")
     public abstract boolean getRejoinAfterLeave();
+
+    /**
+     * New version of consul has Telemetry field
+     * TODO: Have to think about back compatibility (I think we shouldn't)
+     */
+    @JsonProperty("Telemetry")
+    public abstract Optional<Telemetry> getTelemetry();
 }
