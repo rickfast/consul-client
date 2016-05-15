@@ -3,6 +3,7 @@ package com.orbitz.consul;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.guava.GuavaModule;
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Preconditions;
 import com.google.common.io.BaseEncoding;
 import com.google.common.net.HostAndPort;
 import com.orbitz.consul.util.Jackson;
@@ -14,6 +15,7 @@ import javax.net.ssl.SSLContext;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Client for interacting with the Consul HTTP API.
@@ -175,6 +177,9 @@ public class Consul {
         private boolean ping = true;
         private Interceptor basicAuthInterceptor;
         private Interceptor aclTokenInterceptor;
+        private Long connectTimeoutMillis;
+        private Long readTimeoutMillis;
+        private Long writeTimeoutMillis;
 
         {
             try {
@@ -319,6 +324,42 @@ public class Consul {
         }
 
         /**
+         * Connect timeout for OkHttpClient
+         * @param timeoutMillis timeout values in milliseconds
+         * @return The builder
+         */
+        public Builder withConnectTimeoutMillis(long timeoutMillis) {
+            Preconditions.checkArgument(timeoutMillis >= 0, "Negative value");
+            this.connectTimeoutMillis = timeoutMillis;
+
+            return this;
+        }
+
+        /**
+         * Read timeout for OkHttpClient
+         * @param timeoutMillis timeout value in milliseconds
+         * @return The builder
+         */
+        public Builder withReadTimeoutMillis(long timeoutMillis) {
+            Preconditions.checkArgument(timeoutMillis >= 0, "Negative value");
+            this.readTimeoutMillis = timeoutMillis;
+
+            return this;
+        }
+
+        /**
+         * Write timeout for OkHttpClient
+         * @param timeoutMillis timeout value in milliseconds
+         * @return The builder
+         */
+        public Builder withWriteTimeoutMillis(long timeoutMillis) {
+            Preconditions.checkArgument(timeoutMillis >= 0, "Negative value");
+            this.writeTimeoutMillis = timeoutMillis;
+
+            return this;
+        }
+
+        /**
          * Sets the {@link ObjectMapper} for the client.
          *
          * @param objectMapper The {@link ObjectMapper} to use.
@@ -340,7 +381,10 @@ public class Consul {
         public Consul build() {
             final Retrofit retrofit;
             try {
-                retrofit = createRetrofit(this.url.toExternalForm(), this.sslContext, this.objectMapper);
+                retrofit = createRetrofit(
+                        this.url.toExternalForm(),
+                        this.sslContext,
+                        this.objectMapper);
             } catch (MalformedURLException e) {
                 throw new RuntimeException(e);
             }
@@ -371,11 +415,23 @@ public class Consul {
                 builder.addInterceptor(aclTokenInterceptor);
             }
 
-            final URL consulUrl = new URL(url);
-
             if (sslContext != null) {
                 builder.sslSocketFactory(sslContext.getSocketFactory());
             }
+
+            if (connectTimeoutMillis != null) {
+                builder.connectTimeout(connectTimeoutMillis, TimeUnit.MILLISECONDS);
+            }
+
+            if (readTimeoutMillis != null) {
+                builder.readTimeout(readTimeoutMillis, TimeUnit.MILLISECONDS);
+            }
+
+            if (writeTimeoutMillis != null) {
+                builder.writeTimeout(writeTimeoutMillis, TimeUnit.MILLISECONDS);
+            }
+
+            final URL consulUrl = new URL(url);
 
             return new Retrofit.Builder()
                     .baseUrl(new URL(consulUrl.getProtocol(), consulUrl.getHost(),
