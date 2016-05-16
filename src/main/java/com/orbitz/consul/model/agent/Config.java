@@ -60,7 +60,7 @@ public abstract class Config {
 
     /**
      *
-     * @deprecated GET /v1/agent/self of Consul v0.6.4 dose not have that field
+     * @deprecated GET /v1/agent/self from v0.6.4 does not have this JSON field
      */
     @Deprecated
     @JsonProperty("StatsiteAddr")
