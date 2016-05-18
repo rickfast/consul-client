@@ -87,4 +87,31 @@ public class CatalogTests {
 
         assertNotNull(node);
     }
+
+    @Test
+    public void shouldGetTaggedAddressesForNodesLists() throws UnknownHostException {
+        Consul client = Consul.builder().build();
+        CatalogClient catalogClient = client.catalogClient();
+
+        final List<Node> nodesResp = catalogClient.getNodes().getResponse();
+        for (Node node : nodesResp) {
+            assertNotNull(node.getTaggedAddresses());
+            assertNotNull(node.getTaggedAddresses().getWan());
+            assertFalse(node.getTaggedAddresses().getWan().isEmpty());
+        }
+    }
+
+    @Test
+    public void shouldGetTaggedAddressesForNode() throws UnknownHostException {
+        Consul client = Consul.builder().build();
+        CatalogClient catalogClient = client.catalogClient();
+
+        final List<Node> nodesResp = catalogClient.getNodes().getResponse();
+        for (Node tmp : nodesResp) {
+            final Node node = catalogClient.getNode(tmp.getNode()).getResponse().getNode();
+            assertNotNull(node.getTaggedAddresses());
+            assertNotNull(node.getTaggedAddresses().getWan());
+            assertFalse(node.getTaggedAddresses().getWan().isEmpty());
+        }
+    }
 }
