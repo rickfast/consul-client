@@ -10,11 +10,13 @@ Simple client for the Consul HTTP API.  For more information about the Consul HT
 Installation
 -----------
 
-###Bintray:
+### Bintray:
 
-Grab the latest binary (0.11.3) [here](http://dl.bintray.com/orbitz/consul-client/com/orbitz/consul/consul-client/0.11.3/#consul-client-0.11.3.jar).
+Grab the latest binary (0.12.0) [here](http://dl.bintray.com/orbitz/consul-client/com/orbitz/consul/consul-client/0.12.0/#consul-client-0.12.0.jar).
 
-###Gradle:
+### Gradle:
+
+#### Shaded JAR (New)
 
 ```groovy
 repositories {
@@ -22,18 +24,33 @@ repositories {
 }
 
 dependencies {
-    compile 'com.orbitz.consul:consul-client:0.11.3'
+    compile 'com.orbitz.consul:consul-client:0.12.0:all'
 }
 ```
 
-###Maven:
+#### Regular JAR
+
+```groovy
+repositories {
+    jcenter() // or mavenCentral()
+}
+
+dependencies {
+    compile 'com.orbitz.consul:consul-client:0.12.0'
+}
+```
+
+### Maven:
+
+#### Shaded JAR (New)
 
 ```xml
 <dependencies>
     <dependency>
         <groupId>com.orbitz.consul</groupId>
         <artifactId>consul-client</artifactId>
-        <version>0.11.3</version>
+        <version>0.12.0</version>
+        <classifier>all</classifier>
     </dependency>
 </dependencies>
 
@@ -48,6 +65,30 @@ dependencies {
     </repository>
 </repositories>
 ```
+
+#### Regular JAR
+
+```xml
+<dependencies>
+    <dependency>
+        <groupId>com.orbitz.consul</groupId>
+        <artifactId>consul-client</artifactId>
+        <version>0.12.0</version>
+    </dependency>
+</dependencies>
+
+<repositories>
+    <repository>
+        <snapshots>
+            <enabled>false</enabled>
+        </snapshots>
+        <id>central</id>
+        <name>bintray</name>
+        <url>http://jcenter.bintray.com</url>
+    </repository>
+</repositories>
+```
+
 
 Basic Usage
 -----------

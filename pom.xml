@@ -4,7 +4,7 @@
     <groupId>com.orbitz.consul</groupId>
     <artifactId>consul-client</artifactId>
     <packaging>jar</packaging>
-    <version>0.11.3</version>
+    <version>0.12.0</version>
     <name>consul-client</name>
     <url>http://maven.apache.org</url>
     <description>Consul Client for Java</description>
@@ -229,15 +229,13 @@
                             <goal>shade</goal>
                         </goals>
                         <configuration>
+                            <shadedArtifactAttached>true</shadedArtifactAttached>
+                            <shadedClassifierName>all</shadedClassifierName>
                             <artifactSet>
                                 <excludes>
                                     <exclude>org.slf4j:slf4j-api</exclude>
                                     <exclude>org.immutables:values</exclude>
                                     <exclude>com.google.guava:guava</exclude>
-                                    <exclude>com.fasterxml.jackson.core:jackson-annotations</exclude>
-                                    <exclude>com.fasterxml.jackson.core:jackson-core</exclude>
-                                    <exclude>com.fasterxml.jackson.core:jackson-databind</exclude>
-                                    <exclude>com.fasterxml.jackson.datatype:jackson-datatype-guava</exclude>
                                 </excludes>
                             </artifactSet>
                             <relocations>
@@ -260,6 +258,10 @@
                                 <relocation>
                                     <pattern>org.apache</pattern>
                                     <shadedPattern>com.orbitz.apache</shadedPattern>
+                                </relocation>
+                                <relocation>
+                                    <pattern>com.fasterxml</pattern>
+                                    <shadedPattern>com.orbitz.fasterxml</shadedPattern>
                                 </relocation>
                             </relocations>
                         </configuration>
