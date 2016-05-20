@@ -10,25 +10,15 @@ Simple client for the Consul HTTP API.  For more information about the Consul HT
 Installation
 -----------
 
+### Note
+
+As of 0.11.X, the Consul JAR is now a shaded JAR, with most dependencies included. This was done because a number of issues being files were related to dependency conflicts. The JAR is a bit bigger, but the HTTP + JSON libraries are now internal to the JAR. Only Guava is still a transitive dependency.
+
 ### Bintray:
 
 Grab the latest binary (0.12.0) [here](http://dl.bintray.com/orbitz/consul-client/com/orbitz/consul/consul-client/0.12.0/#consul-client-0.12.0.jar).
 
 ### Gradle:
-
-#### Shaded JAR (New)
-
-```groovy
-repositories {
-    jcenter() // or mavenCentral()
-}
-
-dependencies {
-    compile 'com.orbitz.consul:consul-client:0.12.0:all'
-}
-```
-
-#### Regular JAR
 
 ```groovy
 repositories {
@@ -41,32 +31,6 @@ dependencies {
 ```
 
 ### Maven:
-
-#### Shaded JAR (New)
-
-```xml
-<dependencies>
-    <dependency>
-        <groupId>com.orbitz.consul</groupId>
-        <artifactId>consul-client</artifactId>
-        <version>0.12.0</version>
-        <classifier>all</classifier>
-    </dependency>
-</dependencies>
-
-<repositories>
-    <repository>
-        <snapshots>
-            <enabled>false</enabled>
-        </snapshots>
-        <id>central</id>
-        <name>bintray</name>
-        <url>http://jcenter.bintray.com</url>
-    </repository>
-</repositories>
-```
-
-#### Regular JAR
 
 ```xml
 <dependencies>

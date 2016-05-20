@@ -1,7 +1,6 @@
 package com.orbitz.consul;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.guava.GuavaModule;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.io.BaseEncoding;
@@ -173,7 +172,6 @@ public class Consul {
     public static class Builder {
         private URL url;
         private SSLContext sslContext;
-        private ObjectMapper objectMapper = Jackson.MAPPER;
         private boolean ping = true;
         private Interceptor basicAuthInterceptor;
         private Interceptor aclTokenInterceptor;
@@ -360,20 +358,6 @@ public class Consul {
         }
 
         /**
-         * Sets the {@link ObjectMapper} for the client.
-         *
-         * @param objectMapper The {@link ObjectMapper} to use.
-         * @return The builder.
-         */
-        public Builder withObjectMapper(ObjectMapper objectMapper) {
-            this.objectMapper = objectMapper;
-
-            objectMapper.registerModule(new GuavaModule());
-
-            return this;
-        }
-
-        /**
          * Constructs a new {@link Consul} client.
          *
          * @return A new Consul client.
@@ -384,7 +368,7 @@ public class Consul {
                 retrofit = createRetrofit(
                         this.url.toExternalForm(),
                         this.sslContext,
-                        this.objectMapper);
+                        Jackson.MAPPER);
             } catch (MalformedURLException e) {
                 throw new RuntimeException(e);
             }

@@ -229,8 +229,6 @@
                             <goal>shade</goal>
                         </goals>
                         <configuration>
-                            <shadedArtifactAttached>true</shadedArtifactAttached>
-                            <shadedClassifierName>all</shadedClassifierName>
                             <artifactSet>
                                 <excludes>
                                     <exclude>org.slf4j:slf4j-api</exclude>
