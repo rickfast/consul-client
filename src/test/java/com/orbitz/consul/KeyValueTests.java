@@ -188,6 +188,20 @@ public class KeyValueTests {
     }
 
     @Test
+    public void testGetKeys() throws Exception {
+        Consul consul = Consul.builder().build();
+        KeyValueClient kvClient = consul.keyValueClient();
+        String testString = "Hello World!";
+        String key = "my_key";
+        kvClient.putValue(key, testString);
+        // check keys (this line throws com.orbitz.consul.ConsulException: Consul request failed)
+        List<String> list = kvClient.getKeys(key);
+
+        assertFalse(list.isEmpty());
+        assertEquals(key, list.get(0));
+    }
+
+    @Test
     public void testAcquireLock() throws Exception {
         Consul client = Consul.builder().build();
         KeyValueClient keyValueClient = client.keyValueClient();

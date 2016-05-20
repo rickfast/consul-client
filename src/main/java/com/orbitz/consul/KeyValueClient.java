@@ -1,8 +1,6 @@
 package com.orbitz.consul;
 
-import com.google.common.base.Function;
 import com.google.common.base.Optional;
-import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.primitives.UnsignedLongs;
 import com.orbitz.consul.async.ConsulResponseCallback;
@@ -265,14 +263,7 @@ public class KeyValueClient {
      * @return A list of zero to many keys.
      */
     public List<String> getKeys(String key) {
-        List<Value> values = extract(api.getValue(trimLeadingSlash(key), ImmutableMap.<String, Object>of("keys", "true")));
-
-        return FluentIterable.from(values).transform(new Function<Value, String>() {
-            @Override
-            public String apply(Value input) {
-                return input.getValue().get();
-            }
-        }).toList();
+        return extract(api.getKeys(trimLeadingSlash(key), ImmutableMap.<String, Object>of("keys", "true")));
     }
 
     /**
@@ -359,6 +350,10 @@ public class KeyValueClient {
 
         @GET("kv/{key}")
         Call<List<Value>> getValue(@Path("key") String key,
+                                   @QueryMap Map<String, Object> query);
+
+        @GET("kv/{key}")
+        Call<List<String>> getKeys(@Path("key") String key,
                                    @QueryMap Map<String, Object> query);
 
         @PUT("kv/{key}")
