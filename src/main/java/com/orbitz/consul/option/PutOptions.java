@@ -23,7 +23,7 @@ public abstract class PutOptions implements ParamAdder {
         Map<String, Object> result = new HashMap<>();
 
         optionallyAdd(result, "dc", getDc());
-        optionallyAdd(result, "case", getCas());
+        optionallyAdd(result, "cas", getCas());
         optionallyAdd(result, "acquire", getAcquire());
         optionallyAdd(result, "release", getRelease());
 
