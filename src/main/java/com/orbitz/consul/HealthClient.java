@@ -242,6 +242,24 @@ public class HealthClient {
     }
 
     /**
+     * Asynchronously retrieves the healthchecks for a state in a given datacenter with {@link com.orbitz.consul.option.QueryOptions}.
+     *
+     * GET /v1/health/state/{state}?dc={datacenter}
+     *
+     * @param state          The state to query.
+     * @param catalogOptions The catalog specific options to use.
+     * @param queryOptions   The Query Options to use.
+     * @param callback       Callback implemented by callee to handle results.
+     * @return A {@link com.orbitz.consul.model.ConsulResponse} containing a list of
+     * {@link com.orbitz.consul.model.health.HealthCheck} objects.
+     */
+    public void getChecksByState(State state, CatalogOptions catalogOptions,
+                                                              QueryOptions queryOptions,
+                                                              ConsulResponseCallback<List<HealthCheck>> callback) {
+        extractConsulResponse(api.getChecksByState(state.getName(), Options.from(catalogOptions, queryOptions)), callback);
+    }
+
+    /**
      * Retrieves the healthchecks for all healthy service instances.
      *
      * GET /v1/health/service/{service}?passing
