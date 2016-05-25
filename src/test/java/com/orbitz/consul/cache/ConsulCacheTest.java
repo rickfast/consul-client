@@ -6,7 +6,11 @@ import com.orbitz.consul.Consul;
 import com.orbitz.consul.HealthClient;
 import com.orbitz.consul.KeyValueClient;
 import com.orbitz.consul.model.ConsulResponse;
+import com.orbitz.consul.model.State;
 import com.orbitz.consul.model.agent.Agent;
+import com.orbitz.consul.model.agent.Check;
+import com.orbitz.consul.model.health.HealthCheck;
+import com.orbitz.consul.model.health.Service;
 import com.orbitz.consul.model.health.ServiceHealth;
 import com.orbitz.consul.model.kv.Value;
 import org.junit.Test;
@@ -27,6 +31,32 @@ import static org.junit.Assert.fail;
 
 public class ConsulCacheTest {
 
+
+    @Test
+    public void nodeCacheHealthCheckTest() throws Exception {
+        Consul client = Consul.newClient();
+        HealthClient healthClient = client.healthClient();
+        String checkName = UUID.randomUUID().toString();
+        String checkId = UUID.randomUUID().toString();
+
+        client.agentClient().registerCheck(checkId, checkName, 20L);
+        client.agentClient().passCheck(checkId);
+        Thread.sleep(100);
+
+        HealthCheckCache hCheck = HealthCheckCache.newCache(healthClient, State.PASS);
+
+        hCheck.start();
+        hCheck.awaitInitialized(3, TimeUnit.SECONDS);
+
+        HealthCheck check = hCheck.getMap().get(checkId);
+        assertEquals(checkId, check.getCheckId());
+
+        client.agentClient().failCheck(checkId);
+        Thread.sleep(100);
+
+        check = hCheck.getMap().get(checkId);
+        assertNull(check);
+    }
 
     @Test
     public void nodeCacheServicePassingTest() throws Exception {
