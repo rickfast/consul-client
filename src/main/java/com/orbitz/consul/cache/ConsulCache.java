@@ -11,6 +11,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.math.BigInteger;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -200,6 +201,10 @@ public class ConsulCache<K, V> {
             listener.notify(lastResponse.get());
         }
         return added;
+    }
+
+    public List<Listener<K, V>> getListeners() {
+        return Collections.unmodifiableList(listeners);
     }
 
     public boolean removeListener(Listener<K, V> listener) {
