@@ -202,6 +202,14 @@ public class ConsulCache<K, V> {
         return added;
     }
 
+    public Iterable<Listener<K, V>> getListeners() {
+        return listeners;
+    }
+
+    public int getListenersSize() {
+        return listeners.size();
+    }
+
     public boolean removeListener(Listener<K, V> listener) {
         return listeners.remove(listener);
     }
