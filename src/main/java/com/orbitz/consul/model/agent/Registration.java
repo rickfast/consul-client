@@ -62,6 +62,9 @@ public abstract class Registration {
         @JsonProperty("TCP")
         public abstract Optional<String> getTcp();
 
+        @JsonProperty("Timeout")
+        public abstract Optional<String> getTimeout();
+
         public static RegCheck ttl(long ttl) {
             return ImmutableRegCheck
                     .builder()
@@ -77,6 +80,15 @@ public abstract class Registration {
                     .build();
         }
 
+        public static RegCheck script(String script, long interval, long timeout) {
+            return ImmutableRegCheck
+                    .builder()
+                    .script(script)
+                    .interval(String.format("%ss", interval))
+                    .timeout(String.format("%ss", timeout))
+                    .build();
+        }
+
         public static RegCheck http(String http, long interval) {
             return ImmutableRegCheck
                     .builder()
@@ -85,11 +97,29 @@ public abstract class Registration {
                     .build();
         }
 
+        public static RegCheck http(String http, long interval, long timeout) {
+            return ImmutableRegCheck
+                    .builder()
+                    .http(http)
+                    .interval(String.format("%ss", interval))
+                    .timeout(String.format("%ss", timeout))
+                    .build();
+        }
+
         public static RegCheck tcp(String tcp, long interval) {
             return ImmutableRegCheck
                     .builder()
                     .tcp(tcp)
                     .interval(String.format("%ss", interval))
+                    .build();
+        }
+
+        public static RegCheck tcp(String tcp, long interval, long timeout) {
+            return ImmutableRegCheck
+                    .builder()
+                    .tcp(tcp)
+                    .interval(String.format("%ss", interval))
+                    .timeout(String.format("%ss", timeout))
                     .build();
         }
 

@@ -1,7 +1,6 @@
 package com.orbitz.consul;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.net.HostAndPort;
 import com.orbitz.consul.model.agent.Agent;
 import com.orbitz.consul.model.agent.ImmutableRegistration;
 import com.orbitz.consul.model.agent.Registration;
@@ -18,11 +17,7 @@ import java.util.Map;
 import java.util.UUID;
 
 import static org.hamcrest.core.Is.is;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 public class AgentTests {
 
@@ -112,8 +107,8 @@ public class AgentTests {
         String serviceId = UUID.randomUUID().toString();
 
         List<Registration.RegCheck> regChecks = ImmutableList.of(
-                Registration.RegCheck.script("/usr/bin/echo \"sup\"", 10),
-                Registration.RegCheck.http("http://localhost:8080/health", 10));
+                Registration.RegCheck.script("/usr/bin/echo \"sup\"", 10, 1),
+                Registration.RegCheck.http("http://localhost:8080/health", 10, 1));
 
         client.agentClient().register(8080, regChecks, serviceName, serviceId);
 
