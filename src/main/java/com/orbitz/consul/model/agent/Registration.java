@@ -64,6 +64,9 @@ public abstract class Registration {
 
         @JsonProperty("Timeout")
         public abstract Optional<String> getTimeout();
+        
+        @JsonProperty("Notes")
+        public abstract Optional<String> getNotes();
 
         public static RegCheck ttl(long ttl) {
             return ImmutableRegCheck
@@ -88,6 +91,16 @@ public abstract class Registration {
                     .timeout(String.format("%ss", timeout))
                     .build();
         }
+        
+        public static RegCheck script(String script, long interval, long timeout, String notes) {
+            return ImmutableRegCheck
+                    .builder()
+                    .script(script)
+                    .interval(String.format("%ss", interval))
+                    .timeout(String.format("%ss", timeout))
+                    .notes(notes)
+                    .build();
+        }
 
         public static RegCheck http(String http, long interval) {
             return ImmutableRegCheck
@@ -105,6 +118,16 @@ public abstract class Registration {
                     .timeout(String.format("%ss", timeout))
                     .build();
         }
+        
+        public static RegCheck http(String http, long interval, long timeout, String notes) {
+            return ImmutableRegCheck
+                    .builder()
+                    .http(http)
+                    .interval(String.format("%ss", interval))
+                    .timeout(String.format("%ss", timeout))
+                    .notes(notes)
+                    .build();
+        }
 
         public static RegCheck tcp(String tcp, long interval) {
             return ImmutableRegCheck
@@ -120,6 +143,16 @@ public abstract class Registration {
                     .tcp(tcp)
                     .interval(String.format("%ss", interval))
                     .timeout(String.format("%ss", timeout))
+                    .build();
+        }
+        
+        public static RegCheck tcp(String tcp, long interval, long timeout, String notes) {
+            return ImmutableRegCheck
+                    .builder()
+                    .tcp(tcp)
+                    .interval(String.format("%ss", interval))
+                    .timeout(String.format("%ss", timeout))
+                    .notes(notes)
                     .build();
         }
 

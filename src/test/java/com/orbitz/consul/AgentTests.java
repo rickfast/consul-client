@@ -107,8 +107,8 @@ public class AgentTests {
         String serviceId = UUID.randomUUID().toString();
 
         List<Registration.RegCheck> regChecks = ImmutableList.of(
-                Registration.RegCheck.script("/usr/bin/echo \"sup\"", 10, 1),
-                Registration.RegCheck.http("http://localhost:8080/health", 10, 1));
+                Registration.RegCheck.script("/usr/bin/echo \"sup\"", 10, 1, "Custom description."),
+                Registration.RegCheck.http("http://localhost:8080/health", 10, 1, "Custom description."));
 
         client.agentClient().register(8080, regChecks, serviceName, serviceId);
 
