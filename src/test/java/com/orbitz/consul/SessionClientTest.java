@@ -4,7 +4,6 @@ import com.orbitz.consul.model.session.ImmutableSession;
 import com.orbitz.consul.model.session.Session;
 import com.orbitz.consul.model.session.SessionCreatedResponse;
 import com.orbitz.consul.model.session.SessionInfo;
-import org.junit.After;
 import org.junit.Test;
 
 import java.util.List;
@@ -15,45 +14,28 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
-public class SessionClientTest {
-
-    @After
-    public void cleanUp() {
-        SessionClient sessionClient = Consul.newClient().sessionClient();
-        List<SessionInfo> result = sessionClient.listSessions();
-
-        for(SessionInfo info : result) {
-            sessionClient.destroySession(info.getId());
-        }
-    }
+public class SessionClientTest extends BaseIntegrationTest {
 
     @Test
     public void testCreateAndDestroySession() throws Exception {
-        Consul client = Consul.builder().build();
         SessionClient sessionClient = client.sessionClient();
         final Session value = ImmutableSession.builder().name("session_" + UUID.randomUUID().toString()).build();
 
         SessionCreatedResponse session = sessionClient.createSession(value);
 
         assertNotNull(session);
-
-        sessionClient.destroySession(session.getId());
     }
 
     @Test
     public void testCreateEmptySession() throws Exception {
-        Consul client = Consul.builder().build();
         SessionClient sessionClient = client.sessionClient();
         SessionCreatedResponse session = sessionClient.createSession(ImmutableSession.builder().build());
 
         assertNotNull(session);
-
-        sessionClient.destroySession(session.getId());
     }
 
     @Test(expected = ConsulException.class)
     public void testRenewSession() throws Exception {
-        Consul client = Consul.builder().build();
         SessionClient sessionClient = client.sessionClient();
         final Session value = ImmutableSession.builder().name("session_" + UUID.randomUUID().toString()).build();
 
@@ -64,13 +46,10 @@ public class SessionClientTest {
         SessionInfo info = sessionClient.renewSession(session.getId()).get();
 
         assertEquals(session.getId(), info.getId());
-
-        sessionClient.renewSession("doesn't exist!");
     }
 
     @Test
     public void testGetSessionInfo() throws Exception {
-        Consul client = Consul.builder().build();
         KeyValueClient keyValueClient = client.keyValueClient();
         SessionClient sessionClient = client.sessionClient();
         String key = UUID.randomUUID().toString();
@@ -89,7 +68,6 @@ public class SessionClientTest {
 
     @Test
     public void testListSessions() throws Exception {
-        Consul client = Consul.builder().build();
         KeyValueClient keyValueClient = client.keyValueClient();
         SessionClient sessionClient = client.sessionClient();
         String key = UUID.randomUUID().toString();

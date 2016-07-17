@@ -24,11 +24,10 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
-public class AgentTests {
+public class AgentTests extends BaseIntegrationTest {
 
     @Test
     public void shouldRetrieveAgentInformation() throws UnknownHostException {
-        Consul client = Consul.builder().build();
         Agent agent = client.agentClient().getAgent();
 
         assertNotNull(agent);
@@ -37,7 +36,6 @@ public class AgentTests {
 
     @Test
     public void shouldRegisterTtlCheck() throws UnknownHostException, InterruptedException {
-        Consul client = Consul.builder().build();
         String serviceName = UUID.randomUUID().toString();
         String serviceId = UUID.randomUUID().toString();
 
@@ -55,12 +53,10 @@ public class AgentTests {
         }
 
         assertTrue(found);
-        client.agentClient().deregister(serviceId);
     }
 
     @Test
     public void shouldRegisterHttpCheck() throws UnknownHostException, InterruptedException, MalformedURLException {
-        Consul client = Consul.builder().build();
         String serviceName = UUID.randomUUID().toString();
         String serviceId = UUID.randomUUID().toString();
 
@@ -78,7 +74,6 @@ public class AgentTests {
         }
 
         assertTrue(found);
-        client.agentClient().deregister(serviceId);
     }
 
     // Need to fix tests for 0.6.2
@@ -107,7 +102,6 @@ public class AgentTests {
 
     @Test
     public void shouldRegisterMultipleChecks() throws UnknownHostException, InterruptedException, MalformedURLException {
-        Consul client = Consul.builder().build();
         String serviceName = UUID.randomUUID().toString();
         String serviceId = UUID.randomUUID().toString();
 
@@ -129,7 +123,6 @@ public class AgentTests {
         }
 
         assertTrue(found);
-        client.agentClient().deregister(serviceId);
     }
 
     // This is apparently valid
@@ -137,7 +130,6 @@ public class AgentTests {
     // and multiple "Checks" in one call
     @Test
     public void shouldRegisterMultipleChecks2() throws UnknownHostException, InterruptedException, MalformedURLException {
-        Consul client = Consul.builder().build();
         String serviceName = UUID.randomUUID().toString();
         String serviceId = UUID.randomUUID().toString();
 
@@ -168,12 +160,10 @@ public class AgentTests {
         }
 
         assertTrue(found);
-        client.agentClient().deregister(serviceId);
     }
 
     @Test
     public void shouldDeregister() throws UnknownHostException, InterruptedException {
-        Consul client = Consul.builder().build();
         String serviceName = UUID.randomUUID().toString();
         String serviceId = UUID.randomUUID().toString();
 
@@ -193,7 +183,6 @@ public class AgentTests {
 
     @Test
     public void shouldGetChecks() {
-        Consul client = Consul.builder().build();
         String id = UUID.randomUUID().toString();
         client.agentClient().register(8080, 20L, UUID.randomUUID().toString(), id);
 
@@ -206,12 +195,10 @@ public class AgentTests {
         }
 
         assertTrue(found);
-        client.agentClient().deregister(id);
     }
 
     @Test
     public void shouldGetServices() {
-        Consul client = Consul.builder().build();
         String id = UUID.randomUUID().toString();
         client.agentClient().register(8080, 20L, UUID.randomUUID().toString(), id);
 
@@ -225,12 +212,10 @@ public class AgentTests {
         }
 
         assertTrue(found);
-        client.agentClient().deregister(id);
     }
 
     @Test
     public void shouldSetWarning() throws UnknownHostException, NotRegisteredException {
-        Consul client = Consul.builder().build();
         String serviceName = UUID.randomUUID().toString();
         String serviceId = UUID.randomUUID().toString();
         String note = UUID.randomUUID().toString();
@@ -239,12 +224,10 @@ public class AgentTests {
         client.agentClient().warn(serviceId, note);
 
         verifyState("warning", client, serviceId, serviceName, note);
-        client.agentClient().deregister(serviceId);
     }
 
     @Test
     public void shouldSetFailing() throws UnknownHostException, NotRegisteredException {
-        Consul client = Consul.builder().build();
         String serviceName = UUID.randomUUID().toString();
         String serviceId = UUID.randomUUID().toString();
         String note = UUID.randomUUID().toString();
@@ -253,12 +236,10 @@ public class AgentTests {
         client.agentClient().fail(serviceId, note);
 
         verifyState("critical", client, serviceId, serviceName, note);
-        client.agentClient().deregister(serviceId);
     }
 
     @Test
     public void shouldRegisterNodeScriptCheck() throws InterruptedException {
-        Consul client = Consul.builder().build();
         String checkId = UUID.randomUUID().toString();
 
         client.agentClient().registerCheck(checkId, "test-validate", "/usr/bin/echo \"sup\"", 30);
@@ -267,14 +248,11 @@ public class AgentTests {
 
         assertEquals(check.getCheckId(), checkId);
         assertEquals(check.getName(), "test-validate");
-
-        client.agentClient().deregisterCheck(checkId);
     }
 
 
     @Test
     public void shouldRegisterNodeHttpCheck() throws InterruptedException, MalformedURLException {
-        Consul client = Consul.builder().build();
         String checkId = UUID.randomUUID().toString();
 
         client.agentClient().registerCheck(checkId, "test-validate", new URL("http://foo.local:1337/check"), 30);
@@ -283,13 +261,10 @@ public class AgentTests {
 
         assertEquals(check.getCheckId(), checkId);
         assertEquals(check.getName(), "test-validate");
-
-        client.agentClient().deregisterCheck(checkId);
     }
 
     @Test
     public void shouldRegisterNodeTtlCheck() throws InterruptedException, MalformedURLException {
-        Consul client = Consul.builder().build();
         String checkId = UUID.randomUUID().toString();
 
         client.agentClient().registerCheck(checkId, "test-validate", 30);
@@ -298,8 +273,6 @@ public class AgentTests {
 
         assertEquals(check.getCheckId(), checkId);
         assertEquals(check.getName(), "test-validate");
-
-        client.agentClient().deregisterCheck(checkId);
     }
 
 

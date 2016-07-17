@@ -2,15 +2,13 @@ package com.orbitz.consul.cache;
 
 import com.google.common.base.Function;
 import com.google.common.collect.ImmutableMap;
-import com.orbitz.consul.Consul;
+import com.orbitz.consul.BaseIntegrationTest;
 import com.orbitz.consul.HealthClient;
 import com.orbitz.consul.KeyValueClient;
 import com.orbitz.consul.model.ConsulResponse;
 import com.orbitz.consul.model.State;
 import com.orbitz.consul.model.agent.Agent;
-import com.orbitz.consul.model.agent.Check;
 import com.orbitz.consul.model.health.HealthCheck;
-import com.orbitz.consul.model.health.Service;
 import com.orbitz.consul.model.health.ServiceHealth;
 import com.orbitz.consul.model.kv.Value;
 import org.junit.Test;
@@ -29,12 +27,10 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.fail;
 
-public class ConsulCacheTest {
-
+public class ConsulCacheTest extends BaseIntegrationTest {
 
     @Test
     public void nodeCacheHealthCheckTest() throws Exception {
-        Consul client = Consul.newClient();
         HealthClient healthClient = client.healthClient();
         String checkName = UUID.randomUUID().toString();
         String checkId = UUID.randomUUID().toString();
@@ -60,7 +56,6 @@ public class ConsulCacheTest {
 
     @Test
     public void nodeCacheServicePassingTest() throws Exception {
-        Consul client = Consul.newClient();
         HealthClient healthClient = client.healthClient();
         String serviceName = UUID.randomUUID().toString();
         String serviceId = UUID.randomUUID().toString();
@@ -89,7 +84,6 @@ public class ConsulCacheTest {
 
     @Test
     public void testServicesAreUniqueByID() throws Exception {
-        Consul client = Consul.newClient();
         HealthClient healthClient = client.healthClient();
         String serviceName = UUID.randomUUID().toString();
         String serviceId = UUID.randomUUID().toString();
@@ -124,8 +118,7 @@ public class ConsulCacheTest {
     @Test
     public void nodeCacheKvTest() throws Exception {
 
-        Consul consul = Consul.newClient();
-        KeyValueClient kvClient = consul.keyValueClient();
+        KeyValueClient kvClient = client.keyValueClient();
         String root = UUID.randomUUID().toString();
 
         for (int i = 0; i < 5; i++) {
@@ -169,8 +162,7 @@ public class ConsulCacheTest {
 
     @Test
     public void testListeners() throws Exception {
-        Consul consul = Consul.newClient();
-        KeyValueClient kvClient = consul.keyValueClient();
+        KeyValueClient kvClient = client.keyValueClient();
         String root = UUID.randomUUID().toString();
 
         KVCache nc = KVCache.newCache(
@@ -214,8 +206,7 @@ public class ConsulCacheTest {
 
     @Test
     public void testLateListenersGetValues() throws Exception {
-        Consul consul = Consul.newClient();
-        KeyValueClient kvClient = consul.keyValueClient();
+        KeyValueClient kvClient = client.keyValueClient();
         String root = UUID.randomUUID().toString();
 
         KVCache nc = KVCache.newCache(
@@ -255,8 +246,7 @@ public class ConsulCacheTest {
 
     @Test(expected = IllegalStateException.class)
     public void testLifeCycleDoubleStart() throws Exception {
-        Consul consul = Consul.newClient();
-        KeyValueClient kvClient = consul.keyValueClient();
+        KeyValueClient kvClient = client.keyValueClient();
         String root = UUID.randomUUID().toString();
 
         KVCache nc = KVCache.newCache(
@@ -277,8 +267,7 @@ public class ConsulCacheTest {
 
     @Test
     public void testLifeCycle() throws Exception {
-        Consul consul = Consul.newClient();
-        KeyValueClient kvClient = consul.keyValueClient();
+        KeyValueClient kvClient = client.keyValueClient();
         String root = UUID.randomUUID().toString();
 
         KVCache nc = KVCache.newCache(
@@ -322,11 +311,11 @@ public class ConsulCacheTest {
         kvClient.deleteKeys(root);
 
     }
-    
+
     /**
      * Test that if Consul for some reason returns a duplicate service or keyvalue entry
      * that we recover gracefully by taking the first value, ignoring duplicates, and warning
-     * user of the condition 
+     * user of the condition
      */
     @Test
     public void testDuplicateServicesDontCauseFailure() {
@@ -338,7 +327,7 @@ public class ConsulCacheTest {
         };
         final List<Value> response = Arrays.asList(Mockito.mock(Value.class), Mockito.mock(Value.class));
         final ConsulCache<String, Value> consulCache = new ConsulCache<>(keyExtractor, null);
-        final ConsulResponse<List<Value>> consulResponse = new ConsulResponse<>(response, 0, false, BigInteger.ONE); 
+        final ConsulResponse<List<Value>> consulResponse = new ConsulResponse<>(response, 0, false, BigInteger.ONE);
         final ImmutableMap<String, Value> map = consulCache.convertToMap(consulResponse);
         assertNotNull(map);
         // Second copy has been weeded out

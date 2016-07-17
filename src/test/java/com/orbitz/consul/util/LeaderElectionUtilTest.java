@@ -1,5 +1,6 @@
 package com.orbitz.consul.util;
 
+import com.orbitz.consul.BaseIntegrationTest;
 import com.orbitz.consul.Consul;
 import org.junit.Test;
 
@@ -7,11 +8,10 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
-public class LeaderElectionUtilTest {
+public class LeaderElectionUtilTest extends BaseIntegrationTest {
 
     @Test
     public void testGetLeaderInfoForService() throws Exception {
-        Consul client = Consul.newClient();
         LeaderElectionUtil leutil = new LeaderElectionUtil(client);
         final String serviceName = "myservice100";
         final String serviceInfo = "serviceinfo";
