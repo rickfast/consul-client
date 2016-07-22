@@ -19,7 +19,7 @@ import java.util.logging.Logger;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-public class StatusClientTests {
+public class StatusClientTests extends BaseIntegrationTest {
 
     private static Set<InetAddress> ips = new HashSet<InetAddress>();
 
@@ -53,32 +53,31 @@ public class StatusClientTests {
     }
 
     public static final String IP_PORT_DELIM = ":";
-    public static final String CONSUL_PORT = "8300";
 
     public String getIp(String ipAndPort) {
         return ipAndPort.substring(0, ipAndPort.indexOf(IP_PORT_DELIM));
     }
 
-    public String getPort(String ipAndPort) {
-        return ipAndPort.substring(ipAndPort.indexOf(IP_PORT_DELIM) + 1);
+    public int getPort(String ipAndPort) {
+        return Integer.valueOf(ipAndPort.substring(ipAndPort.indexOf(IP_PORT_DELIM) + 1));
     }
 
     public void assertLocalIpAndCorrectPort(String ipAndPort) throws UnknownHostException {
         String ip = getIp(ipAndPort);
-        String port = getPort(ipAndPort);
+        int port = getPort(ipAndPort);
         assertTrue(isLocalIp(ip));
-        assertEquals(CONSUL_PORT, port);
+        assertEquals(consul.getServerPort(), port);
     }
 
     @Test
     public void shouldGetLeader() throws UnknownHostException {
-        String ipAndPort = Consul.newClient().statusClient().getLeader();
+        String ipAndPort = client.statusClient().getLeader();
         assertLocalIpAndCorrectPort(ipAndPort);
     }
 
     @Test
     public void shouldGetPeers() throws UnknownHostException {
-        List<String> peers = Consul.newClient().statusClient().getPeers();
+        List<String> peers = client.statusClient().getPeers();
         for (String ipAndPort : peers) {
             assertLocalIpAndCorrectPort(ipAndPort);
         }

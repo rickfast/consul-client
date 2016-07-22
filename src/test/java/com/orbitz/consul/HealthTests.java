@@ -1,5 +1,6 @@
 package com.orbitz.consul;
 
+import com.google.common.net.HostAndPort;
 import com.orbitz.consul.model.ConsulResponse;
 import com.orbitz.consul.model.State;
 import com.orbitz.consul.model.agent.ImmutableRegistration;
@@ -15,20 +16,20 @@ import java.net.UnknownHostException;
 import java.util.List;
 import java.util.UUID;
 
+import static com.orbitz.consul.Consul.builder;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-public class HealthTests {
+public class HealthTests extends BaseIntegrationTest {
     @Test
     public void shouldFetchPassingNode() throws UnknownHostException, NotRegisteredException {
-        Consul client = Consul.builder().build();
         String serviceName = UUID.randomUUID().toString();
         String serviceId = UUID.randomUUID().toString();
 
         client.agentClient().register(8080, 20L, serviceName, serviceId);
         client.agentClient().pass(serviceId);
 
-        Consul client2 = Consul.newClient();
+        Consul client2 = builder().withHostAndPort(HostAndPort.fromParts("localhost", consul.getHttpPort())).build();
         String serviceId2 = UUID.randomUUID().toString();
 
         client2.agentClient().register(8080, 20L, serviceName, serviceId2);
@@ -44,7 +45,6 @@ public class HealthTests {
 
     @Test
     public void shouldFetchNode() throws UnknownHostException, NotRegisteredException {
-        Consul client = Consul.builder().build();
         String serviceName = UUID.randomUUID().toString();
         String serviceId = UUID.randomUUID().toString();
 
@@ -59,7 +59,6 @@ public class HealthTests {
 
     @Test
     public void shouldFetchNodeDatacenter() throws UnknownHostException, NotRegisteredException {
-        Consul client = Consul.builder().build();
         String serviceName = UUID.randomUUID().toString();
         String serviceId = UUID.randomUUID().toString();
 
@@ -75,7 +74,6 @@ public class HealthTests {
 
     @Test
     public void shouldFetchNodeBlock() throws UnknownHostException, NotRegisteredException {
-        Consul client = Consul.builder().build();
         String serviceName = UUID.randomUUID().toString();
         String serviceId = UUID.randomUUID().toString();
 
@@ -92,7 +90,6 @@ public class HealthTests {
 
     @Test
     public void shouldFetchChecksForServiceBlock() throws UnknownHostException, NotRegisteredException {
-        Consul client = Consul.builder().build();
         String serviceName = UUID.randomUUID().toString();
         String serviceId = UUID.randomUUID().toString();
 
@@ -126,7 +123,6 @@ public class HealthTests {
 
     @Test
     public void shouldFetchByState() throws UnknownHostException, NotRegisteredException {
-        Consul client = Consul.builder().build();
         String serviceName = UUID.randomUUID().toString();
         String serviceId = UUID.randomUUID().toString();
 

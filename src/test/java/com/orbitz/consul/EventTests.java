@@ -7,11 +7,10 @@ import org.junit.Test;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-public class EventTests {
+public class EventTests extends BaseIntegrationTest {
 
     @Test
     public void shouldFire() throws InterruptedException {
-        Consul client = Consul.builder().build();
         EventClient eventClient = client.eventClient();
 
         String name = RandomStringUtils.random(10);
@@ -32,7 +31,6 @@ public class EventTests {
 
     @Test
     public void shouldFireWithPayload() throws InterruptedException {
-        Consul client = Consul.builder().build();
         EventClient eventClient = client.eventClient();
 
         String payload = RandomStringUtils.randomAlphabetic(20);
