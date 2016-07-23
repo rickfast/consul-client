@@ -7,6 +7,7 @@ import com.google.common.io.BaseEncoding;
 import com.google.common.net.HostAndPort;
 import com.orbitz.consul.util.Jackson;
 import okhttp3.*;
+import okhttp3.internal.Util;
 import retrofit2.Retrofit;
 import retrofit2.converter.jackson.JacksonConverterFactory;
 
@@ -14,6 +15,8 @@ import javax.net.ssl.SSLContext;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.concurrent.SynchronousQueue;
+import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -414,6 +417,14 @@ public class Consul {
             if (writeTimeoutMillis != null) {
                 builder.writeTimeout(writeTimeoutMillis, TimeUnit.MILLISECONDS);
             }
+
+            /**
+             * mimics okhttp3.Dispatcher#executorService implementation, except
+             * using daemon thread so shutdown is not blocked (issue #133)
+             */
+            Dispatcher dispatcher = new Dispatcher(new ThreadPoolExecutor(0, Integer.MAX_VALUE, 60, TimeUnit.SECONDS,
+                    new SynchronousQueue<Runnable>(), Util.threadFactory("OkHttp Dispatcher", true)));
+            builder.dispatcher(dispatcher);
 
             final URL consulUrl = new URL(url);
 
