@@ -11,6 +11,7 @@ import okhttp3.internal.Util;
 import retrofit2.Retrofit;
 import retrofit2.converter.jackson.JacksonConverterFactory;
 
+import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLContext;
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -175,6 +176,7 @@ public class Consul {
     public static class Builder {
         private URL url;
         private SSLContext sslContext;
+        private HostnameVerifier hostnameVerifier;
         private boolean ping = true;
         private Interceptor basicAuthInterceptor;
         private Interceptor aclTokenInterceptor;
@@ -325,6 +327,18 @@ public class Consul {
         }
 
         /**
+         * Sets the {@link HostnameVerifier} for the client.
+         *
+         * @param hostnameVerifier The hostname verifier to use.
+         * @return The builder.
+         */
+        public Builder withHostnameVerifier(HostnameVerifier hostnameVerifier) {
+            this.hostnameVerifier = hostnameVerifier;
+
+            return this;
+        }
+
+        /**
          * Connect timeout for OkHttpClient
          * @param timeoutMillis timeout values in milliseconds
          * @return The builder
@@ -371,6 +385,7 @@ public class Consul {
                 retrofit = createRetrofit(
                         this.url.toExternalForm(),
                         this.sslContext,
+                        this.hostnameVerifier,
                         Jackson.MAPPER);
             } catch (MalformedURLException e) {
                 throw new RuntimeException(e);
@@ -392,7 +407,7 @@ public class Consul {
         }
 
 
-        private Retrofit createRetrofit(String url, SSLContext sslContext, ObjectMapper mapper) throws MalformedURLException {
+        private Retrofit createRetrofit(String url, SSLContext sslContext, HostnameVerifier hostnameVerifier, ObjectMapper mapper) throws MalformedURLException {
             final OkHttpClient.Builder builder = new OkHttpClient.Builder();
 
             if (basicAuthInterceptor != null) {
@@ -404,6 +419,10 @@ public class Consul {
 
             if (sslContext != null) {
                 builder.sslSocketFactory(sslContext.getSocketFactory());
+            }
+
+            if (hostnameVerifier != null) {
+                builder.hostnameVerifier(hostnameVerifier);
             }
 
             if (connectTimeoutMillis != null) {
