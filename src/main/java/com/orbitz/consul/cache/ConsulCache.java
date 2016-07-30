@@ -3,24 +3,16 @@ package com.orbitz.consul.cache;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Function;
 import com.google.common.collect.ImmutableMap;
+import com.orbitz.consul.ConsulException;
 import com.orbitz.consul.async.ConsulResponseCallback;
 import com.orbitz.consul.model.ConsulResponse;
 import com.orbitz.consul.option.QueryOptions;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.math.BigInteger;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
+import java.util.*;
+import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicReference;
 
 import static com.google.common.base.Preconditions.checkState;
@@ -67,28 +59,32 @@ public class ConsulCache<K, V> {
             @Override
             public void onComplete(ConsulResponse<List<V>> consulResponse) {
 
-                if (!isRunning()) {
-                    return;
-                }
-                updateIndex(consulResponse);
-                ImmutableMap<K, V> full = convertToMap(consulResponse);
-
-                boolean changed = !full.equals(lastResponse.get());
-                if (changed) {
-                    // changes
-                    lastResponse.set(full);
-                }
-
-                if (changed) {
-                    for (Listener<K, V> l : listeners) {
-                        l.notify(full);
+                if (consulResponse.isKnownLeader()) {
+                    if (!isRunning()) {
+                        return;
                     }
-                }
+                    updateIndex(consulResponse);
+                    ImmutableMap<K, V> full = convertToMap(consulResponse);
 
-                if (state.compareAndSet(State.starting, State.started)) {
-                    initLatch.countDown();
+                    boolean changed = !full.equals(lastResponse.get());
+                    if (changed) {
+                        // changes
+                        lastResponse.set(full);
+                    }
+
+                    if (changed) {
+                        for (Listener<K, V> l : listeners) {
+                            l.notify(full);
+                        }
+                    }
+
+                    if (state.compareAndSet(State.starting, State.started)) {
+                        initLatch.countDown();
+                    }
+                    runCallback();s
+                } else {
+                    onFailure(new ConsulException("Consul cluster has no elected leader"));
                 }
-                runCallback();
             }
 
             @Override
