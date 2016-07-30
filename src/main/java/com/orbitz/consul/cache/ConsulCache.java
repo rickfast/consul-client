@@ -81,7 +81,7 @@ public class ConsulCache<K, V> {
                     if (state.compareAndSet(State.starting, State.started)) {
                         initLatch.countDown();
                     }
-                    runCallback();s
+                    runCallback();
                 } else {
                     onFailure(new ConsulException("Consul cluster has no elected leader"));
                 }
