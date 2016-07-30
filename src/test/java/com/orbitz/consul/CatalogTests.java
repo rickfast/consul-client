@@ -88,8 +88,8 @@ public class CatalogTests extends BaseIntegrationTest {
         final List<Node> nodesResp = catalogClient.getNodes().getResponse();
         for (Node node : nodesResp) {
             assertNotNull(node.getTaggedAddresses());
-            assertNotNull(node.getTaggedAddresses().getWan());
-            assertFalse(node.getTaggedAddresses().getWan().isEmpty());
+            assertNotNull(node.getTaggedAddresses().get().getWan());
+            assertFalse(node.getTaggedAddresses().get().getWan().isEmpty());
         }
     }
 
@@ -101,8 +101,8 @@ public class CatalogTests extends BaseIntegrationTest {
         for (Node tmp : nodesResp) {
             final Node node = catalogClient.getNode(tmp.getNode()).getResponse().getNode();
             assertNotNull(node.getTaggedAddresses());
-            assertNotNull(node.getTaggedAddresses().getWan());
-            assertFalse(node.getTaggedAddresses().getWan().isEmpty());
+            assertNotNull(node.getTaggedAddresses().get().getWan());
+            assertFalse(node.getTaggedAddresses().get().getWan().isEmpty());
         }
     }
 }
