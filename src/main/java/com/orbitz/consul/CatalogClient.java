@@ -179,6 +179,7 @@ public class CatalogClient {
      *
      * GET /v1/catalog/service/{service}
      *
+     * @param service      The service to query.
      * @return A {@link com.orbitz.consul.model.ConsulResponse} containing
      * {@link com.orbitz.consul.model.catalog.CatalogService} objects.
      */
