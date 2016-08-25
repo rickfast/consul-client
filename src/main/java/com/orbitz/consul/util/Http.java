@@ -91,7 +91,7 @@ public class Http {
         String lastContactHeaderValue = headers.get("X-Consul-Lastcontact");
         String knownLeaderHeaderValue = headers.get("X-Consul-Knownleader");
 
-        BigInteger index = new BigInteger(indexHeaderValue);
+        BigInteger index = indexHeaderValue == null ? new BigInteger("-1") : new BigInteger(indexHeaderValue);
         long lastContact = lastContactHeaderValue == null ? -1 : Long.valueOf(lastContactHeaderValue);
         boolean knownLeader = knownLeaderHeaderValue == null ? false : Boolean.valueOf(knownLeaderHeaderValue);
 
