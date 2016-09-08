@@ -91,8 +91,8 @@ public class Http {
         String lastContactHeaderValue = headers.get("X-Consul-Lastcontact");
         String knownLeaderHeaderValue = headers.get("X-Consul-Knownleader");
 
-        BigInteger index = indexHeaderValue == null ? new BigInteger("-1") : new BigInteger(indexHeaderValue);
-        long lastContact = lastContactHeaderValue == null ? -1 : Long.valueOf(lastContactHeaderValue);
+        BigInteger index = indexHeaderValue == null ? new BigInteger("0") : new BigInteger(indexHeaderValue);
+        long lastContact = lastContactHeaderValue == null ? 0 : Long.valueOf(lastContactHeaderValue);
         boolean knownLeader = knownLeaderHeaderValue == null ? false : Boolean.valueOf(knownLeaderHeaderValue);
 
         ConsulResponse<T> consulResponse = new ConsulResponse<>(response.body(), lastContact, knownLeader, index);
