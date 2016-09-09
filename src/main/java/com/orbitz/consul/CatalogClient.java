@@ -1,5 +1,6 @@
 package com.orbitz.consul;
 
+import com.orbitz.consul.async.ConsulResponseCallback;
 import com.orbitz.consul.model.ConsulResponse;
 import com.orbitz.consul.model.catalog.CatalogNode;
 import com.orbitz.consul.model.catalog.CatalogService;
@@ -151,6 +152,34 @@ public class CatalogClient {
      *
      * GET /v1/catalog/service/{service}
      *
+     * @return A {@link com.orbitz.consul.model.ConsulResponse} containing
+     * {@link com.orbitz.consul.model.catalog.CatalogService} objects.
+     */
+
+    /**
+     * Asynchronously retrieves a single service
+     *
+     * GET /v1/catalog/service/{service}
+     *
+     * @param service      The service to query.
+     * @param catalogOptions Catalog specific options to use.
+     * @param queryOptions The Query Options to use.
+     * @param callback       Callback implemented by callee to handle results.
+     * {@link com.orbitz.consul.model.health.HealthCheck} objects.
+     */
+    public void getService(String service,
+                           CatalogOptions catalogOptions,
+                           QueryOptions queryOptions,
+                           ConsulResponseCallback<List<CatalogService>> callback) {
+        extractConsulResponse(api.getService(service, Options.from(catalogOptions, queryOptions)), callback);
+    }
+
+    /**
+     * Retrieves a single service.
+     *
+     * GET /v1/catalog/service/{service}
+     *
+     * @param service      The service to query.
      * @return A {@link com.orbitz.consul.model.ConsulResponse} containing
      * {@link com.orbitz.consul.model.catalog.CatalogService} objects.
      */

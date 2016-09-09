@@ -3,11 +3,13 @@ package com.orbitz.consul.cache;
 import com.google.common.base.Function;
 import com.google.common.collect.ImmutableMap;
 import com.orbitz.consul.BaseIntegrationTest;
+import com.orbitz.consul.CatalogClient;
 import com.orbitz.consul.HealthClient;
 import com.orbitz.consul.KeyValueClient;
 import com.orbitz.consul.model.ConsulResponse;
 import com.orbitz.consul.model.State;
 import com.orbitz.consul.model.agent.Agent;
+import com.orbitz.consul.model.catalog.CatalogService;
 import com.orbitz.consul.model.health.HealthCheck;
 import com.orbitz.consul.model.health.ServiceHealth;
 import com.orbitz.consul.model.kv.Value;
@@ -17,6 +19,7 @@ import org.mockito.Mockito;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -26,6 +29,8 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.fail;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertFalse;
 
 public class ConsulCacheTest extends BaseIntegrationTest {
 
@@ -333,4 +338,80 @@ public class ConsulCacheTest extends BaseIntegrationTest {
         // Second copy has been weeded out
         assertEquals(1, map.size());
     }
+
+    @Test
+    public void nodeCacheServiceDeregistereTest() throws Exception {
+        CatalogClient catalogClient = client.catalogClient();
+        String serviceName = UUID.randomUUID().toString();
+        String serviceId = UUID.randomUUID().toString();
+
+        CatalogServiceCache svCatalogCache = CatalogServiceCache.newCache(catalogClient, serviceName);
+        svCatalogCache.start();
+        svCatalogCache.awaitInitialized(3, TimeUnit.SECONDS);
+
+        client.agentClient().register(8080, 20L, serviceName, serviceId);
+        Agent agent = client.agentClient().getAgent();
+        Thread.sleep(100);
+
+        CatalogServiceKey serviceKey = CatalogServiceKey.of(serviceId, agent.getConfig().getAdvertiseAddr(), 8080);
+        CatalogService service = svCatalogCache.getMap().get(serviceKey);
+        assertEquals(serviceId, service.getServiceId());
+
+        client.agentClient().deregister(serviceId);
+        Thread.sleep(100);
+
+        service = svCatalogCache.getMap().get(serviceKey);
+        assertNull(service);
+
+    }
+
+
+    @Test
+    public void testCatalogCacheListeners() throws Exception {
+        CatalogClient catalogClient = client.catalogClient();
+        String serviceName = UUID.randomUUID().toString();
+        String serviceId = UUID.randomUUID().toString();
+
+        CatalogServiceCache svCatalogCache = CatalogServiceCache.newCache(catalogClient, serviceName);
+
+        final Map<CatalogServiceKey, CatalogService> values = new HashMap<>();
+        svCatalogCache.addListener(new ConsulCache.Listener<CatalogServiceKey, CatalogService>() {
+            @Override
+            public void notify(Map<CatalogServiceKey, CatalogService> newValues) {
+                values.putAll(newValues);
+            }
+        });
+
+        svCatalogCache.start();
+        if (!svCatalogCache.awaitInitialized(3, TimeUnit.SECONDS)) {
+            fail("cache initialization failed");
+        }
+
+        // Register new service and check it triggers the listener to react
+        client.agentClient().register(8080, 20L, serviceName, serviceId);
+        Agent agent = client.agentClient().getAgent();
+        Thread.sleep(100);
+
+        CatalogServiceKey serviceKey = CatalogServiceKey.of(serviceId, agent.getConfig().getAdvertiseAddr(), 8080);
+        assertTrue(values.containsKey(serviceKey));
+
+        // Register a second service and check it triggers the listener to react
+        values.clear();
+        String serviceId2 = UUID.randomUUID().toString();
+        client.agentClient().register(8080, 20L, serviceName, serviceId2);
+        Thread.sleep(100);
+
+        CatalogServiceKey serviceKey2 = CatalogServiceKey.of(serviceId2, agent.getConfig().getAdvertiseAddr(), 8080);
+        assertTrue(values.containsKey(serviceKey2));
+
+        // Derregister service and check listener is triggered without this value.
+        values.clear();
+        client.agentClient().deregister(serviceId);
+        Thread.sleep(100);
+
+        assertFalse(values.containsKey(serviceKey));
+        assertTrue(values.containsKey(serviceKey2));
+
+    }
+
 }
