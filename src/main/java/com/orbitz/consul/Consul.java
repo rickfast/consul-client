@@ -383,7 +383,7 @@ public class Consul {
             final Retrofit retrofit;
             try {
                 retrofit = createRetrofit(
-                        this.url.toExternalForm(),
+                        buildUrl(this.url),
                         this.sslContext,
                         this.hostnameVerifier,
                         Jackson.MAPPER);
@@ -404,6 +404,10 @@ public class Consul {
                 agentClient.ping();
             }
             return new Consul(agentClient, healthClient, keyValueClient, catalogClient, statusClient, sessionClient, eventClient, preparedQueryClient);
+        }
+
+        private String buildUrl(URL url) {
+            return url.toExternalForm().replaceAll("/$", "") + "/v1/";
         }
 
 
@@ -449,7 +453,7 @@ public class Consul {
 
             return new Retrofit.Builder()
                     .baseUrl(new URL(consulUrl.getProtocol(), consulUrl.getHost(),
-                            consulUrl.getPort(), "/v1/").toExternalForm())
+                            consulUrl.getPort(), consulUrl.getFile()).toExternalForm())
                     .addConverterFactory(JacksonConverterFactory.create(mapper))
                     .client(builder.build())
                     .build();
