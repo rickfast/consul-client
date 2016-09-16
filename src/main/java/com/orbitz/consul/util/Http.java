@@ -60,7 +60,11 @@ public class Http {
         call.enqueue(new retrofit2.Callback<T>() {
             @Override
             public void onResponse(Call<T> call, Response<T> response) {
-                callback.onComplete(consulResponse(response));
+                if (response.isSuccessful()) {
+                    callback.onComplete(consulResponse(response));
+                } else {
+                    callback.onFailure(new ConsulException(response.code(), response));
+                }
             }
 
             @Override
@@ -75,7 +79,11 @@ public class Http {
 
             @Override
             public void onResponse(Call<T> call, Response<T> response) {
-                callback.onResponse(response.body());
+                if (response.isSuccessful()) {
+                    callback.onResponse(response.body());
+                } else {
+                    callback.onFailure(new ConsulException(response.code(), response));
+                }
             }
 
             @Override

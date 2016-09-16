@@ -257,14 +257,12 @@ public class KeyValueTests extends BaseIntegrationTest {
 
             @Override
             public void onComplete(ConsulResponse<Optional<Value>> consulResponse) {
-
-                success.set(!consulResponse.getResponse().isPresent());
                 completed.countDown();
             }
 
             @Override
             public void onFailure(Throwable throwable) {
-                throwable.printStackTrace();
+                success.set(throwable instanceof ConsulException);;
                 completed.countDown();
             }
         });
