@@ -5,6 +5,7 @@ import com.google.common.collect.Sets;
 import com.orbitz.consul.KeyValueClient;
 import com.orbitz.consul.async.ConsulResponseCallback;
 import com.orbitz.consul.model.kv.Value;
+import com.orbitz.consul.option.QueryOptions;
 import org.apache.commons.lang3.StringUtils;
 
 import java.math.BigInteger;
@@ -19,18 +20,11 @@ public class KVCache extends ConsulCache<String, Value> {
         super(keyConversion, callbackConsumer);
     }
 
-    /**
-     * Factory method to construct a String/{@link Value} map with a 10 second
-     * block interval
-     *
-     * @param kvClient the {@link KeyValueClient} to use
-     * @param rootPath the root path
-     * @return the cache object
-     */
     public static KVCache newCache(
             final KeyValueClient kvClient,
             final String rootPath,
-            final int watchSeconds) {
+            final int watchSeconds,
+            final QueryOptions queryOptions) {
 
         final Set<String> rootPathSegments =
                 new LinkedHashSet<>(Arrays.asList(rootPath.split("/")));
@@ -48,10 +42,32 @@ public class KVCache extends ConsulCache<String, Value> {
         final CallbackConsumer<Value> callbackConsumer = new CallbackConsumer<Value>() {
             @Override
             public void consume(BigInteger index, ConsulResponseCallback<List<Value>> callback) {
-                kvClient.getValues(rootPath, watchParams(index, watchSeconds), callback);
+                QueryOptions params = watchParams(index, watchSeconds, queryOptions);
+                kvClient.getValues(rootPath, params, callback);
             }
         };
 
         return new KVCache(keyExtractor, callbackConsumer);
+    }
+
+    public static KVCache newCache(
+            final KeyValueClient kvClient,
+            final String rootPath,
+            final int watchSeconds) {
+        return newCache(kvClient, rootPath, watchSeconds, QueryOptions.BLANK);
+    }
+
+    /**
+     * Factory method to construct a String/{@link Value} map with a 10 second
+     * block interval
+     *
+     * @param kvClient the {@link KeyValueClient} to use
+     * @param rootPath the root path
+     * @return the cache object
+     */
+    public static KVCache newCache(
+            final KeyValueClient kvClient,
+            final String rootPath) {
+        return newCache(kvClient, rootPath, 10);
     }
 }

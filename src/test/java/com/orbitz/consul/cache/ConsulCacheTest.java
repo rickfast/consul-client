@@ -11,6 +11,9 @@ import com.orbitz.consul.model.agent.Agent;
 import com.orbitz.consul.model.health.HealthCheck;
 import com.orbitz.consul.model.health.ServiceHealth;
 import com.orbitz.consul.model.kv.Value;
+import com.orbitz.consul.option.ConsistencyMode;
+import com.orbitz.consul.option.ImmutableQueryOptions;
+import com.orbitz.consul.option.QueryOptions;
 import org.junit.Test;
 import org.mockito.Mockito;
 
@@ -332,5 +335,47 @@ public class ConsulCacheTest extends BaseIntegrationTest {
         assertNotNull(map);
         // Second copy has been weeded out
         assertEquals(1, map.size());
+    }
+
+    @Test
+    public void testWatchParamsWithNoAdditionalOptions() {
+        BigInteger index = new BigInteger("12");
+        QueryOptions expectedOptions = ImmutableQueryOptions.builder()
+                .index(index)
+                .wait("10s")
+                .build();
+        QueryOptions actualOptions = ConsulCache.watchParams(index, 10, QueryOptions.BLANK);
+        assertEquals(expectedOptions, actualOptions);
+    }
+
+    @Test
+    public void testWatchParamsWithAdditionalOptions() {
+        BigInteger index = new BigInteger("12");
+        QueryOptions additionalOptions = ImmutableQueryOptions.builder()
+                .consistencyMode(ConsistencyMode.STALE)
+                .token("186596")
+                .near("156892")
+                .build();
+
+        QueryOptions expectedOptions = ImmutableQueryOptions.builder()
+                .index(index)
+                .wait("10s")
+                .consistencyMode(ConsistencyMode.STALE)
+                .token("186596")
+                .near("156892")
+                .build();
+
+        QueryOptions actualOptions = ConsulCache.watchParams(index, 10, additionalOptions);
+        assertEquals(expectedOptions, actualOptions);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testWatchParamsWithAdditionalIndexAndWaitingThrows() {
+        BigInteger index = new BigInteger("12");
+        QueryOptions additionalOptions = ImmutableQueryOptions.builder()
+                .index(index)
+                .wait("10s")
+                .build();
+        ConsulCache.watchParams(index, 10, additionalOptions);
     }
 }

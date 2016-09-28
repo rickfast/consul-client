@@ -6,6 +6,7 @@ import com.google.common.collect.ImmutableMap;
 import com.orbitz.consul.ConsulException;
 import com.orbitz.consul.async.ConsulResponseCallback;
 import com.orbitz.consul.model.ConsulResponse;
+import com.orbitz.consul.option.ImmutableQueryOptions;
 import com.orbitz.consul.option.QueryOptions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,6 +16,7 @@ import java.util.*;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicReference;
 
+import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkState;
 
 /**
@@ -164,7 +166,20 @@ public class ConsulCache<K, V> {
         }
     }
 
-    protected static QueryOptions watchParams(BigInteger index, int blockSeconds) {
+    protected static QueryOptions watchParams(final BigInteger index, final int blockSeconds,
+                                              QueryOptions queryOptions) {
+        checkArgument(!queryOptions.getIndex().isPresent() && !queryOptions.getWait().isPresent(),
+                "Index and wait cannot be overridden");
+
+        return ImmutableQueryOptions.builder()
+                .from(watchDefaultParams(index, blockSeconds))
+                .token(queryOptions.getToken())
+                .consistencyMode(queryOptions.getConsistencyMode())
+                .near(queryOptions.getNear())
+                .build();
+    }
+
+    private static QueryOptions watchDefaultParams(final BigInteger index, final int blockSeconds) {
         if (index == null) {
             return QueryOptions.BLANK;
         } else {
