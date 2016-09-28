@@ -30,7 +30,7 @@ public class HealthCheckCache extends ConsulCache<String, HealthCheck> {
             final com.orbitz.consul.model.State state,
             final CatalogOptions catalogOptions,
             final int watchSeconds,
-            final QueryOptions additionalQueryOptions) {
+            final QueryOptions queryOptions) {
         Function<HealthCheck, String> keyExtractor = new Function<HealthCheck, String>() {
             @Override
             public String apply(HealthCheck input) {
@@ -41,8 +41,8 @@ public class HealthCheckCache extends ConsulCache<String, HealthCheck> {
         CallbackConsumer<HealthCheck> callbackConsumer = new CallbackConsumer<HealthCheck>() {
             @Override
             public void consume(BigInteger index, ConsulResponseCallback<List<HealthCheck>> callback) {
-                QueryOptions queryOptions = watchParams(index, watchSeconds, additionalQueryOptions);
-                healthClient.getChecksByState(state, catalogOptions, queryOptions, callback);
+                QueryOptions params = watchParams(index, watchSeconds, queryOptions);
+                healthClient.getChecksByState(state, catalogOptions, params, callback);
             }
         };
 

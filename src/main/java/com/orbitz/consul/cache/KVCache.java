@@ -24,7 +24,7 @@ public class KVCache extends ConsulCache<String, Value> {
             final KeyValueClient kvClient,
             final String rootPath,
             final int watchSeconds,
-            final QueryOptions additionalQueryOptions) {
+            final QueryOptions queryOptions) {
 
         final Set<String> rootPathSegments =
                 new LinkedHashSet<>(Arrays.asList(rootPath.split("/")));
@@ -42,8 +42,8 @@ public class KVCache extends ConsulCache<String, Value> {
         final CallbackConsumer<Value> callbackConsumer = new CallbackConsumer<Value>() {
             @Override
             public void consume(BigInteger index, ConsulResponseCallback<List<Value>> callback) {
-                QueryOptions queryOptions = watchParams(index, watchSeconds, additionalQueryOptions);
-                kvClient.getValues(rootPath, queryOptions, callback);
+                QueryOptions params = watchParams(index, watchSeconds, queryOptions);
+                kvClient.getValues(rootPath, params, callback);
             }
         };
 

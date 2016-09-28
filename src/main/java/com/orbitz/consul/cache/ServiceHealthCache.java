@@ -33,7 +33,7 @@ public class ServiceHealthCache extends ConsulCache<ServiceHealthKey, ServiceHea
             final boolean passing,
             final CatalogOptions catalogOptions,
             final int watchSeconds,
-            final QueryOptions additionalQueryOptions) {
+            final QueryOptions queryOptions) {
         Function<ServiceHealth, ServiceHealthKey> keyExtractor = new Function<ServiceHealth, ServiceHealthKey>() {
             @Override
             public ServiceHealthKey apply(ServiceHealth input) {
@@ -44,11 +44,11 @@ public class ServiceHealthCache extends ConsulCache<ServiceHealthKey, ServiceHea
         CallbackConsumer<ServiceHealth> callbackConsumer = new CallbackConsumer<ServiceHealth>() {
             @Override
             public void consume(BigInteger index, ConsulResponseCallback<List<ServiceHealth>> callback) {
-                QueryOptions queryOptions = watchParams(index, watchSeconds, additionalQueryOptions);
+                QueryOptions params = watchParams(index, watchSeconds, queryOptions);
                 if (passing) {
-                    healthClient.getHealthyServiceInstances(serviceName, catalogOptions, queryOptions, callback);
+                    healthClient.getHealthyServiceInstances(serviceName, catalogOptions, params, callback);
                 } else {
-                    healthClient.getAllServiceInstances(serviceName, catalogOptions, queryOptions, callback);
+                    healthClient.getAllServiceInstances(serviceName, catalogOptions, params, callback);
                 }
             }
         };
