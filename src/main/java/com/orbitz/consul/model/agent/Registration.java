@@ -41,6 +41,9 @@ public abstract class Registration {
     @JsonProperty("Tags")
     public abstract List<String> getTags();
 
+    @JsonProperty("EnableTagOverride")
+    public abstract Optional<Boolean> getEnableTagOverride();
+
     @Value.Immutable
     @JsonSerialize(as = ImmutableRegCheck.class)
     @JsonDeserialize(as = ImmutableRegCheck.class)
