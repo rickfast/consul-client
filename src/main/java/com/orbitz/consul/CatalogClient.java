@@ -1,5 +1,6 @@
 package com.orbitz.consul;
 
+import com.orbitz.consul.async.ConsulResponseCallback;
 import com.orbitz.consul.model.ConsulResponse;
 import com.orbitz.consul.model.catalog.CatalogNode;
 import com.orbitz.consul.model.catalog.CatalogService;
@@ -96,6 +97,20 @@ public class CatalogClient {
      */
     public ConsulResponse<List<Node>> getNodes(CatalogOptions catalogOptions, QueryOptions queryOptions) {
         return extractConsulResponse(api.getNodes(Options.from(catalogOptions, queryOptions)));
+    }
+
+    /**
+     * Asynchronously retrieves the nodes for a given datacenter with {@link com.orbitz.consul.option.QueryOptions}.
+     *
+     * GET /v1/catalog/nodes?dc={datacenter}
+     *
+     * @param catalogOptions Catalog specific options to use.
+     * @param queryOptions The Query Options to use.
+     * @param callback       Callback implemented by callee to handle results.
+     * {@link com.orbitz.consul.model.health.Node} objects.
+     */
+    public void getNodes(CatalogOptions catalogOptions, QueryOptions queryOptions, ConsulResponseCallback<List<Node>> callback) {
+        extractConsulResponse(api.getNodes(Options.from(catalogOptions, queryOptions)), callback);
     }
 
     /**
