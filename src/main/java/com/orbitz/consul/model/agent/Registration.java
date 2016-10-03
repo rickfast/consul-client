@@ -71,6 +71,9 @@ public abstract class Registration {
         @JsonProperty("Notes")
         public abstract Optional<String> getNotes();
 
+        @JsonProperty("DeregisterCriticalServiceAfter")
+        public abstract Optional<String> getDeregisterCriticalServiceAfter();
+
         public static RegCheck ttl(long ttl) {
             return ImmutableRegCheck
                     .builder()
