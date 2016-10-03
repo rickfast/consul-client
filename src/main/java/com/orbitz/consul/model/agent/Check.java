@@ -45,6 +45,9 @@ public abstract class Check {
     @JsonProperty("ServiceID")
     public abstract Optional<String> getServiceId();
 
+    @JsonProperty("DeregisterCriticalServiceAfter")
+    public abstract Optional<String> getDeregisterCriticalServiceAfter();
+
     @Value.Check
     protected void validate() {
 

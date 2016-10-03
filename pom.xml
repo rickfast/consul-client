@@ -129,7 +129,7 @@
         <dependency>
             <groupId>com.pszymczyk.consul</groupId>
             <artifactId>embedded-consul</artifactId>
-            <version>0.1.8</version>
+            <version>0.1.10</version>
             <scope>test</scope>
         </dependency>
     </dependencies>
