@@ -26,16 +26,25 @@ public class KVCache extends ConsulCache<String, Value> {
             final int watchSeconds,
             final QueryOptions queryOptions) {
 
-        final Set<String> rootPathSegments =
-                new LinkedHashSet<>(Arrays.asList(rootPath.split("/")));
+        final String rootPathWithTrailingSlash = rootPath.endsWith("/") ? rootPath : rootPath + "/";
+        final int rootPathWithTrailingSlashLength = rootPathWithTrailingSlash.length();
 
         final Function<Value, String> keyExtractor = new Function<Value, String>() {
             @Override
             public String apply(Value input) {
-                final Set<String> inputPathSegments =
-                        new LinkedHashSet<>(Arrays.asList(input.getKey().split("/")));
+                if (input == null) {
+                    throw new RuntimeException("Input to key extractor is null");
+                }
+                if (input.getKey() == null) {
+                    throw new RuntimeException("Input to key extractor has no key");
+                }
 
-                return StringUtils.join(Sets.difference(inputPathSegments, rootPathSegments), "/");
+                if (input.getKey().startsWith(rootPathWithTrailingSlash)) {
+                    return input.getKey().substring(rootPathWithTrailingSlashLength);
+                } else {
+                    throw new RuntimeException(String.format("Got value for key %s but root is %s",
+                        input.getKey(), rootPathWithTrailingSlash));
+                }
             }
         };
 
@@ -50,6 +59,16 @@ public class KVCache extends ConsulCache<String, Value> {
         return new KVCache(keyExtractor, callbackConsumer);
     }
 
+    /**
+     * Factory method to construct a String/{@link Value} map.
+     *
+     * @param kvClient the {@link KeyValueClient} to use
+     * @param rootPath the root path (will be stripped from keys in the cache)
+     * @param watchSeconds how long to tell the Consul server to wait for new values (note that
+     *                     if this is 60 seconds or more, the client's read timeout will need
+     *                     to be increased as well)
+     * @return the cache object
+     */
     public static KVCache newCache(
             final KeyValueClient kvClient,
             final String rootPath,
