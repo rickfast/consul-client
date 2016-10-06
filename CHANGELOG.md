@@ -11,10 +11,12 @@
 
 **Merged pull requests:**
 
+- CoordinateClient [\#170](https://github.com/OrbitzWorldwide/consul-client/pull/170) ([craigday](https://github.com/craigday))
 - Add node membership watch capabilities [\#169](https://github.com/OrbitzWorldwide/consul-client/pull/169) ([killerwhile](https://github.com/killerwhile))
 - Support the new DeregisterCriticalServerAfter option in Consul 0.7 [\#168](https://github.com/OrbitzWorldwide/consul-client/pull/168) ([jplock](https://github.com/jplock))
 - Support the new DeregisterCriticalServerAfter option in Consul 0.7 [\#165](https://github.com/OrbitzWorldwide/consul-client/pull/165) ([jplock](https://github.com/jplock))
 - Enable additional query options for caches [\#163](https://github.com/OrbitzWorldwide/consul-client/pull/163) ([yfouquet-criteo](https://github.com/yfouquet-criteo))
+- Use substring comparison to remove key prefixes in KVCache [\#159](https://github.com/OrbitzWorldwide/consul-client/pull/159) ([sgrimm-sg](https://github.com/sgrimm-sg))
 
 ## [0.13.0](https://github.com/OrbitzWorldwide/consul-client/tree/0.13.0) (2016-09-21)
 [Full Changelog](https://github.com/OrbitzWorldwide/consul-client/compare/0.12.8...0.13.0)
