@@ -45,12 +45,13 @@ public class Consul {
     private final SessionClient sessionClient;
     private final EventClient eventClient;
     private final PreparedQueryClient preparedQueryClient;
+    private final CoordinateClient coordinateClient;
 
     /**
      * Private constructor.
      *
      */
-    private Consul(AgentClient agentClient, HealthClient healthClient, KeyValueClient keyValueClient, CatalogClient catalogClient, StatusClient statusClient, SessionClient sessionClient, EventClient eventClient, PreparedQueryClient preparedQueryClient) {
+    private Consul(AgentClient agentClient, HealthClient healthClient, KeyValueClient keyValueClient, CatalogClient catalogClient, StatusClient statusClient, SessionClient sessionClient, EventClient eventClient, PreparedQueryClient preparedQueryClient, CoordinateClient coordinateClient) {
         this.agentClient = agentClient;
         this.healthClient = healthClient;
         this.keyValueClient = keyValueClient;
@@ -59,6 +60,7 @@ public class Consul {
         this.sessionClient = sessionClient;
         this.eventClient = eventClient;
         this.preparedQueryClient = preparedQueryClient;
+        this.coordinateClient = coordinateClient;
     }
 
 
@@ -149,6 +151,17 @@ public class Consul {
      */
     public PreparedQueryClient preparedQueryClient() {
         return preparedQueryClient;
+    }
+
+    /**
+     * Get the Coordinate HTTP client.
+     * <p>
+     * /v1/coordinate
+     *
+     * @return The Coordinate HTTP client.
+     */
+    public CoordinateClient coordinateClient() {
+        return coordinateClient;
     }
 
     /**
@@ -399,11 +412,12 @@ public class Consul {
             SessionClient sessionClient = new SessionClient(retrofit);
             EventClient eventClient = new EventClient(retrofit);
             PreparedQueryClient preparedQueryClient = new PreparedQueryClient(retrofit);
+            CoordinateClient coordinateClient = new CoordinateClient(retrofit);
 
             if (ping) {
                 agentClient.ping();
             }
-            return new Consul(agentClient, healthClient, keyValueClient, catalogClient, statusClient, sessionClient, eventClient, preparedQueryClient);
+            return new Consul(agentClient, healthClient, keyValueClient, catalogClient, statusClient, sessionClient, eventClient, preparedQueryClient, coordinateClient);
         }
 
         private String buildUrl(URL url) {
