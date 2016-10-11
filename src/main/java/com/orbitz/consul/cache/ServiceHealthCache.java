@@ -33,13 +33,8 @@ public class ServiceHealthCache extends ConsulCache<ServiceHealthKey, ServiceHea
             final boolean passing,
             final CatalogOptions catalogOptions,
             final int watchSeconds,
-            final QueryOptions queryOptions) {
-        Function<ServiceHealth, ServiceHealthKey> keyExtractor = new Function<ServiceHealth, ServiceHealthKey>() {
-            @Override
-            public ServiceHealthKey apply(ServiceHealth input) {
-                return ServiceHealthKey.fromServiceHealth(input);
-            }
-        };
+            final QueryOptions queryOptions,
+            final Function<ServiceHealth, ServiceHealthKey> keyExtractor) {
 
         CallbackConsumer<ServiceHealth> callbackConsumer = new CallbackConsumer<ServiceHealth>() {
             @Override
@@ -56,6 +51,24 @@ public class ServiceHealthCache extends ConsulCache<ServiceHealthKey, ServiceHea
         return new ServiceHealthCache(keyExtractor, callbackConsumer);
     }
 
+    public static ServiceHealthCache newCache(
+            final HealthClient healthClient,
+            final String serviceName,
+            final boolean passing,
+            final CatalogOptions catalogOptions,
+            final int watchSeconds,
+            final QueryOptions queryOptions) {
+
+        Function<ServiceHealth, ServiceHealthKey> keyExtractor = new Function<ServiceHealth, ServiceHealthKey>() {
+            @Override
+            public ServiceHealthKey apply(ServiceHealth input) {
+                return ServiceHealthKey.fromServiceHealth(input);
+            }
+        };
+
+        return newCache(healthClient, serviceName, passing, catalogOptions, watchSeconds, queryOptions, keyExtractor);
+    }
+    
     public static ServiceHealthCache newCache(
             final HealthClient healthClient,
             final String serviceName,
