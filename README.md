@@ -96,6 +96,8 @@ String value = kvClient.getValueAsString("foo").get(); // bar
 
 ### Example 4: Blocking call for value.
 
+A blocking is used to wait for a potential changes in the key value store. 
+
 ```java
 Consul consul = Consul.builder().build();
 final KeyValueClient kvClient = consul.keyValueClient();
