@@ -97,42 +97,42 @@ String value = kvClient.getValueAsString("foo").get(); // bar
 ### Example 4: Blocking call for value.
 
 ```java
-        Consul consul = Consul.builder().build();
-        final KeyValueClient kvClient = consul.keyValueClient();
+Consul consul = Consul.builder().build();
+final KeyValueClient kvClient = consul.keyValueClient();
 
-        kvClient.putValue("foo", "bar");
+kvClient.putValue("foo", "bar");
 
-        ConsulResponseCallback<Optional<Value>> callback = new ConsulResponseCallback<Optional<Value>>() {
+ConsulResponseCallback<Optional<Value>> callback = new ConsulResponseCallback<Optional<Value>>() {
 
-            AtomicReference<BigInteger> index = new AtomicReference<BigInteger>(null);
+    AtomicReference<BigInteger> index = new AtomicReference<BigInteger>(null);
 
-            @Override
-            public void onComplete(ConsulResponse<Optional<Value>> consulResponse) {
+    @Override
+    public void onComplete(ConsulResponse<Optional<Value>> consulResponse) {
 
-                if (consulResponse.getResponse().isPresent()) {
-                    Value v = consulResponse.getResponse().get();
-                    LOGGER.info("Value is: {}", new String(BaseEncoding.base64().decode(v.getValue().toString())));
-                }
-                index.set(consulResponse.getIndex());
-                watch();
-            }
+        if (consulResponse.getResponse().isPresent()) {
+            Value v = consulResponse.getResponse().get();
+            LOGGER.info("Value is: {}", new String(BaseEncoding.base64().decode(v.getValue().toString())));
+        }
+        
+	index.set(consulResponse.getIndex());
+        watch();
+    }
 
-            void watch() {
-                kvClient.getValue("foo", QueryOptions.blockMinutes(5, index.get()).build(), this);
-            }
+    void watch() {
+        kvClient.getValue("foo", QueryOptions.blockMinutes(5, index.get()).build(), this);
+    }
 
-            @Override
-            public void onFailure(Throwable throwable) {
-                LOGGER.error("Error encountered", throwable);
-                watch();
-            }
-        };
+    @Override
+        public void onFailure(Throwable throwable) {
+            LOGGER.error("Error encountered", throwable);
+            watch();
+        }
+    };
 
-        kvClient.getValue("foo", QueryOptions.blockMinutes(5, new BigInteger("0")).build(), callback);
-
+    kvClient.getValue("foo", QueryOptions.blockMinutes(5, new BigInteger("0")).build(), callback);
 ```
 
-### Example 6: Subscribe to healthy services
+### Example 5: Subscribe to healthy services
 
 You can also use the ConsulCache implementations to easily subscribe to healthy service changes or Key-Value changes.
 
@@ -152,7 +152,7 @@ svHealth.addListener(new ConsulCache.Listener<HostAndPort, ServiceHealth>() {
 svHealth.start();
 ```         
 
-### Example 7: Find Raft peers.
+### Example 6: Find Raft peers.
 
 ```java
 StatusClient statusClient = Consul.builder().build().statusClient();
@@ -162,7 +162,7 @@ for(String peer : statusClient.getPeers()) {
 }
 ```
 
-### Example 8: Find Raft leader.
+### Example 7: Find Raft leader.
 
 ```java
 StatusClient statusClient = Consul.builder().build().statusClient();
