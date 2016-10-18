@@ -1,5 +1,6 @@
 package com.orbitz.consul.util;
 
+import com.google.common.collect.Sets;
 import com.orbitz.consul.ConsulException;
 import com.orbitz.consul.async.Callback;
 import com.orbitz.consul.async.ConsulResponseCallback;
@@ -13,7 +14,11 @@ import java.math.BigInteger;
 
 public class Http {
 
-    public static <T> T extract(Call<T> call) {
+    public static boolean isSuccessful(Response<?> response, Integer... okCodes) {
+        return response.isSuccessful() || Sets.newHashSet(okCodes).contains(response.code());
+    }
+
+    public static <T> T extract(Call<T> call, Integer... okCodes) {
         Response<T> response;
         try {
             response = call.execute();
@@ -21,14 +26,14 @@ public class Http {
             throw new ConsulException(e);
         }
 
-        if(response.isSuccessful()) {
+        if(isSuccessful(response, okCodes)) {
             return response.body();
         } else {
             throw new ConsulException(response.code(), response);
         }
     }
 
-    public static void handle(Call<Void> call) {
+    public static void handle(Call<Void> call, Integer... okCodes) {
         Response<Void> response;
         try {
             response = call.execute();
@@ -36,12 +41,12 @@ public class Http {
             throw new ConsulException(e);
         }
 
-        if(!response.isSuccessful()) {
+        if(!isSuccessful(response, okCodes)) {
             throw new ConsulException(response.code(), response);
         }
     }
 
-    public static <T> ConsulResponse<T> extractConsulResponse(Call<T> call) {
+    public static <T> ConsulResponse<T> extractConsulResponse(Call<T> call, Integer... okCodes) {
         Response<T> response;
         try {
             response = call.execute();
@@ -49,18 +54,19 @@ public class Http {
             throw new ConsulException(e);
         }
 
-        if(!response.isSuccessful()) {
+        if(!isSuccessful(response, okCodes)) {
             throw new ConsulException(response.code(), response);
         }
 
         return consulResponse(response);
     }
 
-    public static <T> void extractConsulResponse(Call<T> call, final ConsulResponseCallback<T> callback) {
+    public static <T> void extractConsulResponse(Call<T> call, final ConsulResponseCallback<T> callback,
+                                                 final Integer... okCodes) {
         call.enqueue(new retrofit2.Callback<T>() {
             @Override
             public void onResponse(Call<T> call, Response<T> response) {
-                if (response.isSuccessful()) {
+                if (isSuccessful(response, okCodes)) {
                     callback.onComplete(consulResponse(response));
                 } else {
                     callback.onFailure(new ConsulException(response.code(), response));
@@ -74,12 +80,13 @@ public class Http {
         });
     }
 
-    public static <T> void extractBasicResponse(Call<T> call, final Callback<T> callback) {
+    public static <T> void extractBasicResponse(Call<T> call, final Callback<T> callback,
+                                                final Integer... okCodes) {
         call.enqueue(new retrofit2.Callback<T>() {
 
             @Override
             public void onResponse(Call<T> call, Response<T> response) {
-                if (response.isSuccessful()) {
+                if (isSuccessful(response, okCodes)) {
                     callback.onResponse(response.body());
                 } else {
                     callback.onFailure(new ConsulException(response.code(), response));
