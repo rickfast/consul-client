@@ -30,6 +30,7 @@ import static com.orbitz.consul.util.Strings.trimLeadingSlash;
  */
 public class KeyValueClient {
 
+    public static final int NOT_FOUND_404 = 404;
     private final Api api;
 
     /**
@@ -66,9 +67,9 @@ public class KeyValueClient {
      */
     public Optional<Value> getValue(String key, QueryOptions queryOptions) {
         try {
-            return getSingleValue(extract(api.getValue(trimLeadingSlash(key), queryOptions.toQuery())));
+            return getSingleValue(extract(api.getValue(trimLeadingSlash(key), queryOptions.toQuery()), NOT_FOUND_404));
         } catch (ConsulException ignored) {
-            if(ignored.getCode() != 404) {
+            if(ignored.getCode() != NOT_FOUND_404) {
                 throw ignored;
             }
         }
@@ -102,7 +103,7 @@ public class KeyValueClient {
             }
         };
 
-        extractConsulResponse(api.getValue(trimLeadingSlash(key), queryOptions.toQuery()), wrapper);
+        extractConsulResponse(api.getValue(trimLeadingSlash(key), queryOptions.toQuery()), wrapper, NOT_FOUND_404);
     }
 
     private Optional<Value> getSingleValue(List<Value> values){
@@ -137,7 +138,7 @@ public class KeyValueClient {
 
         query.put("recurse", "true");
 
-        return extract(api.getValue(trimLeadingSlash(key), query));
+        return extract(api.getValue(trimLeadingSlash(key), query), NOT_FOUND_404);
     }
 
     /**
@@ -155,7 +156,7 @@ public class KeyValueClient {
 
         query.put("recurse", "true");
 
-        extractConsulResponse(api.getValue(trimLeadingSlash(key), query), callback);
+        extractConsulResponse(api.getValue(trimLeadingSlash(key), query), callback, NOT_FOUND_404);
     }
 
     /**
