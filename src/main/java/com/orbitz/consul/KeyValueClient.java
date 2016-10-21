@@ -7,6 +7,7 @@ import com.orbitz.consul.async.ConsulResponseCallback;
 import com.orbitz.consul.model.ConsulResponse;
 import com.orbitz.consul.model.kv.Value;
 import com.orbitz.consul.model.session.SessionInfo;
+import com.orbitz.consul.option.DeleteOptions;
 import com.orbitz.consul.option.ImmutablePutOptions;
 import com.orbitz.consul.option.PutOptions;
 import com.orbitz.consul.option.QueryOptions;
@@ -275,7 +276,7 @@ public class KeyValueClient {
      * @param key The key to delete.
      */
     public void deleteKey(String key) {
-        handle(api.deleteValue(trimLeadingSlash(key)));
+        deleteKey(key, DeleteOptions.BLANK);
     }
 
     /**
@@ -286,7 +287,22 @@ public class KeyValueClient {
      * @param key The key to delete.
      */
     public void deleteKeys(String key) {
-        handle(api.deleteValues(trimLeadingSlash(key), ImmutableMap.of("recurse", "true")));
+        deleteKey(key, DeleteOptions.RECURSE);
+    }
+
+    /**
+     * Deletes a specified key.
+     *
+     * DELETE /v1/kv/{key}
+     *
+     * @param key The key to delete.
+     * @param deleteOptions DELETE options (e.g. recurse, cas)
+     */
+    public void deleteKey(String key, DeleteOptions deleteOptions) {
+        checkArgument(StringUtils.isNotEmpty(key), "Key must be defined");
+        Map<String, Object> query = deleteOptions.toQuery();
+
+        handle(api.deleteValues(trimLeadingSlash(key), query));
     }
 
     /**
@@ -366,10 +382,7 @@ public class KeyValueClient {
                                @QueryMap Map<String, Object> query);
 
         @DELETE("kv/{key}")
-        Call<Void> deleteValue(@Path("key") String key);
-
-        @DELETE("kv/{key}")
         Call<Void> deleteValues(@Path("key") String key,
-                                @QueryMap Map<String, String> query);
+                                @QueryMap Map<String, Object> query);
     }
 }
