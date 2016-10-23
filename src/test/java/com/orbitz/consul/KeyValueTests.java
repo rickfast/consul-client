@@ -6,6 +6,8 @@ import com.orbitz.consul.model.ConsulResponse;
 import com.orbitz.consul.model.kv.Value;
 import com.orbitz.consul.model.session.ImmutableSession;
 import com.orbitz.consul.model.session.SessionCreatedResponse;
+import com.orbitz.consul.option.ImmutableDeleteOptions;
+import com.orbitz.consul.option.ImmutableDeleteOptions.Builder;
 import com.orbitz.consul.option.QueryOptions;
 import org.junit.Test;
 
@@ -123,6 +125,51 @@ public class KeyValueTests extends BaseIntegrationTest {
         assertFalse(keyValueClient.getValueAsString(key).isPresent());
         assertFalse(keyValueClient.getValueAsString(childKEY).isPresent());
 
+    }
+
+    @Test
+    public void shouldDeleteCas() throws Exception {
+        KeyValueClient keyValueClient = client.keyValueClient();
+        String key = UUID.randomUUID().toString();
+        final String value = UUID.randomUUID().toString();
+
+        /**
+         * Update the value twice and remember the value at each step
+         */
+        keyValueClient.putValue(key, value);
+
+        final Optional<Value> valueAfter1stPut = keyValueClient.getValue(key);
+        assertTrue(valueAfter1stPut.isPresent());
+        assertTrue(valueAfter1stPut.get().getValueAsString().isPresent());
+
+        keyValueClient.putValue(key, UUID.randomUUID().toString());
+
+        final Optional<Value> valueAfter2ndPut = keyValueClient.getValue(key);
+        assertTrue(valueAfter2ndPut.isPresent());
+        assertTrue(valueAfter2ndPut.get().getValueAsString().isPresent());
+
+        /**
+         * Trying to delete the key once with the older lock, which should not
+         * work
+         */
+        final Builder deleteOptionsBuilderWithOlderLock = ImmutableDeleteOptions.builder();
+        deleteOptionsBuilderWithOlderLock.cas(valueAfter1stPut.get().getModifyIndex());
+        final ImmutableDeleteOptions deleteOptionsWithOlderLock = deleteOptionsBuilderWithOlderLock.build();
+
+        keyValueClient.deleteKey(key, deleteOptionsWithOlderLock);
+
+        assertTrue(keyValueClient.getValueAsString(key).isPresent());
+
+        /**
+         * Deleting the key with the most recent lock, which should work
+         */
+        final Builder deleteOptionsBuilderWithLatestLock = ImmutableDeleteOptions.builder();
+        deleteOptionsBuilderWithLatestLock.cas(valueAfter2ndPut.get().getModifyIndex());
+        final ImmutableDeleteOptions deleteOptionsWithLatestLock = deleteOptionsBuilderWithLatestLock.build();
+
+        keyValueClient.deleteKey(key, deleteOptionsWithLatestLock);
+
+        assertFalse(keyValueClient.getValueAsString(key).isPresent());
     }
 
     @Test
