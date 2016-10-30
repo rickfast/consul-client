@@ -1,16 +1,21 @@
 package com.orbitz.consul;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.primitives.UnsignedLongs;
 import com.orbitz.consul.async.ConsulResponseCallback;
 import com.orbitz.consul.model.ConsulResponse;
+import com.orbitz.consul.model.kv.Operation;
+import com.orbitz.consul.model.kv.TxResponse;
 import com.orbitz.consul.model.kv.Value;
 import com.orbitz.consul.model.session.SessionInfo;
 import com.orbitz.consul.option.DeleteOptions;
+import com.orbitz.consul.option.ConsistencyMode;
 import com.orbitz.consul.option.ImmutablePutOptions;
 import com.orbitz.consul.option.PutOptions;
 import com.orbitz.consul.option.QueryOptions;
+import com.orbitz.consul.util.Jackson;
 import okhttp3.MediaType;
 import okhttp3.RequestBody;
 import org.apache.commons.lang3.StringUtils;
@@ -361,6 +366,55 @@ public class KeyValueClient {
     }
 
     /**
+     * Performs a Consul transaction.
+     *
+     * PUT /v1/tx
+     *
+     * @param operations A list of KV operations.
+     * @return A {@link ConsulResponse} containing results and potential errors.
+     */
+    public ConsulResponse<TxResponse> performTransaction(Operation... operations) {
+        return performTransaction(ConsistencyMode.DEFAULT, operations);
+    }
+
+    /**
+     * Performs a Consul transaction.
+     *
+     * PUT /v1/tx
+     *
+     * @param consistency The consistency to use for the transaction.
+     * @param operations A list of KV operations.
+     * @return A {@link ConsulResponse} containing results and potential errors.
+     */
+    public ConsulResponse<TxResponse> performTransaction(ConsistencyMode consistency, Operation... operations) {
+        Map<String, String> query = consistency == ConsistencyMode.DEFAULT
+                ? ImmutableMap.<String, String>of()
+                : ImmutableMap.of(consistency.toParam().get(), "true");
+
+        try {
+            return extractConsulResponse(api.performTransaction(RequestBody.create(MediaType.parse("application/json"),
+                    Jackson.MAPPER.writeValueAsString(kv(operations))), query));
+        } catch (JsonProcessingException e) {
+            throw new ConsulException(e);
+        }
+    }
+
+    /**
+     * Wraps {@link Operation} in a <code>"KV": { }</code> block.
+     * @param operations An array of ops.
+     * @return An array of wrapped ops.
+     */
+    static Kv[] kv(Operation... operations) {
+        Kv[] kvs = new Kv[operations.length];
+
+        for (int i = 0; i < operations.length; i ++) {
+            kvs[i] = new Kv(operations[i]);
+        }
+
+        return kvs;
+    }
+
+    /**
      * Retrofit API interface.
      */
     interface Api {
@@ -384,5 +438,25 @@ public class KeyValueClient {
         @DELETE("kv/{key}")
         Call<Void> deleteValues(@Path("key") String key,
                                 @QueryMap Map<String, Object> query);
+
+        @PUT("txn")
+        @Headers("Content-Type: application/json")
+        Call<TxResponse> performTransaction(@Body RequestBody body,
+                                            @QueryMap Map<String, String> query);
+    }
+
+    /**
+     * Wrapper for Transaction KV entry.
+     */
+    static class Kv {
+        private Operation kv;
+
+        private Kv(Operation operation) {
+            kv = operation;
+        }
+
+        public Operation getKv() {
+            return kv;
+        }
     }
 }
