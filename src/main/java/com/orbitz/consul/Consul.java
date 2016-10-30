@@ -46,12 +46,17 @@ public class Consul {
     private final EventClient eventClient;
     private final PreparedQueryClient preparedQueryClient;
     private final CoordinateClient coordinateClient;
+    private final OperatorClient operatorClient;
 
     /**
      * Private constructor.
      *
      */
-    private Consul(AgentClient agentClient, HealthClient healthClient, KeyValueClient keyValueClient, CatalogClient catalogClient, StatusClient statusClient, SessionClient sessionClient, EventClient eventClient, PreparedQueryClient preparedQueryClient, CoordinateClient coordinateClient) {
+    private Consul(AgentClient agentClient, HealthClient healthClient,
+                   KeyValueClient keyValueClient, CatalogClient catalogClient,
+                   StatusClient statusClient, SessionClient sessionClient,
+                   EventClient eventClient, PreparedQueryClient preparedQueryClient,
+                   CoordinateClient coordinateClient, OperatorClient operatorClient) {
         this.agentClient = agentClient;
         this.healthClient = healthClient;
         this.keyValueClient = keyValueClient;
@@ -61,6 +66,7 @@ public class Consul {
         this.eventClient = eventClient;
         this.preparedQueryClient = preparedQueryClient;
         this.coordinateClient = coordinateClient;
+        this.operatorClient = operatorClient;
     }
 
 
@@ -164,6 +170,16 @@ public class Consul {
         return coordinateClient;
     }
 
+    /**
+     * Get the Operator HTTP client.
+     * <p>
+     * /v1/operator
+     *
+     * @return The Operator HTTP client.
+     */
+    public OperatorClient operatorClient() {
+        return operatorClient;
+    }
     /**
      * Creates a new {@link Builder} object.
      *
@@ -413,11 +429,14 @@ public class Consul {
             EventClient eventClient = new EventClient(retrofit);
             PreparedQueryClient preparedQueryClient = new PreparedQueryClient(retrofit);
             CoordinateClient coordinateClient = new CoordinateClient(retrofit);
+            OperatorClient operatorClient = new OperatorClient(retrofit);
 
             if (ping) {
                 agentClient.ping();
             }
-            return new Consul(agentClient, healthClient, keyValueClient, catalogClient, statusClient, sessionClient, eventClient, preparedQueryClient, coordinateClient);
+            return new Consul(agentClient, healthClient, keyValueClient,
+                    catalogClient, statusClient, sessionClient, eventClient,
+                    preparedQueryClient, coordinateClient, operatorClient);
         }
 
         private String buildUrl(URL url) {
