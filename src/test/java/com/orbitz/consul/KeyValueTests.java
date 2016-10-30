@@ -3,12 +3,18 @@ package com.orbitz.consul;
 import com.google.common.base.Optional;
 import com.orbitz.consul.async.ConsulResponseCallback;
 import com.orbitz.consul.model.ConsulResponse;
+import com.orbitz.consul.model.kv.ImmutableOperation;
+import com.orbitz.consul.model.kv.Operation;
+import com.orbitz.consul.model.kv.TxResponse;
 import com.orbitz.consul.model.kv.Value;
 import com.orbitz.consul.model.session.ImmutableSession;
 import com.orbitz.consul.model.session.SessionCreatedResponse;
 import com.orbitz.consul.option.ImmutableDeleteOptions;
 import com.orbitz.consul.option.ImmutableDeleteOptions.Builder;
 import com.orbitz.consul.option.QueryOptions;
+import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.lang3.RandomStringUtils;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.net.UnknownHostException;
@@ -315,5 +321,21 @@ public class KeyValueTests extends BaseIntegrationTest {
         completed.await(3, TimeUnit.SECONDS);
         keyValueClient.deleteKey(key);
         assertFalse(success.get());
+    }
+
+    @Test
+    @Ignore
+    public void testBasicTxn() throws Exception {
+        KeyValueClient keyValueClient = client.keyValueClient();
+        String key = UUID.randomUUID().toString();
+        String value = Base64.encodeBase64String(RandomStringUtils.random(20).getBytes());
+        Operation[] operation = new Operation[] {ImmutableOperation.builder().verb("set")
+                .key(key)
+                .value(value).build()};
+
+        ConsulResponse<TxResponse> response = keyValueClient.performTransaction(operation);
+
+        assertEquals(value, keyValueClient.getValueAsString(key).get());
+        assertEquals(response.getIndex(), keyValueClient.getValue(key).get().getModifyIndex());
     }
 }
