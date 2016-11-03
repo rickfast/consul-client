@@ -14,15 +14,12 @@ import com.orbitz.consul.model.kv.Value;
 import com.orbitz.consul.option.ConsistencyMode;
 import com.orbitz.consul.option.ImmutableQueryOptions;
 import com.orbitz.consul.option.QueryOptions;
+import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;
 
 import java.math.BigInteger;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 import static org.junit.Assert.assertEquals;
@@ -260,7 +257,7 @@ public class ConsulCacheTest extends BaseIntegrationTest {
         nc.start();
         assertEquals(ConsulCache.State.starting, nc.getState());
 
-        if (!nc.awaitInitialized(1, TimeUnit.SECONDS)) {
+        if (!nc.awaitInitialized(10, TimeUnit.SECONDS)) {
             fail("cache initialization failed");
         }
         assertEquals(ConsulCache.State.started, nc.getState());
@@ -377,5 +374,25 @@ public class ConsulCacheTest extends BaseIntegrationTest {
                 .wait("10s")
                 .build();
         ConsulCache.watchParams(index, 10, additionalOptions);
+    }
+
+    @Test
+    public void testDefaultBackOffDelay() {
+        Properties properties = new Properties();
+        Assert.assertEquals(10000L, ConsulCache.getBackOffDelayInMs(properties));
+    }
+
+    @Test
+    public void testBackOffDelayFromProperties() {
+        Properties properties = new Properties();
+        properties.setProperty(ConsulCache.BACKOFF_DELAY_PROPERTY, "500");
+        Assert.assertEquals(500L, ConsulCache.getBackOffDelayInMs(properties));
+    }
+
+    @Test
+    public void testBackOffDelayDoesNotThrow() {
+        Properties properties = new Properties();
+        properties.setProperty(ConsulCache.BACKOFF_DELAY_PROPERTY, "unparseableLong");
+        Assert.assertEquals(10000L, ConsulCache.getBackOffDelayInMs(properties));
     }
 }
