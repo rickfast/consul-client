@@ -2,6 +2,7 @@ package com.orbitz.consul.cache;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Function;
+import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableMap;
 import com.orbitz.consul.ConsulException;
 import com.orbitz.consul.async.ConsulResponseCallback;
@@ -12,8 +13,17 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.math.BigInteger;
-import java.util.*;
-import java.util.concurrent.*;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
 import static com.google.common.base.Preconditions.checkArgument;
@@ -31,6 +41,10 @@ public class ConsulCache<K, V> {
 
     private final static Logger LOGGER = LoggerFactory.getLogger(ConsulCache.class);
 
+    @VisibleForTesting
+    static final String BACKOFF_DELAY_PROPERTY = "com.orbitz.consul.cache.backOffDelay";
+    private static final long BACKOFF_DELAY_QTY_IN_MS = getBackOffDelayInMs(System.getProperties());
+
     private final AtomicReference<BigInteger> latestIndex = new AtomicReference<BigInteger>(null);
     private final AtomicReference<ImmutableMap<K, V>> lastResponse = new AtomicReference<ImmutableMap<K, V>>(ImmutableMap.<K, V>of());
     private final AtomicReference<State> state = new AtomicReference<State>(State.latent);
@@ -45,14 +59,6 @@ public class ConsulCache<K, V> {
     ConsulCache(
             Function<V, K> keyConversion,
             CallbackConsumer<V> callbackConsumer) {
-        this(keyConversion, callbackConsumer, 10, TimeUnit.SECONDS);
-    }
-
-    ConsulCache(
-            Function<V, K> keyConversion,
-            CallbackConsumer<V> callbackConsumer,
-            final long backoffDelayQty,
-            final TimeUnit backoffDelayUnit) {
 
         this.keyConversion = keyConversion;
         this.callBackConsumer = callbackConsumer;
@@ -95,16 +101,33 @@ public class ConsulCache<K, V> {
                 if (!isRunning()) {
                     return;
                 }
-                LOGGER.error(String.format("Error getting response from consul. will retry in %d %s", backoffDelayQty, backoffDelayUnit), throwable);
+                LOGGER.error(String.format("Error getting response from consul. will retry in %d %s", BACKOFF_DELAY_QTY_IN_MS, TimeUnit.MILLISECONDS), throwable);
 
                 executorService.schedule(new Runnable() {
                     @Override
                     public void run() {
                         runCallback();
                     }
-                }, backoffDelayQty, backoffDelayUnit);
+                }, BACKOFF_DELAY_QTY_IN_MS, TimeUnit.MILLISECONDS);
             }
         };
+    }
+
+    @VisibleForTesting
+    static long getBackOffDelayInMs(Properties properties) {
+        String backOffDelay = null;
+        try {
+            backOffDelay = properties.getProperty(BACKOFF_DELAY_PROPERTY);
+            if (!Strings.isNullOrEmpty(backOffDelay)) {
+                return Long.parseLong(backOffDelay);
+            }
+        } catch (Exception ex) {
+            LOGGER.warn(backOffDelay != null ?
+                    String.format("Error parsing property variable %s: %s", BACKOFF_DELAY_PROPERTY, backOffDelay) :
+                    String.format("Error extracting property variable %s", BACKOFF_DELAY_PROPERTY),
+                    ex);
+        }
+        return TimeUnit.SECONDS.toMillis(10);
     }
 
     public void start() throws Exception {
