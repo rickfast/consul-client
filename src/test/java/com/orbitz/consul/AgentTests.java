@@ -270,6 +270,16 @@ public class AgentTests extends BaseIntegrationTest {
         assertEquals(check.getName(), "test-validate");
     }
 
+    @Test
+    public void shouldEnableMaintenanceMode() throws InterruptedException, MalformedURLException {
+        String serviceName = UUID.randomUUID().toString();
+        String serviceId = UUID.randomUUID().toString();
+        String reason = UUID.randomUUID().toString();
+
+        client.agentClient().register(8080, 20L, serviceName, serviceId);
+        client.agentClient().toggleMaintenanceMode(serviceId, true, reason);
+    }
+
 
     private void verifyState(String state, Consul client, String serviceId,
                              String serviceName, String output) throws UnknownHostException {

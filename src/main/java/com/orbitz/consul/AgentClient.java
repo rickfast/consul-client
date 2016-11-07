@@ -555,6 +555,34 @@ public class AgentClient {
     }
 
     /**
+     * Toggles maintenance mode for a service ID.
+     *
+     * @param serviceId The service ID.
+     * @param enable <code>true</code> if the service should be in
+     *               maintenance mode, otherwise <code>false</code>.
+     */
+    public void toggleMaintenanceMode(String serviceId, boolean enable) {
+        handle(api.toggleMaintenanceMode(serviceId,
+                ImmutableMap.of("enable", Boolean.toString(enable))));
+    }
+
+    /**
+     * Toggles maintenance mode for a service ID.
+     *
+     * @param serviceId The service ID.
+     * @param enable <code>true</code> if the service should be in
+     *               maintenance mode, otherwise <code>false</code>.
+     * @param reason The reason for maintenance mode.
+     */
+    public void toggleMaintenanceMode(String serviceId,
+                                      boolean enable,
+                                      String reason) {
+        handle(api.toggleMaintenanceMode(serviceId,
+                ImmutableMap.of("enable", Boolean.toString(enable),
+                                "reason", reason)));
+    }
+
+    /**
      * Retrofit API interface.
      */
     interface Api {
@@ -597,5 +625,9 @@ public class AgentClient {
 
         @GET("agent/join/{address}")
         Call<Void> join(String address, Map<String, String> query);
+
+        @GET("/v1/agent/service/maintenance/{serviceId}")
+        Call<Void> toggleMaintenanceMode(@Path("serviceId") String serviceId,
+                                         @QueryMap Map<String, String> query);
     }
 }
