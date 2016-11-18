@@ -27,6 +27,10 @@ public class KVCache extends ConsulCache<String, Value> {
                 Preconditions.checkNotNull(input, "Input to key extractor is null");
                 Preconditions.checkNotNull(input.getKey(), "Input to key extractor has no key");
 
+                if (rootPathWithTrailingSlashLength == 1) {
+                    return input.getKey();
+                }
+
                 if (rootPath.equals(input.getKey())) {
                     return "";
                 }
