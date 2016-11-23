@@ -1,8 +1,7 @@
 # Change Log
 
-## [Unreleased](https://github.com/OrbitzWorldwide/consul-client/tree/HEAD)
-
-[Full Changelog](https://github.com/OrbitzWorldwide/consul-client/compare/0.13.3...HEAD)
+## [0.13.4](https://github.com/OrbitzWorldwide/consul-client/tree/0.13.4) (2016-11-23)
+[Full Changelog](https://github.com/OrbitzWorldwide/consul-client/compare/0.13.3...0.13.4)
 
 **Closed issues:**
 
