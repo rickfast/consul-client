@@ -1,5 +1,49 @@
 # Change Log
 
+## [Unreleased](https://github.com/OrbitzWorldwide/consul-client/tree/HEAD)
+
+[Full Changelog](https://github.com/OrbitzWorldwide/consul-client/compare/0.13.3...HEAD)
+
+**Closed issues:**
+
+- maintenance mode [\#183](https://github.com/OrbitzWorldwide/consul-client/issues/183)
+
+**Merged pull requests:**
+
+- Fix KVCache when using root keys. [\#185](https://github.com/OrbitzWorldwide/consul-client/pull/185) ([IgnasD](https://github.com/IgnasD))
+
+## [0.13.3](https://github.com/OrbitzWorldwide/consul-client/tree/0.13.3) (2016-11-04)
+[Full Changelog](https://github.com/OrbitzWorldwide/consul-client/compare/0.13.2...0.13.3)
+
+**Closed issues:**
+
+- No Operator client? [\#179](https://github.com/OrbitzWorldwide/consul-client/issues/179)
+- Support for transactions. [\#177](https://github.com/OrbitzWorldwide/consul-client/issues/177)
+
+**Merged pull requests:**
+
+- Override default backoff delay for Cache [\#184](https://github.com/OrbitzWorldwide/consul-client/pull/184) ([yfouquet-criteo](https://github.com/yfouquet-criteo))
+- operator api support [\#182](https://github.com/OrbitzWorldwide/consul-client/pull/182) ([rickfast](https://github.com/rickfast))
+- transaction support [\#181](https://github.com/OrbitzWorldwide/consul-client/pull/181) ([rickfast](https://github.com/rickfast))
+- Add support for Check-And-Set option to DELETE operation [\#178](https://github.com/OrbitzWorldwide/consul-client/pull/178) ([bmahe](https://github.com/bmahe))
+
+## [0.13.2](https://github.com/OrbitzWorldwide/consul-client/tree/0.13.2) (2016-10-18)
+[Full Changelog](https://github.com/OrbitzWorldwide/consul-client/compare/0.13.1...0.13.2)
+
+**Closed issues:**
+
+- behavior change : ConsulResponseCallback\#onFailure now called in case entry does not exists [\#173](https://github.com/OrbitzWorldwide/consul-client/issues/173)
+- ConsulCache stops polling for changes [\#166](https://github.com/OrbitzWorldwide/consul-client/issues/166)
+- KVCache silently shortens key paths if multiple path elements have the same value [\#156](https://github.com/OrbitzWorldwide/consul-client/issues/156)
+- ConsulCache error [\#137](https://github.com/OrbitzWorldwide/consul-client/issues/137)
+
+**Merged pull requests:**
+
+- Add single line of documentation to example 4 [\#176](https://github.com/OrbitzWorldwide/consul-client/pull/176) ([robbert229](https://github.com/robbert229))
+- Fix indentation and renumber examples [\#175](https://github.com/OrbitzWorldwide/consul-client/pull/175) ([robbert229](https://github.com/robbert229))
+- Allows to override key extractor [\#172](https://github.com/OrbitzWorldwide/consul-client/pull/172) ([killerwhile](https://github.com/killerwhile))
+- \[Fix\] KVCache does not work for exact key search [\#171](https://github.com/OrbitzWorldwide/consul-client/pull/171) ([yfouquet-criteo](https://github.com/yfouquet-criteo))
+
 ## [0.13.1](https://github.com/OrbitzWorldwide/consul-client/tree/0.13.1) (2016-10-06)
 [Full Changelog](https://github.com/OrbitzWorldwide/consul-client/compare/0.13.0...0.13.1)
 
@@ -409,7 +453,7 @@
 - Added renew to session info, fixed pom file [\#21](https://github.com/OrbitzWorldwide/consul-client/pull/21) ([weberr13](https://github.com/weberr13))
 
 ## [0.9](https://github.com/OrbitzWorldwide/consul-client/tree/0.9) (2015-05-15)
-[Full Changelog](https://github.com/OrbitzWorldwide/consul-client/compare/0.8.4...0.9)
+[Full Changelog](https://github.com/OrbitzWorldwide/consul-client/compare/0.8.3-for_real...0.9)
 
 **Implemented enhancements:**
 
@@ -424,11 +468,11 @@
 - Fixed example code in README [\#14](https://github.com/OrbitzWorldwide/consul-client/pull/14) ([happymap](https://github.com/happymap))
 - Fixed a README typo [\#13](https://github.com/OrbitzWorldwide/consul-client/pull/13) ([happymap](https://github.com/happymap))
 
-## [0.8.4](https://github.com/OrbitzWorldwide/consul-client/tree/0.8.4) (2015-04-24)
-[Full Changelog](https://github.com/OrbitzWorldwide/consul-client/compare/0.8.3-for_real...0.8.4)
-
 ## [0.8.3-for_real](https://github.com/OrbitzWorldwide/consul-client/tree/0.8.3-for_real) (2015-04-24)
-[Full Changelog](https://github.com/OrbitzWorldwide/consul-client/compare/0.8.3...0.8.3-for_real)
+[Full Changelog](https://github.com/OrbitzWorldwide/consul-client/compare/0.8.4...0.8.3-for_real)
+
+## [0.8.4](https://github.com/OrbitzWorldwide/consul-client/tree/0.8.4) (2015-04-24)
+[Full Changelog](https://github.com/OrbitzWorldwide/consul-client/compare/0.8.3...0.8.4)
 
 **Closed issues:**
 
