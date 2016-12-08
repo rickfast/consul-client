@@ -6,6 +6,7 @@ import com.orbitz.consul.Consul;
 import com.orbitz.consul.model.agent.Agent;
 import org.junit.Test;
 
+import java.net.Proxy;
 import java.net.UnknownHostException;
 
 import static org.junit.Assert.assertEquals;
@@ -17,6 +18,7 @@ public class CustomBuilderTest extends BaseIntegrationTest{
     public void shouldConnectWithCustomTimeouts() throws UnknownHostException {
         Consul client = Consul.builder()
                 .withHostAndPort(HostAndPort.fromParts("localhost", consul.getHttpPort()))
+                .withProxy(Proxy.NO_PROXY)
                 .withConnectTimeoutMillis(10000)
                 .withReadTimeoutMillis(3600000)
                 .withWriteTimeoutMillis(900)
