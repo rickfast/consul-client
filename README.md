@@ -113,7 +113,7 @@ ConsulResponseCallback<Optional<Value>> callback = new ConsulResponseCallback<Op
 
         if (consulResponse.getResponse().isPresent()) {
             Value v = consulResponse.getResponse().get();
-            LOGGER.info("Value is: {}", new String(BaseEncoding.base64().decode(v.getValue().toString())));
+            LOGGER.info("Value is: {}", v.getValue());
         }
         
 	index.set(consulResponse.getIndex());
