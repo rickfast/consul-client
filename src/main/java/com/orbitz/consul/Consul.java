@@ -15,6 +15,7 @@ import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLContext;
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.net.Proxy;
 import java.net.URL;
 import java.util.concurrent.SynchronousQueue;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -206,6 +207,7 @@ public class Consul {
         private URL url;
         private SSLContext sslContext;
         private HostnameVerifier hostnameVerifier;
+        private Proxy proxy;
         private boolean ping = true;
         private Interceptor basicAuthInterceptor;
         private Interceptor aclTokenInterceptor;
@@ -368,6 +370,18 @@ public class Consul {
         }
 
         /**
+         * Sets the {@link Proxy} for the client.
+         *
+         * @param proxy The proxy to use.
+         * @return The builder
+         */
+        public Builder withProxy(Proxy proxy) {
+            this.proxy = proxy;
+
+            return this;
+        }
+
+        /**
          * Connect timeout for OkHttpClient
          * @param timeoutMillis timeout values in milliseconds
          * @return The builder
@@ -415,6 +429,7 @@ public class Consul {
                         buildUrl(this.url),
                         this.sslContext,
                         this.hostnameVerifier,
+                        this.proxy,
                         Jackson.MAPPER);
             } catch (MalformedURLException e) {
                 throw new RuntimeException(e);
@@ -444,7 +459,7 @@ public class Consul {
         }
 
 
-        private Retrofit createRetrofit(String url, SSLContext sslContext, HostnameVerifier hostnameVerifier, ObjectMapper mapper) throws MalformedURLException {
+        private Retrofit createRetrofit(String url, SSLContext sslContext, HostnameVerifier hostnameVerifier, Proxy proxy, ObjectMapper mapper) throws MalformedURLException {
             final OkHttpClient.Builder builder = new OkHttpClient.Builder();
 
             if (basicAuthInterceptor != null) {
@@ -460,6 +475,10 @@ public class Consul {
 
             if (hostnameVerifier != null) {
                 builder.hostnameVerifier(hostnameVerifier);
+            }
+
+            if(proxy != null) {
+                builder.proxy(proxy);
             }
 
             if (connectTimeoutMillis != null) {
