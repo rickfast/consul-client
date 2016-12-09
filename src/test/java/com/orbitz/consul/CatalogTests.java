@@ -1,8 +1,8 @@
 package com.orbitz.consul;
 
 import com.orbitz.consul.model.ConsulResponse;
-import com.orbitz.consul.model.catalog.CatalogNode;
-import com.orbitz.consul.model.catalog.CatalogService;
+import com.orbitz.consul.model.catalog.*;
+import com.orbitz.consul.model.health.ImmutableService;
 import com.orbitz.consul.model.health.Node;
 import com.orbitz.consul.option.ImmutableCatalogOptions;
 import com.orbitz.consul.option.QueryOptions;
@@ -12,6 +12,7 @@ import java.math.BigInteger;
 import java.net.UnknownHostException;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -104,5 +105,31 @@ public class CatalogTests extends BaseIntegrationTest {
             assertNotNull(node.getTaggedAddresses().get().getWan());
             assertFalse(node.getTaggedAddresses().get().getWan().isEmpty());
         }
+    }
+
+    @Test
+    public void shouldRegisterService() {
+        CatalogClient catalogClient = client.catalogClient();
+        String service = UUID.randomUUID().toString();
+        String serviceId = UUID.randomUUID().toString();
+
+        CatalogRegistration registration = ImmutableCatalogRegistration.builder()
+                .address("localhost")
+                .datacenter("dc1")
+                .node("node")
+                .service(ImmutableService.builder()
+                        .address("localhost")
+                        .addTags("sometag")
+                        .id(serviceId)
+                        .service(service)
+                        .port(8080)
+                        .build())
+                .build();
+
+        catalogClient.register(registration);
+
+        ConsulResponse<List<CatalogService>> response = catalogClient.getService(service);
+
+        assertFalse(response.getResponse().isEmpty());
     }
 }
