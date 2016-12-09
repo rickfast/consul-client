@@ -5,6 +5,8 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.io.BaseEncoding;
 import com.google.common.net.HostAndPort;
+import com.orbitz.consul.bookend.ConsulBookend;
+import com.orbitz.consul.bookend.ConsulBookendInterceptor;
 import com.orbitz.consul.util.Jackson;
 import okhttp3.*;
 import okhttp3.internal.Util;
@@ -213,6 +215,7 @@ public class Consul {
         private Interceptor basicAuthInterceptor;
         private Interceptor aclTokenInterceptor;
         private Interceptor headerInterceptor;
+        private Interceptor consulBookendInterceptor;
         private Long connectTimeoutMillis;
         private Long readTimeoutMillis;
         private Long writeTimeoutMillis;
@@ -335,6 +338,19 @@ public class Consul {
                     return chain.proceed(requestBuilder.build());
                 }
             };
+
+            return this;
+        }
+
+        /**
+         * Attaches a {@link ConsulBookend} to each Consul request. This can be used for gathering
+         * metrics timings or debugging. {@see ConsulBookend}
+         *
+         * @param consulBookend The bookend implementation.
+         * @return The builder.
+         */
+        public Builder withConsulBookend(ConsulBookend consulBookend) {
+            consulBookendInterceptor = new ConsulBookendInterceptor(consulBookend);
 
             return this;
         }
@@ -498,6 +514,10 @@ public class Consul {
 
             if (headerInterceptor != null) {
                 builder.addInterceptor(headerInterceptor);
+            }
+
+            if (consulBookendInterceptor != null) {
+                builder.addInterceptor(consulBookendInterceptor);
             }
 
             if (sslContext != null) {
