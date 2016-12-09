@@ -17,6 +17,7 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.Proxy;
 import java.net.URL;
+import java.util.Map;
 import java.util.concurrent.SynchronousQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -211,6 +212,7 @@ public class Consul {
         private boolean ping = true;
         private Interceptor basicAuthInterceptor;
         private Interceptor aclTokenInterceptor;
+        private Interceptor headerInterceptor;
         private Long connectTimeoutMillis;
         private Long readTimeoutMillis;
         private Long writeTimeoutMillis;
@@ -307,6 +309,30 @@ public class Consul {
 
                     Request request = requestBuilder.build();
                     return chain.proceed(request);
+                }
+            };
+
+            return this;
+        }
+
+        /**
+         * Sets headers to be included with each Consul request.
+         *
+         * @param headers Map of headers.
+         * @return The builder.
+         */
+        public Builder withHeaders(final Map<String, String> headers) {
+            headerInterceptor = new Interceptor() {
+
+                @Override
+                public Response intercept(Chain chain) throws IOException {
+                    Request.Builder requestBuilder = chain.request().newBuilder();
+
+                    for (Map.Entry<String, String> header : headers.entrySet()) {
+                        requestBuilder.addHeader(header.getKey(), header.getValue());
+                    }
+
+                    return chain.proceed(requestBuilder.build());
                 }
             };
 
@@ -465,8 +491,13 @@ public class Consul {
             if (basicAuthInterceptor != null) {
                 builder.addInterceptor(basicAuthInterceptor);
             }
+
             if (aclTokenInterceptor != null) {
                 builder.addInterceptor(aclTokenInterceptor);
+            }
+
+            if (headerInterceptor != null) {
+                builder.addInterceptor(headerInterceptor);
             }
 
             if (sslContext != null) {
