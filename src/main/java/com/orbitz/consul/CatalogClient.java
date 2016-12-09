@@ -2,7 +2,9 @@ package com.orbitz.consul;
 
 import com.orbitz.consul.async.ConsulResponseCallback;
 import com.orbitz.consul.model.ConsulResponse;
+import com.orbitz.consul.model.catalog.CatalogDeregistration;
 import com.orbitz.consul.model.catalog.CatalogNode;
+import com.orbitz.consul.model.catalog.CatalogRegistration;
 import com.orbitz.consul.model.catalog.CatalogService;
 import com.orbitz.consul.model.health.Node;
 import com.orbitz.consul.option.CatalogOptions;
@@ -11,14 +13,13 @@ import com.orbitz.consul.option.QueryOptions;
 import com.orbitz.consul.util.Http;
 import retrofit2.Call;
 import retrofit2.Retrofit;
-import retrofit2.http.GET;
-import retrofit2.http.Path;
-import retrofit2.http.QueryMap;
+import retrofit2.http.*;
 
 import java.util.List;
 import java.util.Map;
 
 import static com.orbitz.consul.util.Http.extractConsulResponse;
+import static com.orbitz.consul.util.Http.handle;
 
 /**
  * HTTP Client for /v1/catalog/ endpoints.
@@ -263,6 +264,28 @@ public class CatalogClient {
     }
 
     /**
+     * Registers a service or node.
+     *
+     * PUT /v1/catalog/register
+     *
+     * @param registration A {@link CatalogRegistration}
+     */
+    public void register(CatalogRegistration registration) {
+        handle(api.register(registration));
+    }
+
+    /**
+     * Deregisters a service or node.
+     *
+     * PUT /v1/catalog/deregister
+     *
+     * @param deregistration A {@link CatalogDeregistration}
+     */
+    public void deregister(CatalogDeregistration deregistration) {
+        handle(api.deregister(deregistration));
+    }
+
+    /**
      * Retrofit API interface.
      */
     interface Api {
@@ -283,5 +306,11 @@ public class CatalogClient {
         @GET("catalog/service/{service}")
         Call<List<CatalogService>> getService(@Path("service") String service,
                                               @QueryMap Map<String, Object> query);
+
+        @PUT("catalog/register")
+        Call<Void> register(@Body CatalogRegistration registration);
+
+        @PUT("catalog/deregister")
+        Call<Void> deregister(@Body CatalogDeregistration deregistration);
     }
 }
