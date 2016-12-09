@@ -7,6 +7,8 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.base.Optional;
 import org.immutables.value.Value;
 
+import java.util.List;
+
 
 @Value.Immutable
 @JsonSerialize(as = ImmutableTelemetry.class)
@@ -29,6 +31,5 @@ public abstract class Telemetry {
     public abstract String getDogStatsdAddr();
 
     @JsonProperty(value = "DogStatsdTags")
-    // TODO: array?
-    public abstract Optional<String> getDogStatsdTags();
+    public abstract Optional<List<String>> getDogStatsdTags();
 }
