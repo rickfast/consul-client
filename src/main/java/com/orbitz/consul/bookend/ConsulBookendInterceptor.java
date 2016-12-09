@@ -17,12 +17,12 @@ public class ConsulBookendInterceptor implements Interceptor {
     @Override
     public Response intercept(Chain chain) throws IOException {
         Request request = chain.request();
-
-        consulBookend.pre(request.url().encodedPath(), new ConsulBookendContext());
+        ConsulBookendContext context = new ConsulBookendContext();
+        consulBookend.pre(request.url().encodedPath(), context);
 
         Response response = chain.proceed(request);
 
-        consulBookend.post(response.isSuccessful());
+        consulBookend.post(response.code(), context);
 
         return response;
     }

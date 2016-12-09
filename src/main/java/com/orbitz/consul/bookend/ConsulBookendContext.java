@@ -10,10 +10,14 @@ public class ConsulBookendContext {
     private Map<String, Object> data;
 
     ConsulBookendContext() {
-        data = new HashMap<>();
+
     }
 
     public void put(String key, Object value) {
+        if (data == null) {
+            data = new HashMap<>();
+        }
+
         data.put(key, value);
     }
 
