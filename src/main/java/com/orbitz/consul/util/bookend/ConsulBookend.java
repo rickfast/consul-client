@@ -1,4 +1,4 @@
-package com.orbitz.consul.bookend;
+package com.orbitz.consul.util.bookend;
 
 public interface ConsulBookend {
 
