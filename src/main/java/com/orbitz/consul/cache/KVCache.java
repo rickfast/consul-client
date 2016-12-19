@@ -19,29 +19,20 @@ public class KVCache extends ConsulCache<String, Value> {
 
     @VisibleForTesting
     static Function<Value, String> getKeyExtractorFunction(final String rootPath) {
-        final String rootPathWithTrailingSlash = rootPath.endsWith("/") ? rootPath : rootPath + "/";
-        final int rootPathWithTrailingSlashLength = rootPathWithTrailingSlash.length();
         return new Function<Value, String>() {
             @Override
             public String apply(Value input) {
                 Preconditions.checkNotNull(input, "Input to key extractor is null");
                 Preconditions.checkNotNull(input.getKey(), "Input to key extractor has no key");
 
-                if (rootPathWithTrailingSlashLength == 1) {
-                    return input.getKey();
-                }
-
                 if (rootPath.equals(input.getKey())) {
                     return "";
                 }
-
-                boolean isRootPathAPrefix = input.getKey().startsWith(rootPathWithTrailingSlash);
-                if (isRootPathAPrefix) {
-                    return input.getKey().substring(rootPathWithTrailingSlashLength);
+                int lastSlashIndex = rootPath.lastIndexOf("/");
+                if (lastSlashIndex >= 0) {
+                    return input.getKey().substring(lastSlashIndex+1);
                 }
-
-                throw new RuntimeException(String.format("Got value for key %s but root is %s",
-                        input.getKey(), rootPathWithTrailingSlash));
+                return input.getKey();
             }
         };
     }
@@ -52,17 +43,24 @@ public class KVCache extends ConsulCache<String, Value> {
             final int watchSeconds,
             final QueryOptions queryOptions) {
 
-        final Function<Value, String> keyExtractor = getKeyExtractorFunction(rootPath);
+        final String keyPath = prepareRootPath(rootPath);
+
+        final Function<Value, String> keyExtractor = getKeyExtractorFunction(keyPath);
 
         final CallbackConsumer<Value> callbackConsumer = new CallbackConsumer<Value>() {
             @Override
             public void consume(BigInteger index, ConsulResponseCallback<List<Value>> callback) {
                 QueryOptions params = watchParams(index, watchSeconds, queryOptions);
-                kvClient.getValues(rootPath, params, callback);
+                kvClient.getValues(keyPath, params, callback);
             }
         };
 
         return new KVCache(keyExtractor, callbackConsumer);
+    }
+
+    @VisibleForTesting
+    static String prepareRootPath(String rootPath) {
+        return rootPath.startsWith("/") ? rootPath.substring(1) : rootPath;
     }
 
     /**
