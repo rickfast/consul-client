@@ -626,7 +626,7 @@ public class AgentClient {
         @GET("agent/join/{address}")
         Call<Void> join(String address, Map<String, String> query);
 
-        @GET("agent/service/maintenance/{serviceId}")
+        @PUT("agent/service/maintenance/{serviceId}")
         Call<Void> toggleMaintenanceMode(@Path("serviceId") String serviceId,
                                          @QueryMap Map<String, String> query);
     }
