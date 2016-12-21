@@ -24,6 +24,7 @@ import retrofit2.Retrofit;
 import retrofit2.http.*;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -144,7 +145,9 @@ public class KeyValueClient {
 
         query.put("recurse", "true");
 
-        return extract(api.getValue(trimLeadingSlash(key), query), NOT_FOUND_404);
+        List<Value> result = extract(api.getValue(trimLeadingSlash(key), query), NOT_FOUND_404);
+
+        return result == null ? Collections.<Value>emptyList() : result;
     }
 
     /**
