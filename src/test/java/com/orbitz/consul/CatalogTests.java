@@ -6,6 +6,7 @@ import com.orbitz.consul.model.health.ImmutableService;
 import com.orbitz.consul.model.health.Node;
 import com.orbitz.consul.option.ImmutableCatalogOptions;
 import com.orbitz.consul.option.QueryOptions;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.math.BigInteger;
@@ -83,6 +84,7 @@ public class CatalogTests extends BaseIntegrationTest {
     }
 
     @Test
+    @Ignore
     public void shouldGetTaggedAddressesForNodesLists() throws UnknownHostException {
         CatalogClient catalogClient = client.catalogClient();
 
@@ -95,6 +97,7 @@ public class CatalogTests extends BaseIntegrationTest {
     }
 
     @Test
+    @Ignore
     public void shouldGetTaggedAddressesForNode() throws UnknownHostException {
         CatalogClient catalogClient = client.catalogClient();
 
