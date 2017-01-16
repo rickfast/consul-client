@@ -74,6 +74,9 @@ public abstract class Registration {
         @JsonProperty("DeregisterCriticalServiceAfter")
         public abstract Optional<String> getDeregisterCriticalServiceAfter();
 
+        @JsonProperty("TLSSkipVerify")
+        public abstract Optional<Boolean> getTlsSkipVerify();
+
         public static RegCheck ttl(long ttl) {
             return ImmutableRegCheck
                     .builder()
