@@ -66,7 +66,7 @@ public class StatusClientTests extends BaseIntegrationTest {
         String ip = getIp(ipAndPort);
         int port = getPort(ipAndPort);
         assertTrue(isLocalIp(ip));
-        assertEquals(consul.getServerPort(), port);
+        assertEquals(8300, port);
     }
 
     @Test

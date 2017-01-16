@@ -4,7 +4,7 @@
     <groupId>com.orbitz.consul</groupId>
     <artifactId>consul-client</artifactId>
     <packaging>jar</packaging>
-    <version>0.13.8</version>
+    <version>0.13.8-RC</version>
     <name>consul-client</name>
     <url>http://maven.apache.org</url>
     <description>Consul Client for Java</description>
@@ -134,17 +134,18 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>com.pszymczyk.consul</groupId>
-            <artifactId>embedded-consul</artifactId>
-            <version>0.1.10</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
             <groupId>pl.pragmatists</groupId>
             <artifactId>JUnitParams</artifactId>
             <version>1.0.5</version>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>commons-codec</groupId>
+            <artifactId>commons-codec</artifactId>
+            <version>1.9</version>
+            <scope>test</scope>
+        </dependency>
+
     </dependencies>
     <profiles>
         <profile>

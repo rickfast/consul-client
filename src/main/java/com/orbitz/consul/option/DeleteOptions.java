@@ -1,13 +1,12 @@
 package com.orbitz.consul.option;
 
-import static com.orbitz.consul.option.Options.optionallyAdd;
+import com.google.common.base.Optional;
+import org.immutables.value.Value;
 
 import java.util.HashMap;
 import java.util.Map;
 
-import org.immutables.value.Value;
-
-import com.google.common.base.Optional;
+import static com.orbitz.consul.option.Options.optionallyAdd;
 
 @Value.Immutable
 public abstract class DeleteOptions implements ParamAdder {
@@ -18,6 +17,8 @@ public abstract class DeleteOptions implements ParamAdder {
 	public abstract Optional<Long> getCas();
 
 	public abstract Optional<Boolean> getRecurse();
+
+	public abstract Optional<String> getDatacenter();
 
 	@Value.Derived
 	public boolean isRecurse() {
@@ -33,6 +34,7 @@ public abstract class DeleteOptions implements ParamAdder {
 		}
 
 		optionallyAdd(result, "cas", getCas());
+		optionallyAdd(result, "dc", getDatacenter());
 
 		return result;
 	}
