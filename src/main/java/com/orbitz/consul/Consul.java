@@ -550,6 +550,8 @@ public class Consul {
              */
             Dispatcher dispatcher = new Dispatcher(new ThreadPoolExecutor(0, Integer.MAX_VALUE, 60, TimeUnit.SECONDS,
                     new SynchronousQueue<Runnable>(), Util.threadFactory("OkHttp Dispatcher", true)));
+            dispatcher.setMaxRequests(Integer.MAX_VALUE);
+            dispatcher.setMaxRequestsPerHost(Integer.MAX_VALUE);
             builder.dispatcher(dispatcher);
 
             final URL consulUrl = new URL(url);
