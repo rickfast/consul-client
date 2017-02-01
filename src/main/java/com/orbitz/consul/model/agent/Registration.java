@@ -44,9 +44,6 @@ public abstract class Registration {
     @JsonProperty("EnableTagOverride")
     public abstract Optional<Boolean> getEnableTagOverride();
 
-    @JsonProperty("Status")
-    public abstract Optional<String> getStatus();
-
     @Value.Immutable
     @JsonSerialize(as = ImmutableRegCheck.class)
     @JsonDeserialize(as = ImmutableRegCheck.class)
@@ -79,6 +76,9 @@ public abstract class Registration {
 
         @JsonProperty("TLSSkipVerify")
         public abstract Optional<Boolean> getTlsSkipVerify();
+
+        @JsonProperty("Status")
+        public abstract Optional<String> getStatus();
 
         public static RegCheck ttl(long ttl) {
             return ImmutableRegCheck
