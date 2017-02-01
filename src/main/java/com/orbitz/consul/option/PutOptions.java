@@ -17,6 +17,7 @@ public abstract class PutOptions implements ParamAdder {
     public abstract Optional<String> getAcquire();
     public abstract Optional<String> getRelease();
     public abstract Optional<String> getDc();
+    public abstract Optional<String> getToken();
 
     @Override
     public final Map<String, Object> toQuery() {
@@ -26,6 +27,7 @@ public abstract class PutOptions implements ParamAdder {
         optionallyAdd(result, "cas", getCas());
         optionallyAdd(result, "acquire", getAcquire());
         optionallyAdd(result, "release", getRelease());
+        optionallyAdd(result, "token", getToken());
 
         return result;
     }
