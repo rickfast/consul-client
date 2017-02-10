@@ -61,8 +61,6 @@ Basic Usage
 
 ### Example 1: Register and check your service in with Consul.  
 
-Note that you need to continually check in before the TTL expires, otherwise your service's state will be marked as "critical".
-
 ```java
 Consul consul = Consul.builder().build(); // connect to Consul on localhost
 AgentClient agentClient = consul.agentClient();
@@ -72,6 +70,7 @@ String serviceId = "1";
 
 agentClient.register(8080, 3L, serviceName, serviceId); // registers with a TTL of 3 seconds
 agentClient.pass(serviceId); // check in with Consul, serviceId required only.  client will prepend "service:" for service level checks.
+// Note that you need to continually check in before the TTL expires, otherwise your service's state will be marked as "critical".
 ```
 
 ### Example 2: Find available (healthy) services.
