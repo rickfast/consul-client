@@ -18,7 +18,7 @@ In 0.11.X and 0.12.x, the Consul JAR is a shaded JAR, with most dependencies inc
 
 ### Bintray:
 
-Grab the latest binary (0.13.10) [here](http://dl.bintray.com/orbitz/consul-client/com/orbitz/consul/consul-client/0.12.0/#consul-client-0.12.0.jar).
+Grab the latest binary (0.13.10) [here](http://dl.bintray.com/orbitz/consul-client/com/orbitz/consul/consul-client/0.13.10/#consul-client-0.13.10.jar).
 
 ### Gradle:
 
