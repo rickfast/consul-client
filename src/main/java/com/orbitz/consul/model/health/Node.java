@@ -8,6 +8,8 @@ import com.google.common.base.Optional;
 import com.orbitz.consul.model.catalog.TaggedAddresses;
 import org.immutables.value.Value;
 
+import java.util.Map;
+
 @Value.Immutable
 @JsonSerialize(as = ImmutableNode.class)
 @JsonDeserialize(as = ImmutableNode.class)
@@ -22,4 +24,7 @@ public abstract class Node {
 
     @JsonProperty("TaggedAddresses")
     public abstract Optional<TaggedAddresses> getTaggedAddresses();
+
+    @JsonProperty("Meta")
+    public abstract Optional<Map<String,String>> getNodeMeta();
 }
