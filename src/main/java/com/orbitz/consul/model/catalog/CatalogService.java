@@ -4,9 +4,11 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.google.common.base.Optional;
 import org.immutables.value.Value;
 
 import java.util.List;
+import java.util.Map;
 
 @Value.Immutable
 @JsonSerialize(as = ImmutableCatalogService.class)
@@ -34,4 +36,7 @@ public abstract class CatalogService {
 
     @JsonProperty("ServiceTags")
     public abstract List<String> getServiceTags();
+
+    @JsonProperty("NodeMeta")
+    public abstract Optional<Map<String,String>> getNodeMeta();
 }
