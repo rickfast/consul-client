@@ -228,6 +228,7 @@ public class Consul {
         private Long connectTimeoutMillis;
         private Long readTimeoutMillis;
         private Long writeTimeoutMillis;
+        private ExecutorService executorService;
 
         {
             try {
@@ -469,6 +470,25 @@ public class Consul {
         }
 
         /**
+         * Sets the ExecutorService to be used by the internal tasks dispatcher.
+         *
+         * By default, an ExecutorService is created internally.
+         * In this case, it will not be customizable nor manageable by the user application.
+         * It can only be shutdown by the {@link Consul#destroy()} method.
+         *
+         * When an application needs to be able to customize the ExecutorService parameters, and/or manage its lifecycle,
+         * it can provide an instance of ExecutorService to the Builder. In that case, this ExecutorService will be used instead of creating one internally.
+         *
+         * @param executorService The ExecutorService to be injected in the internal tasks dispatcher.
+         * @return
+         */
+        public Builder withExecutorService(ExecutorService executorService) {
+            this.executorService = executorService;
+
+            return this;
+        }
+
+        /**
          * Constructs a new {@link Consul} client.
          *
          * @return A new Consul client.
@@ -476,12 +496,16 @@ public class Consul {
         public Consul build() {
             final Retrofit retrofit;
 
-            /**
-             * mimics okhttp3.Dispatcher#executorService implementation, except
-             * using daemon thread so shutdown is not blocked (issue #133)
-             */
-            ExecutorService executorService = new ThreadPoolExecutor(0, Integer.MAX_VALUE, 60, TimeUnit.SECONDS,
-                    new SynchronousQueue<Runnable>(), Util.threadFactory("OkHttp Dispatcher", true));
+            // if an ExecutorService is provided to the Builder, we use it, otherwise, we create one
+            ExecutorService executorService = this.executorService;
+            if (executorService == null) {
+                /**
+                 * mimics okhttp3.Dispatcher#executorService implementation, except
+                 * using daemon thread so shutdown is not blocked (issue #133)
+                 */
+                executorService = new ThreadPoolExecutor(0, Integer.MAX_VALUE, 60, TimeUnit.SECONDS,
+                        new SynchronousQueue<Runnable>(), Util.threadFactory("OkHttp Dispatcher", true));
+            }
 
             try {
                 retrofit = createRetrofit(
