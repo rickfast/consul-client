@@ -20,6 +20,7 @@ import java.net.MalformedURLException;
 import java.net.Proxy;
 import java.net.URL;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.SynchronousQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -51,6 +52,7 @@ public class Consul {
     private final PreparedQueryClient preparedQueryClient;
     private final CoordinateClient coordinateClient;
     private final OperatorClient operatorClient;
+    private final ExecutorService executorService;
 
     /**
      * Private constructor.
@@ -60,7 +62,8 @@ public class Consul {
                    KeyValueClient keyValueClient, CatalogClient catalogClient,
                    StatusClient statusClient, SessionClient sessionClient,
                    EventClient eventClient, PreparedQueryClient preparedQueryClient,
-                   CoordinateClient coordinateClient, OperatorClient operatorClient) {
+                   CoordinateClient coordinateClient, OperatorClient operatorClient,
+                   ExecutorService executorService) {
         this.agentClient = agentClient;
         this.healthClient = healthClient;
         this.keyValueClient = keyValueClient;
@@ -71,9 +74,15 @@ public class Consul {
         this.preparedQueryClient = preparedQueryClient;
         this.coordinateClient = coordinateClient;
         this.operatorClient = operatorClient;
+        this.executorService = executorService;
     }
 
-
+    /**
+     * Destroys the Object internal state.
+     */
+    public void destroy() {
+        this.executorService.shutdownNow();
+    }
 
     /**
      * Get the Agent HTTP client.
@@ -219,6 +228,7 @@ public class Consul {
         private Long connectTimeoutMillis;
         private Long readTimeoutMillis;
         private Long writeTimeoutMillis;
+        private ExecutorService executorService;
 
         {
             try {
@@ -460,19 +470,50 @@ public class Consul {
         }
 
         /**
+         * Sets the ExecutorService to be used by the internal tasks dispatcher.
+         *
+         * By default, an ExecutorService is created internally.
+         * In this case, it will not be customizable nor manageable by the user application.
+         * It can only be shutdown by the {@link Consul#destroy()} method.
+         *
+         * When an application needs to be able to customize the ExecutorService parameters, and/or manage its lifecycle,
+         * it can provide an instance of ExecutorService to the Builder. In that case, this ExecutorService will be used instead of creating one internally.
+         *
+         * @param executorService The ExecutorService to be injected in the internal tasks dispatcher.
+         * @return
+         */
+        public Builder withExecutorService(ExecutorService executorService) {
+            this.executorService = executorService;
+
+            return this;
+        }
+
+        /**
          * Constructs a new {@link Consul} client.
          *
          * @return A new Consul client.
          */
         public Consul build() {
             final Retrofit retrofit;
+
+            // if an ExecutorService is provided to the Builder, we use it, otherwise, we create one
+            ExecutorService executorService = this.executorService;
+            if (executorService == null) {
+                /**
+                 * mimics okhttp3.Dispatcher#executorService implementation, except
+                 * using daemon thread so shutdown is not blocked (issue #133)
+                 */
+                executorService = new ThreadPoolExecutor(0, Integer.MAX_VALUE, 60, TimeUnit.SECONDS,
+                        new SynchronousQueue<Runnable>(), Util.threadFactory("OkHttp Dispatcher", true));
+            }
+
             try {
                 retrofit = createRetrofit(
                         buildUrl(this.url),
                         this.sslContext,
                         this.hostnameVerifier,
                         this.proxy,
-                        Jackson.MAPPER);
+                        Jackson.MAPPER, executorService);
             } catch (MalformedURLException e) {
                 throw new RuntimeException(e);
             }
@@ -493,7 +534,7 @@ public class Consul {
             }
             return new Consul(agentClient, healthClient, keyValueClient,
                     catalogClient, statusClient, sessionClient, eventClient,
-                    preparedQueryClient, coordinateClient, operatorClient);
+                    preparedQueryClient, coordinateClient, operatorClient, executorService);
         }
 
         private String buildUrl(URL url) {
@@ -501,7 +542,7 @@ public class Consul {
         }
 
 
-        private Retrofit createRetrofit(String url, SSLContext sslContext, HostnameVerifier hostnameVerifier, Proxy proxy, ObjectMapper mapper) throws MalformedURLException {
+        private Retrofit createRetrofit(String url, SSLContext sslContext, HostnameVerifier hostnameVerifier, Proxy proxy, ObjectMapper mapper, ExecutorService executorService) throws MalformedURLException {
             final OkHttpClient.Builder builder = new OkHttpClient.Builder();
 
             if (basicAuthInterceptor != null) {
@@ -544,12 +585,7 @@ public class Consul {
                 builder.writeTimeout(writeTimeoutMillis, TimeUnit.MILLISECONDS);
             }
 
-            /**
-             * mimics okhttp3.Dispatcher#executorService implementation, except
-             * using daemon thread so shutdown is not blocked (issue #133)
-             */
-            Dispatcher dispatcher = new Dispatcher(new ThreadPoolExecutor(0, Integer.MAX_VALUE, 60, TimeUnit.SECONDS,
-                    new SynchronousQueue<Runnable>(), Util.threadFactory("OkHttp Dispatcher", true)));
+            Dispatcher dispatcher = new Dispatcher(executorService);
             dispatcher.setMaxRequests(Integer.MAX_VALUE);
             dispatcher.setMaxRequestsPerHost(Integer.MAX_VALUE);
             builder.dispatcher(dispatcher);
