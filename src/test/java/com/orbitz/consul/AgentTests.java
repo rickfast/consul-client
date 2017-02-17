@@ -17,6 +17,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+import static org.hamcrest.core.AnyOf.anyOf;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.*;
 
@@ -27,7 +28,12 @@ public class AgentTests extends BaseIntegrationTest {
         Agent agent = client.agentClient().getAgent();
 
         assertNotNull(agent);
-        assertEquals("127.0.0.1", agent.getConfig().getClientAddr());
+        assertNotNull(agent.getConfig());
+        assertNotNull(agent.getConfig().getClientAddr());
+
+        // maybe we should not make any assertion on the actual value of the client address
+        // as like when we run consul in a docker container we would have "0.0.0.0"
+        assertThat(agent.getConfig().getClientAddr(), anyOf(is("127.0.0.1"), is("0.0.0.0")));
     }
 
     @Test
