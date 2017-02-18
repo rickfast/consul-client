@@ -4,7 +4,6 @@ import com.google.common.base.Function;
 import com.orbitz.consul.HealthClient;
 import com.orbitz.consul.async.ConsulResponseCallback;
 import com.orbitz.consul.model.health.HealthCheck;
-import com.orbitz.consul.option.CatalogOptions;
 import com.orbitz.consul.option.QueryOptions;
 
 import java.math.BigInteger;
@@ -28,7 +27,6 @@ public class HealthCheckCache extends ConsulCache<String, HealthCheck> {
     public static HealthCheckCache newCache(
             final HealthClient healthClient,
             final com.orbitz.consul.model.State state,
-            final CatalogOptions catalogOptions,
             final int watchSeconds,
             final QueryOptions queryOptions,
             Function<HealthCheck, String> keyExtractor) {
@@ -37,7 +35,7 @@ public class HealthCheckCache extends ConsulCache<String, HealthCheck> {
             @Override
             public void consume(BigInteger index, ConsulResponseCallback<List<HealthCheck>> callback) {
                 QueryOptions params = watchParams(index, watchSeconds, queryOptions);
-                healthClient.getChecksByState(state, catalogOptions, params, callback);
+                healthClient.getChecksByState(state, params, callback);
             }
         };
 
@@ -47,7 +45,6 @@ public class HealthCheckCache extends ConsulCache<String, HealthCheck> {
     public static HealthCheckCache newCache(
             final HealthClient healthClient,
             final com.orbitz.consul.model.State state,
-            final CatalogOptions catalogOptions,
             final int watchSeconds,
             final QueryOptions queryOptions) {
 
@@ -58,19 +55,18 @@ public class HealthCheckCache extends ConsulCache<String, HealthCheck> {
             }
         };
 
-        return newCache(healthClient, state, catalogOptions, watchSeconds, queryOptions, keyExtractor);
+        return newCache(healthClient, state, watchSeconds, queryOptions, keyExtractor);
     }
 
     public static HealthCheckCache newCache(
             final HealthClient healthClient,
             final com.orbitz.consul.model.State state,
-            final CatalogOptions catalogOptions,
             final int watchSeconds) {
-        return newCache(healthClient, state, catalogOptions, watchSeconds, QueryOptions.BLANK);
+        return newCache(healthClient, state, watchSeconds, QueryOptions.BLANK);
     }
 
     public static HealthCheckCache newCache(final HealthClient healthClient, final com.orbitz.consul.model.State state) {
-        return newCache(healthClient, state, CatalogOptions.BLANK, 10);
+        return newCache(healthClient, state, 10);
     }
 
 }

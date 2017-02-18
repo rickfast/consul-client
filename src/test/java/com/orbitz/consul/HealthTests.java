@@ -7,7 +7,7 @@ import com.orbitz.consul.model.agent.ImmutableRegistration;
 import com.orbitz.consul.model.agent.Registration;
 import com.orbitz.consul.model.health.HealthCheck;
 import com.orbitz.consul.model.health.ServiceHealth;
-import com.orbitz.consul.option.ImmutableCatalogOptions;
+import com.orbitz.consul.option.ImmutableQueryOptions;
 import com.orbitz.consul.option.QueryOptions;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -69,7 +69,7 @@ public class HealthTests extends BaseIntegrationTest {
         client.agentClient().pass(serviceId);
 
         ConsulResponse<List<ServiceHealth>> response = client.healthClient().getAllServiceInstances(serviceName,
-                ImmutableCatalogOptions.builder().datacenter("dc1").build());
+                ImmutableQueryOptions.builder().datacenter("dc1").build());
         assertHealth(serviceId, response);
         client.agentClient().deregister(serviceId);
 
@@ -84,8 +84,7 @@ public class HealthTests extends BaseIntegrationTest {
         client.agentClient().pass(serviceId);
 
         ConsulResponse<List<ServiceHealth>> response = client.healthClient().getAllServiceInstances(serviceName,
-                ImmutableCatalogOptions.builder().datacenter("dc1").build(),
-                QueryOptions.blockSeconds(2, new BigInteger("0")).build());
+                QueryOptions.blockSeconds(2, new BigInteger("0")).datacenter("dc1").build());
         assertHealth(serviceId, response);
         client.agentClient().deregister(serviceId);
 
@@ -110,8 +109,7 @@ public class HealthTests extends BaseIntegrationTest {
 
         boolean found = false;
         ConsulResponse<List<HealthCheck>> response = client.healthClient().getServiceChecks(serviceName,
-                ImmutableCatalogOptions.builder().datacenter("dc1").build(),
-                QueryOptions.blockSeconds(20, new BigInteger("0")).build());
+                QueryOptions.blockSeconds(20, new BigInteger("0")).datacenter("dc1").build());
 
         List<HealthCheck> checks = response.getResponse();
         assertEquals(1, checks.size());

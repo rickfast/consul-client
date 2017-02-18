@@ -1,10 +1,13 @@
 package com.orbitz.consul;
 
 import com.orbitz.consul.model.ConsulResponse;
-import com.orbitz.consul.model.catalog.*;
+import com.orbitz.consul.model.catalog.CatalogNode;
+import com.orbitz.consul.model.catalog.CatalogRegistration;
+import com.orbitz.consul.model.catalog.CatalogService;
+import com.orbitz.consul.model.catalog.ImmutableCatalogRegistration;
 import com.orbitz.consul.model.health.ImmutableService;
 import com.orbitz.consul.model.health.Node;
-import com.orbitz.consul.option.ImmutableCatalogOptions;
+import com.orbitz.consul.option.ImmutableQueryOptions;
 import com.orbitz.consul.option.QueryOptions;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -15,10 +18,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 public class CatalogTests extends BaseIntegrationTest {
 
@@ -33,7 +33,7 @@ public class CatalogTests extends BaseIntegrationTest {
     public void shouldGetNodesByDatacenter() throws UnknownHostException {
         CatalogClient catalogClient = client.catalogClient();
 
-        assertFalse(catalogClient.getNodes(ImmutableCatalogOptions.builder().datacenter("dc1").build()).getResponse().isEmpty());
+        assertFalse(catalogClient.getNodes(ImmutableQueryOptions.builder().datacenter("dc1").build()).getResponse().isEmpty());
     }
 
     @Test
@@ -41,8 +41,8 @@ public class CatalogTests extends BaseIntegrationTest {
         CatalogClient catalogClient = client.catalogClient();
 
         long start = System.currentTimeMillis();
-        ConsulResponse<List<Node>> response = catalogClient.getNodes(ImmutableCatalogOptions.builder().datacenter("dc1").build(),
-                QueryOptions.blockSeconds(2, new BigInteger(Integer.toString(Integer.MAX_VALUE))).build());
+        ConsulResponse<List<Node>> response = catalogClient.getNodes(QueryOptions.blockSeconds(2,
+                new BigInteger(Integer.toString(Integer.MAX_VALUE))).datacenter("dc1").build());
         long time = System.currentTimeMillis() - start;
 
         assertTrue(time >= 2000);

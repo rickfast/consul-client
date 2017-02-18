@@ -7,8 +7,6 @@ import com.orbitz.consul.model.catalog.CatalogNode;
 import com.orbitz.consul.model.catalog.CatalogRegistration;
 import com.orbitz.consul.model.catalog.CatalogService;
 import com.orbitz.consul.model.health.Node;
-import com.orbitz.consul.option.CatalogOptions;
-import com.orbitz.consul.option.Options;
 import com.orbitz.consul.option.QueryOptions;
 import com.orbitz.consul.util.Http;
 import retrofit2.Call;
@@ -27,7 +25,7 @@ import static com.orbitz.consul.util.Http.handle;
 public class CatalogClient {
 
     private final Api api;
-    
+
     /**
      * Constructs an instance of this class.
      *
@@ -39,7 +37,7 @@ public class CatalogClient {
 
     /**
      * Retrieves all datacenters.
-     *
+     * <p/>
      * GET /v1/catalog/datacenters
      *
      * @return A list of datacenter names.
@@ -50,222 +48,121 @@ public class CatalogClient {
 
     /**
      * Retrieves all nodes.
-     *
+     * <p/>
      * GET /v1/catalog/nodes
      *
      * @return A {@link com.orbitz.consul.model.ConsulResponse} containing a list of
      * {@link com.orbitz.consul.model.health.Node} objects.
      */
     public ConsulResponse<List<Node>> getNodes() {
-        return getNodes(null, QueryOptions.BLANK);
+        return getNodes(QueryOptions.BLANK);
     }
 
     /**
-     * Retrieves all nodes for a given datacenter.
-     *
+     * Retrieves all nodes for a given datacenter with {@link com.orbitz.consul.option.QueryOptions}.
+     * <p/>
      * GET /v1/catalog/nodes?dc={datacenter}
-     *
-     * @param catalogOptions Catalog specific options to use.
-     * @return A {@link com.orbitz.consul.model.ConsulResponse} containing a list of
-     * {@link com.orbitz.consul.model.health.Node} objects.
-     */
-    public ConsulResponse<List<Node>> getNodes(CatalogOptions catalogOptions) {
-        return getNodes(catalogOptions, QueryOptions.BLANK);
-    }
-
-    /**
-     * Retrieves all nodes with {@link com.orbitz.consul.option.QueryOptions}.
-     *
-     * GET /v1/catalog/nodes
      *
      * @param queryOptions The Query Options to use.
      * @return A {@link com.orbitz.consul.model.ConsulResponse} containing a list of
      * {@link com.orbitz.consul.model.health.Node} objects.
      */
     public ConsulResponse<List<Node>> getNodes(QueryOptions queryOptions) {
-        return getNodes(null, queryOptions);
-    }
-
-    /**
-     * Retrieves all nodes for a given datacenter with {@link com.orbitz.consul.option.QueryOptions}.
-     *
-     * GET /v1/catalog/nodes?dc={datacenter}
-     *
-     * @param catalogOptions Catalog specific options to use.
-     * @param queryOptions The Query Options to use.
-     * @return A {@link com.orbitz.consul.model.ConsulResponse} containing a list of
-     * {@link com.orbitz.consul.model.health.Node} objects.
-     */
-    public ConsulResponse<List<Node>> getNodes(CatalogOptions catalogOptions, QueryOptions queryOptions) {
-        return extractConsulResponse(api.getNodes(Options.from(catalogOptions, queryOptions)));
+        return extractConsulResponse(api.getNodes(queryOptions.toQuery(),
+                queryOptions.getTag(), queryOptions.getNodeMeta()));
     }
 
     /**
      * Asynchronously retrieves the nodes for a given datacenter with {@link com.orbitz.consul.option.QueryOptions}.
-     *
+     * <p/>
      * GET /v1/catalog/nodes?dc={datacenter}
      *
-     * @param catalogOptions Catalog specific options to use.
      * @param queryOptions The Query Options to use.
-     * @param callback       Callback implemented by callee to handle results.
-     * {@link com.orbitz.consul.model.health.Node} objects.
+     * @param callback     Callback implemented by callee to handle results.
+     *                     {@link com.orbitz.consul.model.health.Node} objects.
      */
-    public void getNodes(CatalogOptions catalogOptions, QueryOptions queryOptions, ConsulResponseCallback<List<Node>> callback) {
-        extractConsulResponse(api.getNodes(Options.from(catalogOptions, queryOptions)), callback);
+    public void getNodes(QueryOptions queryOptions, ConsulResponseCallback<List<Node>> callback) {
+        extractConsulResponse(api.getNodes(queryOptions.toQuery(), queryOptions.getTag(),
+                queryOptions.getNodeMeta()), callback);
     }
 
     /**
      * Retrieves all services for a given datacenter.
-     *
+     * <p/>
      * GET /v1/catalog/services?dc={datacenter}
      *
      * @return A {@link com.orbitz.consul.model.ConsulResponse} containing a map of service name to list of tags.
      */
     public ConsulResponse<Map<String, List<String>>> getServices() {
-        return getServices(null, QueryOptions.BLANK);
+        return getServices(QueryOptions.BLANK);
     }
 
     /**
      * Retrieves all services for a given datacenter.
-     *
-     * GET /v1/catalog/services?dc={datacenter}
-     *
-     * @param catalogOptions Catalog specific options to use.
-     * @return A {@link com.orbitz.consul.model.ConsulResponse} containing a map of service name to list of tags.
-     */
-    public ConsulResponse<Map<String, List<String>>> getServices(CatalogOptions catalogOptions) {
-        return getServices(catalogOptions, QueryOptions.BLANK);
-    }
-
-    /**
-     * Retrieves all services for a given datacenter with {@link com.orbitz.consul.option.QueryOptions}.
-     *
+     * <p/>
      * GET /v1/catalog/services?dc={datacenter}
      *
      * @param queryOptions The Query Options to use.
      * @return A {@link com.orbitz.consul.model.ConsulResponse} containing a map of service name to list of tags.
      */
     public ConsulResponse<Map<String, List<String>>> getServices(QueryOptions queryOptions) {
-        return getServices(null, queryOptions);
-    }
-
-    /**
-     * Retrieves all services for a given datacenter with {@link com.orbitz.consul.option.QueryOptions}.
-     *
-     * GET /v1/catalog/services?dc={datacenter}
-     *
-     * @param catalogOptions Catalog specific options to use.
-     * @param queryOptions The Query Options to use.
-     * @return A {@link com.orbitz.consul.model.ConsulResponse} containing a map of service name to list of tags.
-     */
-    public ConsulResponse<Map<String, List<String>>> getServices(CatalogOptions catalogOptions, QueryOptions queryOptions) {
-        return extractConsulResponse(api.getServices(Options.from(catalogOptions, queryOptions)));
+        return extractConsulResponse(api.getServices(queryOptions.toQuery(),
+                queryOptions.getTag(), queryOptions.getNodeMeta()));
     }
 
     /**
      * Retrieves a single service.
-     *
+     * <p/>
      * GET /v1/catalog/service/{service}
      *
      * @return A {@link com.orbitz.consul.model.ConsulResponse} containing
      * {@link com.orbitz.consul.model.catalog.CatalogService} objects.
      */
     public ConsulResponse<List<CatalogService>> getService(String service) {
-        return getService(service, null, QueryOptions.BLANK);
+        return getService(service, QueryOptions.BLANK);
     }
 
     /**
-     * Retrieves a single service for a given datacenter.
-     *
+     * Retrieves a single service for a given datacenter with {@link com.orbitz.consul.option.QueryOptions}.
+     * <p/>
      * GET /v1/catalog/service/{service}?dc={datacenter}
-     *
-     * @param catalogOptions Catalog specific options to use.
-     * @return A {@link com.orbitz.consul.model.ConsulResponse} containing
-     * {@link com.orbitz.consul.model.catalog.CatalogService} objects.
-     */
-    public ConsulResponse<List<CatalogService>> getService(String service, CatalogOptions catalogOptions) {
-        return getService(service, catalogOptions, QueryOptions.BLANK);
-    }
-
-    /**
-     * Retrieves a single service with {@link com.orbitz.consul.option.QueryOptions}.
-     *
-     * GET /v1/catalog/service/{service}
      *
      * @param queryOptions The Query Options to use.
      * @return A {@link com.orbitz.consul.model.ConsulResponse} containing
      * {@link com.orbitz.consul.model.catalog.CatalogService} objects.
      */
     public ConsulResponse<List<CatalogService>> getService(String service, QueryOptions queryOptions) {
-        return getService(service, null, queryOptions);
-    }
-
-    /**
-     * Retrieves a single service for a given datacenter with {@link com.orbitz.consul.option.QueryOptions}.
-     *
-     * GET /v1/catalog/service/{service}?dc={datacenter}
-     *
-     * @param catalogOptions Catalog specific options to use.
-     * @param queryOptions The Query Options to use.
-     * @return A {@link com.orbitz.consul.model.ConsulResponse} containing
-     * {@link com.orbitz.consul.model.catalog.CatalogService} objects.
-     */
-    public ConsulResponse<List<CatalogService>> getService(String service, CatalogOptions catalogOptions,
-                                                           QueryOptions queryOptions) {
-        return extractConsulResponse(api.getService(service, Options.from(catalogOptions, queryOptions)));
+        return extractConsulResponse(api.getService(service, queryOptions.toQuery(),
+                queryOptions.getTag(), queryOptions.getNodeMeta()));
     }
 
     /**
      * Retrieves a single node.
-     *
+     * <p/>
      * GET /v1/catalog/node/{node}
      *
      * @return A list of matching {@link com.orbitz.consul.model.catalog.CatalogService} objects.
      */
     public ConsulResponse<CatalogNode> getNode(String node) {
-        return getNode(node, null, QueryOptions.BLANK);
+        return getNode(node, QueryOptions.BLANK);
     }
 
     /**
-     * Retrieves a single node for a given datacenter.
-     *
+     * Retrieves a single node for a given datacenter with {@link com.orbitz.consul.option.QueryOptions}.
+     * <p/>
      * GET /v1/catalog/node/{node}?dc={datacenter}
-     *
-     * @param catalogOptions Catalog specific options to use.
-     * @return A list of matching {@link com.orbitz.consul.model.catalog.CatalogService} objects.
-     */
-    public ConsulResponse<CatalogNode> getNode(String node, CatalogOptions catalogOptions) {
-        return getNode(node, catalogOptions, QueryOptions.BLANK);
-    }
-
-    /**
-     * Retrieves a single node with {@link com.orbitz.consul.option.QueryOptions}.
-     *
-     * GET /v1/catalog/node/{node}
      *
      * @param queryOptions The Query Options to use.
      * @return A list of matching {@link com.orbitz.consul.model.catalog.CatalogService} objects.
      */
     public ConsulResponse<CatalogNode> getNode(String node, QueryOptions queryOptions) {
-        return getNode(node, null, queryOptions);
-    }
-
-    /**
-     * Retrieves a single node for a given datacenter with {@link com.orbitz.consul.option.QueryOptions}.
-     *
-     * GET /v1/catalog/node/{node}?dc={datacenter}
-     *
-     * @param catalogOptions Catalog specific options to use.
-     * @param queryOptions The Query Options to use.
-     * @return A list of matching {@link com.orbitz.consul.model.catalog.CatalogService} objects.
-     */
-    public ConsulResponse<CatalogNode> getNode(String node, CatalogOptions catalogOptions, QueryOptions queryOptions) {
-        return extractConsulResponse(api.getNode(node, Options.from(catalogOptions, queryOptions)));
+        return extractConsulResponse(api.getNode(node, queryOptions.toQuery(),
+                queryOptions.getTag(), queryOptions.getNodeMeta()));
     }
 
     /**
      * Registers a service or node.
-     *
+     * <p/>
      * PUT /v1/catalog/register
      *
      * @param registration A {@link CatalogRegistration}
@@ -276,7 +173,7 @@ public class CatalogClient {
 
     /**
      * Deregisters a service or node.
-     *
+     * <p/>
      * PUT /v1/catalog/deregister
      *
      * @param deregistration A {@link CatalogDeregistration}
@@ -294,18 +191,26 @@ public class CatalogClient {
         Call<List<String>> getDatacenters();
 
         @GET("catalog/nodes")
-        Call<List<Node>> getNodes(@QueryMap Map<String, Object> query);
+        Call<List<Node>> getNodes(@QueryMap Map<String, Object> query,
+                                  @Query("tag") List<String> tag,
+                                  @Query("node-meta") List<String> nodeMeta);
 
         @GET("catalog/node/{node}")
         Call<CatalogNode> getNode(@Path("node") String node,
-                                  @QueryMap Map<String, Object> query);
+                                  @QueryMap Map<String, Object> query,
+                                  @Query("tag") List<String> tag,
+                                  @Query("node-meta") List<String> nodeMeta);
 
         @GET("catalog/services")
-        Call<Map<String, List<String>>> getServices(@QueryMap Map<String, Object> query);
+        Call<Map<String, List<String>>> getServices(@QueryMap Map<String, Object> query,
+                                                    @Query("tag") List<String> tag,
+                                                    @Query("node-meta") List<String> nodeMeta);
 
         @GET("catalog/service/{service}")
         Call<List<CatalogService>> getService(@Path("service") String service,
-                                              @QueryMap Map<String, Object> query);
+                                              @QueryMap Map<String, Object> queryMeta,
+                                              @Query("tag") List<String> tag,
+                                              @Query("node-meta") List<String> nodeMeta);
 
         @PUT("catalog/register")
         Call<Void> register(@Body CatalogRegistration registration);
