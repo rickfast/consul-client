@@ -74,6 +74,8 @@ public class ConsulCache<K, V> {
                         return;
                     }
                     updateIndex(consulResponse);
+                    LOGGER.debug("Consul cache updated (index={})", latestIndex);
+
                     ImmutableMap<K, V> full = convertToMap(consulResponse);
 
                     boolean changed = !full.equals(lastResponse.get());
