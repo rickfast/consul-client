@@ -176,7 +176,6 @@ public class ConsulCache<K, V> {
                 if (!keySet.contains(key)) {
                     builder.put(key, v);
                 } else {
-                    System.out.println(key.toString());
                     LOGGER.warn("Duplicate service encountered. May differ by tags. Try using more specific tags? " + key.toString());
                 }
             }
