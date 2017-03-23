@@ -202,6 +202,7 @@ public class ConsulCache<K, V> {
                 .token(queryOptions.getToken())
                 .consistencyMode(queryOptions.getConsistencyMode())
                 .near(queryOptions.getNear())
+                .datacenter(queryOptions.getDatacenter())
                 .build();
     }
 
