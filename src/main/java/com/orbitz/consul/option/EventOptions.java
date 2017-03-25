@@ -25,6 +25,7 @@ public abstract class EventOptions implements ParamAdder {
         optionallyAdd(result, "node", getNodeFilter());
         optionallyAdd(result, "service", getServiceFilter());
         optionallyAdd(result, "tag", getTagFilter());
+        optionallyAdd(result, "dc", getDatacenter());
 
         return result;
     }
