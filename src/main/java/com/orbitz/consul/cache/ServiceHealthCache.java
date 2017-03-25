@@ -5,7 +5,6 @@ import com.google.common.net.HostAndPort;
 import com.orbitz.consul.HealthClient;
 import com.orbitz.consul.async.ConsulResponseCallback;
 import com.orbitz.consul.model.health.ServiceHealth;
-import com.orbitz.consul.option.CatalogOptions;
 import com.orbitz.consul.option.QueryOptions;
 
 import java.math.BigInteger;
@@ -31,7 +30,6 @@ public class ServiceHealthCache extends ConsulCache<ServiceHealthKey, ServiceHea
             final HealthClient healthClient,
             final String serviceName,
             final boolean passing,
-            final CatalogOptions catalogOptions,
             final int watchSeconds,
             final QueryOptions queryOptions,
             final Function<ServiceHealth, ServiceHealthKey> keyExtractor) {
@@ -41,9 +39,9 @@ public class ServiceHealthCache extends ConsulCache<ServiceHealthKey, ServiceHea
             public void consume(BigInteger index, ConsulResponseCallback<List<ServiceHealth>> callback) {
                 QueryOptions params = watchParams(index, watchSeconds, queryOptions);
                 if (passing) {
-                    healthClient.getHealthyServiceInstances(serviceName, catalogOptions, params, callback);
+                    healthClient.getHealthyServiceInstances(serviceName, params, callback);
                 } else {
-                    healthClient.getAllServiceInstances(serviceName, catalogOptions, params, callback);
+                    healthClient.getAllServiceInstances(serviceName, params, callback);
                 }
             }
         };
@@ -55,7 +53,6 @@ public class ServiceHealthCache extends ConsulCache<ServiceHealthKey, ServiceHea
             final HealthClient healthClient,
             final String serviceName,
             final boolean passing,
-            final CatalogOptions catalogOptions,
             final int watchSeconds,
             final QueryOptions queryOptions) {
 
@@ -66,19 +63,19 @@ public class ServiceHealthCache extends ConsulCache<ServiceHealthKey, ServiceHea
             }
         };
 
-        return newCache(healthClient, serviceName, passing, catalogOptions, watchSeconds, queryOptions, keyExtractor);
+        return newCache(healthClient, serviceName, passing, watchSeconds, queryOptions, keyExtractor);
     }
     
     public static ServiceHealthCache newCache(
             final HealthClient healthClient,
             final String serviceName,
             final boolean passing,
-            final CatalogOptions catalogOptions,
+            final QueryOptions queryOptions,
             final int watchSeconds) {
-        return newCache(healthClient, serviceName, passing, catalogOptions, watchSeconds, QueryOptions.BLANK);
+        return newCache(healthClient, serviceName, passing, watchSeconds, QueryOptions.BLANK);
     }
 
     public static ServiceHealthCache newCache(final HealthClient healthClient, final String serviceName) {
-        return newCache(healthClient, serviceName, true, CatalogOptions.BLANK, 10);
+        return newCache(healthClient, serviceName, true, QueryOptions.BLANK, 10);
     }
 }

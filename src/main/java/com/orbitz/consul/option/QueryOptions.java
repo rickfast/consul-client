@@ -1,10 +1,13 @@
 package com.orbitz.consul.option;
 
 import com.google.common.base.Optional;
+import com.google.common.collect.ImmutableList;
 import org.immutables.value.Value;
 
 import java.math.BigInteger;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import static com.google.common.base.Preconditions.checkArgument;
@@ -23,7 +26,8 @@ public abstract class QueryOptions implements ParamAdder {
     public abstract Optional<BigInteger> getIndex();
     public abstract Optional<String> getNear();
     public abstract Optional<String> getDatacenter();
-    public abstract Optional<String> getNodeMeta();
+    public abstract List<String> getNodeMeta();
+    public abstract List<String> getTag();
 
     @Value.Default
     public ConsistencyMode getConsistencyMode() {
@@ -38,6 +42,20 @@ public abstract class QueryOptions implements ParamAdder {
     @Value.Derived
     public boolean hasToken() {
         return getToken().isPresent();
+    }
+
+    @Value.Derived
+    public List<String> getNodeMetaQuery() {
+        return getNodeMeta() == null
+                ? Collections.<String>emptyList()
+                : ImmutableList.copyOf(getNodeMeta());
+    }
+
+    @Value.Derived
+    public List<String> getTagsQuery() {
+        return getTag() == null
+                ? Collections.<String>emptyList()
+                : ImmutableList.copyOf(getTag());
     }
 
     @Value.Check
@@ -82,7 +100,6 @@ public abstract class QueryOptions implements ParamAdder {
         optionallyAdd(result, "token", getToken());
         optionallyAdd(result, "near", getNear());
         optionallyAdd(result, "dc", getDatacenter());
-        optionallyAdd(result, "node-meta", getNodeMeta());
 
         return result;
     }
