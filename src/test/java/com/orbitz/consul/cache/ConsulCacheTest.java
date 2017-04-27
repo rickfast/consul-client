@@ -37,22 +37,27 @@ public class ConsulCacheTest extends BaseIntegrationTest {
         String checkId = UUID.randomUUID().toString();
 
         client.agentClient().registerCheck(checkId, checkName, 20L);
-        client.agentClient().passCheck(checkId);
-        Thread.sleep(100);
+        try {
+            client.agentClient().passCheck(checkId);
+            Thread.sleep(100);
 
-        HealthCheckCache hCheck = HealthCheckCache.newCache(healthClient, State.PASS);
+            HealthCheckCache hCheck = HealthCheckCache.newCache(healthClient, State.PASS);
 
-        hCheck.start();
-        hCheck.awaitInitialized(3, TimeUnit.SECONDS);
+            hCheck.start();
+            hCheck.awaitInitialized(3, TimeUnit.SECONDS);
 
-        HealthCheck check = hCheck.getMap().get(checkId);
-        assertEquals(checkId, check.getCheckId());
+            HealthCheck check = hCheck.getMap().get(checkId);
+            assertEquals(checkId, check.getCheckId());
 
-        client.agentClient().failCheck(checkId);
-        Thread.sleep(100);
+            client.agentClient().failCheck(checkId);
+            Thread.sleep(100);
 
-        check = hCheck.getMap().get(checkId);
-        assertNull(check);
+            check = hCheck.getMap().get(checkId);
+            assertNull(check);
+        }
+        finally {
+            client.agentClient().deregister(checkId);
+        }
     }
 
     @Test
