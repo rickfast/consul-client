@@ -65,6 +65,7 @@ public class ServiceHealthCacheTests extends BaseIntegrationTest {
 
         Map<ServiceHealthKey, ServiceHealth> event1 = events.get(1);
         assertEquals(0, event1.size());
+        svHealth.stop();
     }
 
     @Test
@@ -87,5 +88,6 @@ public class ServiceHealthCacheTests extends BaseIntegrationTest {
         assertEquals(1, events.size());
         Map<ServiceHealthKey, ServiceHealth> event0 = events.get(0);
         assertEquals(0, event0.size());
+        svHealth.stop();
     }
 }
