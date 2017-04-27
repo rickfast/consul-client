@@ -25,6 +25,7 @@ import java.util.concurrent.TimeUnit;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.fail;
 
 public class ConsulCacheTest extends BaseIntegrationTest {
@@ -188,11 +189,11 @@ public class ConsulCacheTest extends BaseIntegrationTest {
             Thread.sleep(100);
         }
 
-        assertEquals(5, events.size());
+        assertEquals(6, events.size());
 
-        for (int i = 0; i < 5; i++) {
+        for (int i = -1; i < 5; i++) {
 
-            Map<String, Value> map = events.get(i);
+            Map<String, Value> map = events.get(i+1);
             assertEquals(i + 1, map.size());
             for (int j = 0; j < i; j++) {
                 String keyStr = "" + j;
@@ -242,6 +243,36 @@ public class ConsulCacheTest extends BaseIntegrationTest {
             assertEquals(valStr, map.get(keyStr).getValueAsString().get());
         }
         kvClient.deleteKeys(root);
+    }
+
+    @Test
+    public void testListenersNonExistingKeys() throws Exception {
+        KeyValueClient kvClient = client.keyValueClient();
+        String root = UUID.randomUUID().toString();
+
+        KVCache nc = KVCache.newCache(
+                kvClient, root, 10
+        );
+
+        final List<Map<String, Value>> events = new ArrayList<Map<String, Value>>();
+        nc.addListener(new ConsulCache.Listener<String, Value>() {
+            @Override
+            public void notify(Map<String, Value> newValues) {
+                events.add(newValues);
+            }
+        });
+
+        nc.start();
+
+        if (!nc.awaitInitialized(1, TimeUnit.SECONDS)) {
+            fail("cache initialization failed");
+        }
+
+        Thread.sleep(100);
+
+        assertEquals(1, events.size());
+        Map<String, Value> map = events.get(0);
+        assertEquals(0, map.size());
     }
 
     @Test(expected = IllegalStateException.class)
