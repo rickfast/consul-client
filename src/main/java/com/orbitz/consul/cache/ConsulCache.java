@@ -47,7 +47,7 @@ public class ConsulCache<K, V> {
     private static final long BACKOFF_DELAY_QTY_IN_MS = getBackOffDelayInMs(System.getProperties());
 
     private final AtomicReference<BigInteger> latestIndex = new AtomicReference<BigInteger>(null);
-    private final AtomicReference<ImmutableMap<K, V>> lastResponse = new AtomicReference<ImmutableMap<K, V>>(ImmutableMap.<K, V>of());
+    private final AtomicReference<ImmutableMap<K, V>> lastResponse = new AtomicReference<ImmutableMap<K, V>>(null);
     private final AtomicReference<State> state = new AtomicReference<State>(State.latent);
     private final CountDownLatch initLatch = new CountDownLatch(1);
     private final ScheduledExecutorService executorService = Executors.newSingleThreadScheduledExecutor(
