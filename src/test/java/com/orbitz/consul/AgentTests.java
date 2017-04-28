@@ -225,11 +225,16 @@ public class AgentTests extends BaseIntegrationTest {
         String checkId = UUID.randomUUID().toString();
 
         client.agentClient().registerCheck(checkId, "test-validate", "/usr/bin/echo \"sup\"", 30);
+        try {
 
-        HealthCheck check = client.agentClient().getChecks().get(checkId);
+            HealthCheck check = client.agentClient().getChecks().get(checkId);
 
-        assertEquals(check.getCheckId(), checkId);
-        assertEquals(check.getName(), "test-validate");
+            assertEquals(check.getCheckId(), checkId);
+            assertEquals(check.getName(), "test-validate");
+        }
+        finally {
+            client.agentClient().deregisterCheck(checkId);
+        }
     }
 
 
@@ -239,10 +244,15 @@ public class AgentTests extends BaseIntegrationTest {
 
         client.agentClient().registerCheck(checkId, "test-validate", new URL("http://foo.local:1337/check"), 30);
 
-        HealthCheck check = client.agentClient().getChecks().get(checkId);
+        try {
+            HealthCheck check = client.agentClient().getChecks().get(checkId);
 
-        assertEquals(check.getCheckId(), checkId);
-        assertEquals(check.getName(), "test-validate");
+            assertEquals(check.getCheckId(), checkId);
+            assertEquals(check.getName(), "test-validate");
+        }
+        finally {
+            client.agentClient().deregisterCheck(checkId);
+        }
     }
 
     @Test
@@ -250,11 +260,15 @@ public class AgentTests extends BaseIntegrationTest {
         String checkId = UUID.randomUUID().toString();
 
         client.agentClient().registerCheck(checkId, "test-validate", 30);
+        try {
+            HealthCheck check = client.agentClient().getChecks().get(checkId);
 
-        HealthCheck check = client.agentClient().getChecks().get(checkId);
-
-        assertEquals(check.getCheckId(), checkId);
-        assertEquals(check.getName(), "test-validate");
+            assertEquals(check.getCheckId(), checkId);
+            assertEquals(check.getName(), "test-validate");
+        }
+        finally {
+            client.agentClient().deregisterCheck(checkId);
+        }
     }
 
     @Test
