@@ -92,7 +92,7 @@ public abstract class Config {
     public abstract List<String> getStartJoin();
 
     @JsonProperty("UiDir")
-    public abstract String getUiDir();
+    public abstract Optional<String> getUiDir();
 
     @JsonProperty("PidFile")
     public abstract String getPidFile();
