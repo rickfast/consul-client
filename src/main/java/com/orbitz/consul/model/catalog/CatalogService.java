@@ -23,7 +23,7 @@ public abstract class CatalogService {
     public abstract String getAddress();
 
     @JsonProperty("Datacenter")
-    public abstract String getDatacenter();
+    public abstract Optional<String> getDatacenter();
 
     @JsonProperty("ServiceName")
     public abstract String getServiceName();
