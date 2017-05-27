@@ -22,13 +22,16 @@ public abstract class CatalogService {
     @JsonProperty("Address")
     public abstract String getAddress();
 
+    @JsonProperty("Datacenter")
+    public abstract String getDatacenter();
+
     @JsonProperty("ServiceName")
     public abstract String getServiceName();
 
     @JsonProperty("ServiceID")
     public abstract String getServiceId();
 
-	@JsonProperty("ServiceAddress")
+    @JsonProperty("ServiceAddress")
     public abstract String getServiceAddress();
 
     @JsonProperty("ServicePort")
