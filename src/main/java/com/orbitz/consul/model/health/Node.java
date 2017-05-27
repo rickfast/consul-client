@@ -21,6 +21,9 @@ public abstract class Node {
 
     @JsonProperty("Address")
     public abstract String getAddress();
+    
+    @JsonProperty("Datacenter")
+    public abstract Optional<String> getDatacenter();
 
     @JsonProperty("TaggedAddresses")
     public abstract Optional<TaggedAddresses> getTaggedAddresses();
