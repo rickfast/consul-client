@@ -17,6 +17,8 @@ public abstract class DeleteOptions implements ParamAdder {
 	public abstract Optional<Long> getCas();
 
 	public abstract Optional<Boolean> getRecurse();
+	
+	public abstract Optional<String> getDatacenter();
 
 	public abstract Optional<String> getDatacenter();
 
