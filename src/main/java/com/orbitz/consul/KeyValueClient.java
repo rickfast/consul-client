@@ -10,18 +10,26 @@ import com.orbitz.consul.model.kv.Operation;
 import com.orbitz.consul.model.kv.TxResponse;
 import com.orbitz.consul.model.kv.Value;
 import com.orbitz.consul.model.session.SessionInfo;
-import com.orbitz.consul.option.DeleteOptions;
 import com.orbitz.consul.option.ConsistencyMode;
+import com.orbitz.consul.option.DeleteOptions;
 import com.orbitz.consul.option.ImmutablePutOptions;
+import com.orbitz.consul.option.ImmutableTransactionOptions;
 import com.orbitz.consul.option.PutOptions;
 import com.orbitz.consul.option.QueryOptions;
+import com.orbitz.consul.option.TransactionOptions;
 import com.orbitz.consul.util.Jackson;
 import okhttp3.MediaType;
 import okhttp3.RequestBody;
 import org.apache.commons.lang3.StringUtils;
 import retrofit2.Call;
 import retrofit2.Retrofit;
-import retrofit2.http.*;
+import retrofit2.http.Body;
+import retrofit2.http.DELETE;
+import retrofit2.http.GET;
+import retrofit2.http.Headers;
+import retrofit2.http.PUT;
+import retrofit2.http.Path;
+import retrofit2.http.QueryMap;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -29,7 +37,9 @@ import java.util.List;
 import java.util.Map;
 
 import static com.google.common.base.Preconditions.checkArgument;
-import static com.orbitz.consul.util.Http.*;
+import static com.orbitz.consul.util.Http.extract;
+import static com.orbitz.consul.util.Http.extractConsulResponse;
+import static com.orbitz.consul.util.Http.handle;
 import static com.orbitz.consul.util.Strings.trimLeadingSlash;
 
 /**
@@ -377,7 +387,9 @@ public class KeyValueClient {
      * @return A {@link ConsulResponse} containing results and potential errors.
      */
     public ConsulResponse<TxResponse> performTransaction(Operation... operations) {
-        return performTransaction(ConsistencyMode.DEFAULT, operations);
+        ImmutableTransactionOptions immutableTransactionOptions =
+            ImmutableTransactionOptions.builder().consistencyMode(ConsistencyMode.DEFAULT).build();
+        return performTransaction(immutableTransactionOptions, operations);
     }
 
     /**
@@ -385,18 +397,42 @@ public class KeyValueClient {
      *
      * PUT /v1/tx
      *
+     * @deprecated Replaced by {@link #performTransaction(TransactionOptions, Operation...)}
+     *
      * @param consistency The consistency to use for the transaction.
      * @param operations A list of KV operations.
      * @return A {@link ConsulResponse} containing results and potential errors.
      */
+    @Deprecated
     public ConsulResponse<TxResponse> performTransaction(ConsistencyMode consistency, Operation... operations) {
-        Map<String, String> query = consistency == ConsistencyMode.DEFAULT
-                ? ImmutableMap.<String, String>of()
-                : ImmutableMap.of(consistency.toParam().get(), "true");
+
+        Map<String, Object> query = consistency == ConsistencyMode.DEFAULT
+                ? ImmutableMap.<String, Object>of()
+                : ImmutableMap.<String, Object>of(consistency.toParam().get(), "true");
 
         try {
             return extractConsulResponse(api.performTransaction(RequestBody.create(MediaType.parse("application/json"),
                     Jackson.MAPPER.writeValueAsString(kv(operations))), query));
+        } catch (JsonProcessingException e) {
+            throw new ConsulException(e);
+        }
+    }
+
+    /**
+     * Performs a Consul transaction.
+     *
+     * PUT /v1/tx
+     *
+     * @param transactionOptions transaction options (e.g. dc, consistency).
+     * @param operations A list of KV operations.
+     * @return A {@link ConsulResponse} containing results and potential errors.
+     */
+    public ConsulResponse<TxResponse> performTransaction(TransactionOptions transactionOptions, Operation... operations) {
+        Map<String, Object> query = transactionOptions.toQuery();
+
+        try {
+            return extractConsulResponse(api.performTransaction(RequestBody.create(MediaType.parse("application/json"),
+                Jackson.MAPPER.writeValueAsString(kv(operations))), query));
         } catch (JsonProcessingException e) {
             throw new ConsulException(e);
         }
@@ -445,7 +481,7 @@ public class KeyValueClient {
         @PUT("txn")
         @Headers("Content-Type: application/json")
         Call<TxResponse> performTransaction(@Body RequestBody body,
-                                            @QueryMap Map<String, String> query);
+                                            @QueryMap Map<String, Object> query);
     }
 
     /**
