@@ -42,6 +42,17 @@ public class PreparedQueryClient {
     public String createPreparedQuery(PreparedQuery preparedQuery) {
         return extract(api.createPreparedQuery(preparedQuery)).getId();
     }
+    
+    /**
+     * Retrieves the list of prepared queries.
+     * 
+     * GET /v1/query
+     * 
+     * @return The list of prepared queries.
+     */
+    public List<StoredQuery> getPreparedQueries() {
+	return extract(api.getPreparedQueries());
+    }
 
     /**
      * Retrieves a prepared query by its ID.
@@ -82,6 +93,9 @@ public class PreparedQueryClient {
      * Retrofit API interface.
      */
     interface Api {
+	
+	@GET("query")
+	Call<List<StoredQuery>> getPreparedQueries();
 
         @POST("query")
         Call<QueryId> createPreparedQuery(@Body PreparedQuery preparedQuery);

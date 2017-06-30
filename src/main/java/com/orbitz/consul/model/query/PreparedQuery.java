@@ -11,6 +11,9 @@ import com.google.common.base.Optional;
 @JsonSerialize(as = ImmutablePreparedQuery.class)
 @JsonIgnoreProperties(ignoreUnknown = true)
 public abstract class PreparedQuery {
+    
+    @JsonProperty("Template")
+    public abstract Optional<Template> getTemplate();
 
     @JsonProperty("Name")
     public abstract String getName();
