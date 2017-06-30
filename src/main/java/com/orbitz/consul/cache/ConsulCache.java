@@ -25,6 +25,8 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 
 import static com.google.common.base.Preconditions.checkArgument;
@@ -47,6 +49,8 @@ public class ConsulCache<K, V> {
     private static final long BACKOFF_DELAY_QTY_IN_MS = getBackOffDelayInMs(System.getProperties());
 
     private final AtomicReference<BigInteger> latestIndex = new AtomicReference<BigInteger>(null);
+    private final AtomicLong lastContact = new AtomicLong();
+    private final AtomicBoolean isKnownLeader = new AtomicBoolean();
     private final AtomicReference<ImmutableMap<K, V>> lastResponse = new AtomicReference<ImmutableMap<K, V>>(null);
     private final AtomicReference<State> state = new AtomicReference<State>(State.latent);
     private final CountDownLatch initLatch = new CountDownLatch(1);
@@ -82,6 +86,9 @@ public class ConsulCache<K, V> {
                     if (changed) {
                         // changes
                         lastResponse.set(full);
+                        // metadata changes
+                        lastContact.set(consulResponse.getLastContact());
+                        isKnownLeader.set(consulResponse.isKnownLeader());
                     }
 
                     if (changed) {
@@ -164,12 +171,15 @@ public class ConsulCache<K, V> {
         return lastResponse.get();
     }
 
+    public ConsulResponse<ImmutableMap<K,V>> getMapWithMetadata() {
+        return new ConsulResponse<>(lastResponse.get(), lastContact.get(), isKnownLeader.get(), latestIndex.get());
+    }
+
     @VisibleForTesting
     ImmutableMap<K, V> convertToMap(final ConsulResponse<List<V>> response) {
         if (response == null || response.getResponse() == null || response.getResponse().isEmpty()) {
             return ImmutableMap.of();
         }
-
         final ImmutableMap.Builder<K, V> builder = ImmutableMap.builder();
         final Set<K> keySet = new HashSet<>();
         for (final V v : response.getResponse()) {

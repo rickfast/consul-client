@@ -20,6 +20,7 @@ import org.junit.Test;
 import java.net.UnknownHostException;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -297,6 +298,38 @@ public class KeyValueTests extends BaseIntegrationTest {
         completed.await(3, TimeUnit.SECONDS);
         keyValueClient.deleteKey(key);
         assertTrue(success.get());
+    }
+
+    @Test
+    public void testGetConsulResponseWithValue() {
+        KeyValueClient keyValueClient = client.keyValueClient();
+        String key = UUID.randomUUID().toString();
+        String value = UUID.randomUUID().toString();
+        keyValueClient.putValue(key, value);
+
+        Optional<ConsulResponse<Value>> response = keyValueClient.getConsulResponseWithValue(key);
+
+        keyValueClient.deleteKey(key);
+
+        assertTrue(response.get().getResponse().getKey().equals(key));
+        assertTrue(response.get().getResponse().getValue().isPresent());
+        assertTrue(Objects.nonNull(response.get().getIndex()));
+
+    }
+
+    @Test
+    public void testGetConsulResponseWithValues() {
+        KeyValueClient keyValueClient = client.keyValueClient();
+        String key = UUID.randomUUID().toString();
+        String value = UUID.randomUUID().toString();
+        keyValueClient.putValue(key, value);
+
+        ConsulResponse<List<Value>> response = keyValueClient.getConsulResponseWithValues(key);
+
+        keyValueClient.deleteKey(key);
+
+        assertTrue(!response.getResponse().isEmpty());
+        assertTrue(Objects.nonNull(response.getIndex()));
     }
 
     @Test

@@ -73,6 +73,17 @@ public class KeyValueClient {
     }
 
     /**
+     * Retrieves a {@link com.orbitz.consul.model.ConsulResponse} with the
+     * {@link com.orbitz.consul.model.kv.Value} for a spefici key from the
+     * key/value store
+     * @param key The key to retrieve
+     * @return An {@link Optional} containing the {@link ConsulResponse} or {@link Optional#absent()}
+     */
+    public Optional<ConsulResponse<Value>> getConsulResponseWithValue(String key) {
+        return getConsulResponseWithValue(key, QueryOptions.BLANK);
+    }
+
+    /**
      * Retrieves a {@link com.orbitz.consul.model.kv.Value} for a specific key
      * from the key/value store.
      *
@@ -87,6 +98,36 @@ public class KeyValueClient {
             return getSingleValue(extract(api.getValue(trimLeadingSlash(key), queryOptions.toQuery()), NOT_FOUND_404));
         } catch (ConsulException ignored) {
             if(ignored.getCode() != NOT_FOUND_404) {
+                throw ignored;
+            }
+        }
+
+        return Optional.absent();
+    }
+
+    /**
+     * Returns a {@link ConsulResponse<Value>} for a specific key from the kv store.
+     * Contains the consul response headers along with the configuration value.
+     *
+     * GET /v1/kv/{key}
+     *
+     * @param key The key to retrieve.
+     * @param queryOptions The query options.
+     * @return An {@link Optional} containing the ConsulResponse or {@link Optional#absent()}
+     */
+    public Optional<ConsulResponse<Value>> getConsulResponseWithValue(String key, QueryOptions queryOptions) {
+        try {
+            ConsulResponse<List<Value>> consulResponse =
+                    extractConsulResponse(api.getValue(trimLeadingSlash(key), queryOptions.toQuery()), NOT_FOUND_404);
+            Optional<Value> consulValue = getSingleValue(consulResponse.getResponse());
+            if (consulValue.isPresent()) {
+                ConsulResponse<Value> result =
+                        new ConsulResponse<>(consulValue.get(), consulResponse.getLastContact(),
+                                                    consulResponse.isKnownLeader(), consulResponse.getIndex());
+                return Optional.of(result);
+            }
+        } catch (ConsulException ignored) {
+            if (ignored.getCode() != NOT_FOUND_404) {
                 throw ignored;
             }
         }
@@ -123,7 +164,7 @@ public class KeyValueClient {
         extractConsulResponse(api.getValue(trimLeadingSlash(key), queryOptions.toQuery()), wrapper, NOT_FOUND_404);
     }
 
-    private Optional<Value> getSingleValue(List<Value> values){
+    private Optional<Value> getSingleValue(List<Value> values) {
         return values != null && values.size() != 0 ? Optional.of(values.get(0)) : Optional.<Value>absent();
     }
 
@@ -138,6 +179,20 @@ public class KeyValueClient {
      */
     public List<Value> getValues(String key) {
         return getValues(key, QueryOptions.BLANK);
+    }
+
+    /**
+     * Retrieves a {@link ConsulResponse} with a list of {@link Value} objects along with
+     * consul response headers for a specific key from the key/value store.
+     *
+     * GET /v1/kv/{key}?recurse
+     *
+     * @param key The key to retrieve.
+     * @return A {@link ConsulResponse} with a list of zero to many {@link Value} objects and
+     * consul response headers.
+     */
+    public ConsulResponse<List<Value>> getConsulResponseWithValues(String key) {
+        return getConsulResponseWithValues(key, QueryOptions.BLANK);
     }
 
     /**
@@ -158,6 +213,25 @@ public class KeyValueClient {
         List<Value> result = extract(api.getValue(trimLeadingSlash(key), query), NOT_FOUND_404);
 
         return result == null ? Collections.<Value>emptyList() : result;
+    }
+
+    /**
+     * Retrieves a {@link ConsulResponse} with a list of {@link Value} objects along with
+     * consul response headers for a specific key from the key/value store.
+     *
+     * GET /v1/kv/{key}?recurse
+     *
+     * @param key The key to retrieve.
+     * @param queryOptions The query options to use.
+     * @return A {@link ConsulResponse} with a list of zero to many {@link Value} objects and
+     * consul response headers.
+     */
+    public ConsulResponse<List<Value>> getConsulResponseWithValues(String key, QueryOptions queryOptions) {
+        Map<String, Object> query = queryOptions.toQuery();
+
+        query.put("recursive", "true");
+
+        return extractConsulResponse(api.getValue(trimLeadingSlash(key), query), NOT_FOUND_404);
     }
 
     /**
