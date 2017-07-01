@@ -328,7 +328,7 @@ public class KeyValueTests extends BaseIntegrationTest {
         keyValueClient.deleteKey(key);
 
         assertTrue(!response.getResponse().isEmpty());
-        assertNotNull(response.get().getIndex());
+        assertNotNull(response.getIndex());
     }
 
     @Test
