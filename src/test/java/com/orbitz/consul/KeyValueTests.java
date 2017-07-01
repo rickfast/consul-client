@@ -20,7 +20,6 @@ import org.junit.Test;
 import java.net.UnknownHostException;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Objects;
 import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -313,7 +312,7 @@ public class KeyValueTests extends BaseIntegrationTest {
 
         assertTrue(response.get().getResponse().getKey().equals(key));
         assertTrue(response.get().getResponse().getValue().isPresent());
-        assertTrue(Objects.nonNull(response.get().getIndex()));
+        assertNotNull(response.get().getIndex());
 
     }
 
@@ -329,7 +328,7 @@ public class KeyValueTests extends BaseIntegrationTest {
         keyValueClient.deleteKey(key);
 
         assertTrue(!response.getResponse().isEmpty());
-        assertTrue(Objects.nonNull(response.getIndex()));
+        assertNotNull(response.get().getIndex());
     }
 
     @Test
