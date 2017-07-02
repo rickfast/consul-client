@@ -229,7 +229,7 @@ public class KeyValueClient {
     public ConsulResponse<List<Value>> getConsulResponseWithValues(String key, QueryOptions queryOptions) {
         Map<String, Object> query = queryOptions.toQuery();
 
-        query.put("recursive", "true");
+        query.put("recurse", "true");
 
         return extractConsulResponse(api.getValue(trimLeadingSlash(key), query), NOT_FOUND_404);
     }
