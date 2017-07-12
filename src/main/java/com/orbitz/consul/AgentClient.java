@@ -184,11 +184,19 @@ public class AgentClient {
         register(registration, QueryOptions.BLANK);
     }
 
+
+    /**
+     * De-register a particular service from the Consul Agent.
+     */
+    public void deregister(String serviceId, QueryOptions options) {
+        handle(api.deregister(serviceId, options.toQuery()));
+    }
+
     /**
      * De-register a particular service from the Consul Agent.
      */
     public void deregister(String serviceId) {
-        handle(api.deregister(serviceId));
+        deregister(serviceId, QueryOptions.BLANK);
     }
 
     /**
@@ -591,8 +599,8 @@ public class AgentClient {
         Call<Void> register(@Body Registration registration,
                             @QueryMap Map<String, Object> options);
 
-        @GET("agent/service/deregister/{serviceId}")
-        Call<Void> deregister(@Path("serviceId") String serviceId);
+        @PUT("agent/service/deregister/{serviceId}")
+        Call<Void> deregister(@Path("serviceId") String serviceId, @QueryMap Map<String, Object> options);
 
         @PUT("agent/check/register")
         Call<Void> registerCheck(@Body Check check);
