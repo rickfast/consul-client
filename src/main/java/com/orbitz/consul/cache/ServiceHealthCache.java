@@ -72,7 +72,7 @@ public class ServiceHealthCache extends ConsulCache<ServiceHealthKey, ServiceHea
             final boolean passing,
             final QueryOptions queryOptions,
             final int watchSeconds) {
-        return newCache(healthClient, serviceName, passing, watchSeconds, QueryOptions.BLANK);
+        return newCache(healthClient, serviceName, passing, watchSeconds, queryOptions);
     }
 
     public static ServiceHealthCache newCache(final HealthClient healthClient, final String serviceName) {
