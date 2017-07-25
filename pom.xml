@@ -76,7 +76,7 @@
         <dependency>
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
-            <version>19.0</version>
+            <version>22.0</version>
         </dependency>
         <!-- this dependency is required to avoid javax.annotation.CheckReturnValue,
          see https://github.com/google/guava/issues/2450 for more details -->
