@@ -43,6 +43,7 @@ public class Consul {
     public static final int DEFAULT_HTTP_PORT = 8500;
 
     private final AgentClient agentClient;
+    private final AclClient aclClient;
     private final HealthClient healthClient;
     private final KeyValueClient keyValueClient;
     private final CatalogClient catalogClient;
@@ -63,7 +64,7 @@ public class Consul {
                    StatusClient statusClient, SessionClient sessionClient,
                    EventClient eventClient, PreparedQueryClient preparedQueryClient,
                    CoordinateClient coordinateClient, OperatorClient operatorClient,
-                   ExecutorService executorService) {
+                   ExecutorService executorService, AclClient aclClient) {
         this.agentClient = agentClient;
         this.healthClient = healthClient;
         this.keyValueClient = keyValueClient;
@@ -75,6 +76,7 @@ public class Consul {
         this.coordinateClient = coordinateClient;
         this.operatorClient = operatorClient;
         this.executorService = executorService;
+        this.aclClient = aclClient;
     }
 
     /**
@@ -93,6 +95,17 @@ public class Consul {
      */
     public AgentClient agentClient() {
         return agentClient;
+    }
+
+    /**
+     * Get the ACL HTTP client.
+     * <p>
+     * /v1/acl
+     *
+     * @return The ACL HTTP client.
+     */
+    public AclClient aclClient() {
+        return aclClient;
     }
 
     /**
@@ -528,13 +541,14 @@ public class Consul {
             PreparedQueryClient preparedQueryClient = new PreparedQueryClient(retrofit);
             CoordinateClient coordinateClient = new CoordinateClient(retrofit);
             OperatorClient operatorClient = new OperatorClient(retrofit);
+            AclClient aclClient = new AclClient(retrofit);
 
             if (ping) {
                 agentClient.ping();
             }
             return new Consul(agentClient, healthClient, keyValueClient,
                     catalogClient, statusClient, sessionClient, eventClient,
-                    preparedQueryClient, coordinateClient, operatorClient, executorService);
+                    preparedQueryClient, coordinateClient, operatorClient, executorService, aclClient);
         }
 
         private String buildUrl(URL url) {

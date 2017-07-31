@@ -34,7 +34,7 @@ public class AclClient {
         handle(api.destroyAcl(id));
     }
 
-    public AclResponse getAclInfo(String id) {
+    public List<AclResponse> getAclInfo(String id) {
         return extract(api.getAclInfo(id));
     }
 
@@ -58,7 +58,7 @@ public class AclClient {
         Call<Void> destroyAcl(@Path("id") String id);
 
         @GET("acl/info/{id}")
-        Call<AclResponse> getAclInfo(@Path("id") String id);
+        Call<List<AclResponse>> getAclInfo(@Path("id") String id);
 
         @PUT("acl/clone/{id}")
         Call<AclTokenId> cloneAcl(@Path("id") String id);
