@@ -1,13 +1,19 @@
 package com.orbitz.consul.model.acl;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.base.Optional;
+import org.immutables.value.Value;
 
 import java.math.BigInteger;
 
-/**
- * Created by rfast on 5/4/16.
- */
+
+@Value.Immutable
+@JsonSerialize(as = ImmutableAclResponse.class)
+@JsonDeserialize(as = ImmutableAclResponse.class)
+@JsonIgnoreProperties(ignoreUnknown = true)
 public abstract class AclResponse {
 
     @JsonProperty("CreateIndex")
