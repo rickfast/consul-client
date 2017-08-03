@@ -9,6 +9,9 @@ import com.google.common.base.Optional;
 import com.google.common.io.BaseEncoding;
 import com.orbitz.consul.util.UnsignedLongDeserializer;
 
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
+
 @org.immutables.value.Value.Immutable
 @JsonDeserialize(as = ImmutableValue.class)
 @JsonSerialize(as = ImmutableValue.class)
@@ -39,15 +42,21 @@ public abstract class Value {
 
     @JsonIgnore
     @org.immutables.value.Value.Lazy
-    public Optional<String> getValueAsString() {
+    public Optional<String> getValueAsString(Charset charset) {
 
         if (getValue().isPresent()) {
             return Optional.of(
-                    new String(BaseEncoding.base64().decode(getValue().get()))
+                    new String(BaseEncoding.base64().decode(getValue().get()), charset)
             );
         } else {
             return Optional.absent();
         }
 
+    }
+
+    @JsonIgnore
+    @org.immutables.value.Value.Lazy
+    public Optional<String> getValueAsString() {
+        return getValueAsString(StandardCharsets.UTF_8);
     }
 }
