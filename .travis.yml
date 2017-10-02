@@ -1,8 +1,7 @@
 language: java
+services: docker
 before_install:
-  - wget https://releases.hashicorp.com/consul/0.7.2/consul_0.7.2_linux_amd64.zip --no-check-certificate
-  - unzip consul_0.7.2_linux_amd64.zip
-  - ./consul agent -server -bootstrap -data-dir data &
+  - docker run -d -p 127.0.0.1:8500:8500 consul:0.7.2
 jdk:
   - oraclejdk8
 script: mvn clean test
