@@ -98,7 +98,10 @@ String value = kvClient.getValueAsString("foo").get(); // bar
 A blocking is used to wait for a potential changes in the key value store. 
 
 ```java
-Consul consul = Consul.builder().build();
+// Set a read timeout to a larger value then we will block.
+Consul consul = Consul.builder()
+    .withReadTimeoutMillis(TimeUnit.SECONDS.toMillis(315))
+    .build();
 final KeyValueClient kvClient = consul.keyValueClient();
 
 kvClient.putValue("foo", "bar");
