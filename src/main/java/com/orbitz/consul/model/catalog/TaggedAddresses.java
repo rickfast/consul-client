@@ -15,4 +15,7 @@ public abstract class TaggedAddresses {
 
     @JsonProperty("wan")
     public abstract String getWan();
+
+    @JsonProperty("lan")
+    public abstract String getLan();
 }

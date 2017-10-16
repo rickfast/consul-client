@@ -1,17 +1,72 @@
 # Change Log
 
-## [Unreleased](https://github.com/OrbitzWorldwide/consul-client/tree/HEAD)
-
-[Full Changelog](https://github.com/OrbitzWorldwide/consul-client/compare/0.13.10...HEAD)
+## [0.15.0](https://github.com/OrbitzWorldwide/consul-client/tree/0.15.0) (2017-05-26)
+[Full Changelog](https://github.com/OrbitzWorldwide/consul-client/compare/0.14.1...0.15.0)
 
 **Closed issues:**
 
+- Cannot build Config, some of required attributes are not set \[uiDir\] \(Consul 0.8\) [\#236](https://github.com/OrbitzWorldwide/consul-client/issues/236)
+
+**Merged pull requests:**
+
+- Proposed fix for \#236: Cannot build Config, some of required attributes are not set \[uiDir\] \(Consul 0.8\) [\#237](https://github.com/OrbitzWorldwide/consul-client/pull/237) ([timboven](https://github.com/timboven))
+
+## [0.14.1](https://github.com/OrbitzWorldwide/consul-client/tree/0.14.1) (2017-05-17)
+[Full Changelog](https://github.com/OrbitzWorldwide/consul-client/compare/0.14.0...0.14.1)
+
+**Closed issues:**
+
+- keyValueClient.getValue produces NoSuchMethodError [\#230](https://github.com/OrbitzWorldwide/consul-client/issues/230)
+- service registration example is not working [\#229](https://github.com/OrbitzWorldwide/consul-client/issues/229)
+- ServiceHealthCache lack of notification [\#207](https://github.com/OrbitzWorldwide/consul-client/issues/207)
+- Support for multiple tags [\#157](https://github.com/OrbitzWorldwide/consul-client/issues/157)
+
+**Merged pull requests:**
+
+- + 2 more tests for ServiceHealthCache [\#233](https://github.com/OrbitzWorldwide/consul-client/pull/233) ([maqdev](https://github.com/maqdev))
+- Fixes \#207 - notify listeners even if key doesn't exists in consul [\#232](https://github.com/OrbitzWorldwide/consul-client/pull/232) ([maqdev](https://github.com/maqdev))
+
+## [0.14.0](https://github.com/OrbitzWorldwide/consul-client/tree/0.14.0) (2017-03-27)
+[Full Changelog](https://github.com/OrbitzWorldwide/consul-client/compare/0.13.0-RC1...0.14.0)
+
+**Merged pull requests:**
+
+- Add datacenter to EventOptions query parameters [\#228](https://github.com/OrbitzWorldwide/consul-client/pull/228) ([samjdacanay](https://github.com/samjdacanay))
+- Use datacenter from QueryOptions [\#227](https://github.com/OrbitzWorldwide/consul-client/pull/227) ([yfouquet-criteo](https://github.com/yfouquet-criteo))
+- Add log to monitor caches [\#226](https://github.com/OrbitzWorldwide/consul-client/pull/226) ([yfouquet-criteo](https://github.com/yfouquet-criteo))
+- support multiple tags and node meta [\#224](https://github.com/OrbitzWorldwide/consul-client/pull/224) ([rickfast](https://github.com/rickfast))
+
+## [0.13.0-RC1](https://github.com/OrbitzWorldwide/consul-client/tree/0.13.0-RC1) (2017-02-18)
+[Full Changelog](https://github.com/OrbitzWorldwide/consul-client/compare/0.13.12...0.13.0-RC1)
+
+## [0.13.12](https://github.com/OrbitzWorldwide/consul-client/tree/0.13.12) (2017-02-18)
+[Full Changelog](https://github.com/OrbitzWorldwide/consul-client/compare/0.13.11...0.13.12)
+
+**Merged pull requests:**
+
+- integration tests should support a consul server running in docker [\#223](https://github.com/OrbitzWorldwide/consul-client/pull/223) ([YannRobert](https://github.com/YannRobert))
+- Shutdownable ExecutorService [\#222](https://github.com/OrbitzWorldwide/consul-client/pull/222) ([YannRobert](https://github.com/YannRobert))
+- Adding support for node Meta on response deserialization \(0.7.3\) [\#221](https://github.com/OrbitzWorldwide/consul-client/pull/221) ([shaharck](https://github.com/shaharck))
+
+## [0.13.11](https://github.com/OrbitzWorldwide/consul-client/tree/0.13.11) (2017-02-11)
+[Full Changelog](https://github.com/OrbitzWorldwide/consul-client/compare/0.13.10...0.13.11)
+
+**Closed issues:**
+
+- Memory leak [\#215](https://github.com/OrbitzWorldwide/consul-client/issues/215)
 - Support healthcheck initial state during service registration [\#213](https://github.com/OrbitzWorldwide/consul-client/issues/213)
 - SERIOUS PROBLEM ! - this lib wont work since consul 0.7.3  [\#211](https://github.com/OrbitzWorldwide/consul-client/issues/211)
 - KV client- putValue\(\) method does not support pasing token [\#210](https://github.com/OrbitzWorldwide/consul-client/issues/210)
 - Accessing consul instance on host machine from docker container [\#200](https://github.com/OrbitzWorldwide/consul-client/issues/200)
 - Add a "why" to the section about blocking call [\#174](https://github.com/OrbitzWorldwide/consul-client/issues/174)
 - About KVCache.addListener [\#160](https://github.com/OrbitzWorldwide/consul-client/issues/160)
+
+**Merged pull requests:**
+
+- Clarify comment about having to continuously check in for TTL checks [\#219](https://github.com/OrbitzWorldwide/consul-client/pull/219) ([alugowski](https://github.com/alugowski))
+- Fix link to point to the correct version [\#218](https://github.com/OrbitzWorldwide/consul-client/pull/218) ([alugowski](https://github.com/alugowski))
+- adding node-meta to query options \(added on 0.7.3\) [\#217](https://github.com/OrbitzWorldwide/consul-client/pull/217) ([shaharck](https://github.com/shaharck))
+- \[ConsulCache\] Set retry threads as deamon [\#216](https://github.com/OrbitzWorldwide/consul-client/pull/216) ([yfouquet-criteo](https://github.com/yfouquet-criteo))
 
 ## [0.13.10](https://github.com/OrbitzWorldwide/consul-client/tree/0.13.10) (2017-02-01)
 [Full Changelog](https://github.com/OrbitzWorldwide/consul-client/compare/0.13.9...0.13.10)
@@ -610,13 +665,13 @@
 [Full Changelog](https://github.com/OrbitzWorldwide/consul-client/compare/0.4.4...0.5)
 
 ## [0.4.4](https://github.com/OrbitzWorldwide/consul-client/tree/0.4.4) (2014-11-05)
-[Full Changelog](https://github.com/OrbitzWorldwide/consul-client/compare/0.4.2...0.4.4)
-
-## [0.4.2](https://github.com/OrbitzWorldwide/consul-client/tree/0.4.2) (2014-10-28)
-[Full Changelog](https://github.com/OrbitzWorldwide/consul-client/compare/0.4.3...0.4.2)
+[Full Changelog](https://github.com/OrbitzWorldwide/consul-client/compare/0.4.3...0.4.4)
 
 ## [0.4.3](https://github.com/OrbitzWorldwide/consul-client/tree/0.4.3) (2014-10-28)
-[Full Changelog](https://github.com/OrbitzWorldwide/consul-client/compare/0.4.1...0.4.3)
+[Full Changelog](https://github.com/OrbitzWorldwide/consul-client/compare/0.4.2...0.4.3)
+
+## [0.4.2](https://github.com/OrbitzWorldwide/consul-client/tree/0.4.2) (2014-10-28)
+[Full Changelog](https://github.com/OrbitzWorldwide/consul-client/compare/0.4.1...0.4.2)
 
 **Merged pull requests:**
 

@@ -18,7 +18,7 @@ In 0.11.X and 0.12.x, the Consul JAR is a shaded JAR, with most dependencies inc
 
 ### Bintray:
 
-Grab the latest binary (0.14.0) [here](http://dl.bintray.com/orbitz/consul-client/com/orbitz/consul/consul-client/0.13.11/#consul-client-0.13.11.jar).
+Grab the latest binary (0.16.3) [here](http://dl.bintray.com/orbitz/consul-client/com/orbitz/consul/consul-client/0.13.11/#consul-client-0.13.11.jar).
 
 ### Gradle:
 
@@ -28,7 +28,7 @@ repositories {
 }
 
 dependencies {
-    compile 'com.orbitz.consul:consul-client:0.14.0'
+    compile 'com.orbitz.consul:consul-client:0.16.3'
 }
 ```
 
@@ -39,7 +39,7 @@ dependencies {
     <dependency>
         <groupId>com.orbitz.consul</groupId>
         <artifactId>consul-client</artifactId>
-        <version>0.14.0</version>
+        <version>0.16.3</version>
     </dependency>
 </dependencies>
 
@@ -98,7 +98,10 @@ String value = kvClient.getValueAsString("foo").get(); // bar
 A blocking is used to wait for a potential changes in the key value store. 
 
 ```java
-Consul consul = Consul.builder().build();
+// Set a read timeout to a larger value then we will block.
+Consul consul = Consul.builder()
+    .withReadTimeoutMillis(TimeUnit.SECONDS.toMillis(315))
+    .build();
 final KeyValueClient kvClient = consul.keyValueClient();
 
 kvClient.putValue("foo", "bar");

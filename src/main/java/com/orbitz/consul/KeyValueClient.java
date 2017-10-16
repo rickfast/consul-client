@@ -10,18 +10,26 @@ import com.orbitz.consul.model.kv.Operation;
 import com.orbitz.consul.model.kv.TxResponse;
 import com.orbitz.consul.model.kv.Value;
 import com.orbitz.consul.model.session.SessionInfo;
-import com.orbitz.consul.option.DeleteOptions;
 import com.orbitz.consul.option.ConsistencyMode;
+import com.orbitz.consul.option.DeleteOptions;
 import com.orbitz.consul.option.ImmutablePutOptions;
+import com.orbitz.consul.option.ImmutableTransactionOptions;
 import com.orbitz.consul.option.PutOptions;
 import com.orbitz.consul.option.QueryOptions;
+import com.orbitz.consul.option.TransactionOptions;
 import com.orbitz.consul.util.Jackson;
 import okhttp3.MediaType;
 import okhttp3.RequestBody;
 import org.apache.commons.lang3.StringUtils;
 import retrofit2.Call;
 import retrofit2.Retrofit;
-import retrofit2.http.*;
+import retrofit2.http.Body;
+import retrofit2.http.DELETE;
+import retrofit2.http.GET;
+import retrofit2.http.Headers;
+import retrofit2.http.PUT;
+import retrofit2.http.Path;
+import retrofit2.http.QueryMap;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -29,7 +37,9 @@ import java.util.List;
 import java.util.Map;
 
 import static com.google.common.base.Preconditions.checkArgument;
-import static com.orbitz.consul.util.Http.*;
+import static com.orbitz.consul.util.Http.extract;
+import static com.orbitz.consul.util.Http.extractConsulResponse;
+import static com.orbitz.consul.util.Http.handle;
 import static com.orbitz.consul.util.Strings.trimLeadingSlash;
 
 /**
@@ -63,6 +73,17 @@ public class KeyValueClient {
     }
 
     /**
+     * Retrieves a {@link com.orbitz.consul.model.ConsulResponse} with the
+     * {@link com.orbitz.consul.model.kv.Value} for a spefici key from the
+     * key/value store
+     * @param key The key to retrieve
+     * @return An {@link Optional} containing the {@link ConsulResponse} or {@link Optional#absent()}
+     */
+    public Optional<ConsulResponse<Value>> getConsulResponseWithValue(String key) {
+        return getConsulResponseWithValue(key, QueryOptions.BLANK);
+    }
+
+    /**
      * Retrieves a {@link com.orbitz.consul.model.kv.Value} for a specific key
      * from the key/value store.
      *
@@ -77,6 +98,36 @@ public class KeyValueClient {
             return getSingleValue(extract(api.getValue(trimLeadingSlash(key), queryOptions.toQuery()), NOT_FOUND_404));
         } catch (ConsulException ignored) {
             if(ignored.getCode() != NOT_FOUND_404) {
+                throw ignored;
+            }
+        }
+
+        return Optional.absent();
+    }
+
+    /**
+     * Returns a {@link ConsulResponse<Value>} for a specific key from the kv store.
+     * Contains the consul response headers along with the configuration value.
+     *
+     * GET /v1/kv/{key}
+     *
+     * @param key The key to retrieve.
+     * @param queryOptions The query options.
+     * @return An {@link Optional} containing the ConsulResponse or {@link Optional#absent()}
+     */
+    public Optional<ConsulResponse<Value>> getConsulResponseWithValue(String key, QueryOptions queryOptions) {
+        try {
+            ConsulResponse<List<Value>> consulResponse =
+                    extractConsulResponse(api.getValue(trimLeadingSlash(key), queryOptions.toQuery()), NOT_FOUND_404);
+            Optional<Value> consulValue = getSingleValue(consulResponse.getResponse());
+            if (consulValue.isPresent()) {
+                ConsulResponse<Value> result =
+                        new ConsulResponse<>(consulValue.get(), consulResponse.getLastContact(),
+                                                    consulResponse.isKnownLeader(), consulResponse.getIndex());
+                return Optional.of(result);
+            }
+        } catch (ConsulException ignored) {
+            if (ignored.getCode() != NOT_FOUND_404) {
                 throw ignored;
             }
         }
@@ -113,7 +164,7 @@ public class KeyValueClient {
         extractConsulResponse(api.getValue(trimLeadingSlash(key), queryOptions.toQuery()), wrapper, NOT_FOUND_404);
     }
 
-    private Optional<Value> getSingleValue(List<Value> values){
+    private Optional<Value> getSingleValue(List<Value> values) {
         return values != null && values.size() != 0 ? Optional.of(values.get(0)) : Optional.<Value>absent();
     }
 
@@ -128,6 +179,20 @@ public class KeyValueClient {
      */
     public List<Value> getValues(String key) {
         return getValues(key, QueryOptions.BLANK);
+    }
+
+    /**
+     * Retrieves a {@link ConsulResponse} with a list of {@link Value} objects along with
+     * consul response headers for a specific key from the key/value store.
+     *
+     * GET /v1/kv/{key}?recurse
+     *
+     * @param key The key to retrieve.
+     * @return A {@link ConsulResponse} with a list of zero to many {@link Value} objects and
+     * consul response headers.
+     */
+    public ConsulResponse<List<Value>> getConsulResponseWithValues(String key) {
+        return getConsulResponseWithValues(key, QueryOptions.BLANK);
     }
 
     /**
@@ -148,6 +213,25 @@ public class KeyValueClient {
         List<Value> result = extract(api.getValue(trimLeadingSlash(key), query), NOT_FOUND_404);
 
         return result == null ? Collections.<Value>emptyList() : result;
+    }
+
+    /**
+     * Retrieves a {@link ConsulResponse} with a list of {@link Value} objects along with
+     * consul response headers for a specific key from the key/value store.
+     *
+     * GET /v1/kv/{key}?recurse
+     *
+     * @param key The key to retrieve.
+     * @param queryOptions The query options to use.
+     * @return A {@link ConsulResponse} with a list of zero to many {@link Value} objects and
+     * consul response headers.
+     */
+    public ConsulResponse<List<Value>> getConsulResponseWithValues(String key, QueryOptions queryOptions) {
+        Map<String, Object> query = queryOptions.toQuery();
+
+        query.put("recurse", "true");
+
+        return extractConsulResponse(api.getValue(trimLeadingSlash(key), query), NOT_FOUND_404);
     }
 
     /**
@@ -377,7 +461,9 @@ public class KeyValueClient {
      * @return A {@link ConsulResponse} containing results and potential errors.
      */
     public ConsulResponse<TxResponse> performTransaction(Operation... operations) {
-        return performTransaction(ConsistencyMode.DEFAULT, operations);
+        ImmutableTransactionOptions immutableTransactionOptions =
+            ImmutableTransactionOptions.builder().consistencyMode(ConsistencyMode.DEFAULT).build();
+        return performTransaction(immutableTransactionOptions, operations);
     }
 
     /**
@@ -385,18 +471,42 @@ public class KeyValueClient {
      *
      * PUT /v1/tx
      *
+     * @deprecated Replaced by {@link #performTransaction(TransactionOptions, Operation...)}
+     *
      * @param consistency The consistency to use for the transaction.
      * @param operations A list of KV operations.
      * @return A {@link ConsulResponse} containing results and potential errors.
      */
+    @Deprecated
     public ConsulResponse<TxResponse> performTransaction(ConsistencyMode consistency, Operation... operations) {
-        Map<String, String> query = consistency == ConsistencyMode.DEFAULT
-                ? ImmutableMap.<String, String>of()
-                : ImmutableMap.of(consistency.toParam().get(), "true");
+
+        Map<String, Object> query = consistency == ConsistencyMode.DEFAULT
+                ? ImmutableMap.<String, Object>of()
+                : ImmutableMap.<String, Object>of(consistency.toParam().get(), "true");
 
         try {
             return extractConsulResponse(api.performTransaction(RequestBody.create(MediaType.parse("application/json"),
                     Jackson.MAPPER.writeValueAsString(kv(operations))), query));
+        } catch (JsonProcessingException e) {
+            throw new ConsulException(e);
+        }
+    }
+
+    /**
+     * Performs a Consul transaction.
+     *
+     * PUT /v1/tx
+     *
+     * @param transactionOptions transaction options (e.g. dc, consistency).
+     * @param operations A list of KV operations.
+     * @return A {@link ConsulResponse} containing results and potential errors.
+     */
+    public ConsulResponse<TxResponse> performTransaction(TransactionOptions transactionOptions, Operation... operations) {
+        Map<String, Object> query = transactionOptions.toQuery();
+
+        try {
+            return extractConsulResponse(api.performTransaction(RequestBody.create(MediaType.parse("application/json"),
+                Jackson.MAPPER.writeValueAsString(kv(operations))), query));
         } catch (JsonProcessingException e) {
             throw new ConsulException(e);
         }
@@ -445,7 +555,7 @@ public class KeyValueClient {
         @PUT("txn")
         @Headers("Content-Type: application/json")
         Call<TxResponse> performTransaction(@Body RequestBody body,
-                                            @QueryMap Map<String, String> query);
+                                            @QueryMap Map<String, Object> query);
     }
 
     /**
