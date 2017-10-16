@@ -421,7 +421,7 @@ public class AgentClient {
 
             handle(api.check(state.getPath(), checkId, query));
         } catch (Exception ex) {
-            throw new NotRegisteredException();
+            throw new NotRegisteredException("Error checking state", ex);
         }
     }
 
