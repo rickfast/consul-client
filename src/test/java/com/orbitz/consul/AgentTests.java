@@ -29,11 +29,11 @@ public class AgentTests extends BaseIntegrationTest {
 
         assertNotNull(agent);
         assertNotNull(agent.getConfig());
-        assertNotNull(agent.getConfig().getClientAddr());
+        assertNotNull(agent.getDebugConfig().getClientAddrs().get(0));
 
         // maybe we should not make any assertion on the actual value of the client address
         // as like when we run consul in a docker container we would have "0.0.0.0"
-        assertThat(agent.getConfig().getClientAddr(), anyOf(is("127.0.0.1"), is("0.0.0.0")));
+        assertThat(agent.getDebugConfig().getClientAddrs().get(0), anyOf(is("127.0.0.1"), is("0.0.0.0")));
     }
 
     @Test

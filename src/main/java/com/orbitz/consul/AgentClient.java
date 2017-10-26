@@ -605,7 +605,7 @@ public class AgentClient {
         @PUT("agent/check/register")
         Call<Void> registerCheck(@Body Check check);
 
-        @GET("agent/check/deregister/{checkId}")
+        @PUT("agent/check/deregister/{checkId}")
         Call<Void> deregisterCheck(@Path("checkId") String checkId);
 
         @GET("agent/self")
@@ -623,15 +623,15 @@ public class AgentClient {
         @GET("agent/members")
         Call<List<Member>> getMembers();
 
-        @GET("agent/force-leave")
+        @PUT("agent/force-leave")
         Call<Void> forceLeave();
 
-        @GET("agent/check/{state}/{checkId}")
+        @PUT("agent/check/{state}/{checkId}")
         Call<Void> check(@Path("state") String state,
                          @Path("checkId") String checkId,
                          @QueryMap Map<String, String> query);
 
-        @GET("agent/join/{address}")
+        @PUT("agent/join/{address}")
         Call<Void> join(String address, Map<String, String> query);
 
         @PUT("agent/service/maintenance/{serviceId}")

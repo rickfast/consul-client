@@ -16,6 +16,9 @@ public abstract class Agent {
     @JsonProperty("Config")
     public abstract Config getConfig();
 
+    @JsonProperty("DebugConfig")
+    public abstract DebugConfig getDebugConfig();
+
     @JsonProperty("Member")
     public abstract Member getMember();
 
