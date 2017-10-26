@@ -27,6 +27,8 @@ public class AgentTests extends BaseIntegrationTest {
     public void shouldRetrieveAgentInformation() throws UnknownHostException {
         Agent agent = client.agentClient().getAgent();
 
+        org.junit.Assume.assumeTrue(agent.getDebugConfig() != null);
+
         assertNotNull(agent);
         assertNotNull(agent.getConfig());
         assertNotNull(agent.getDebugConfig().getClientAddrs().get(0));
