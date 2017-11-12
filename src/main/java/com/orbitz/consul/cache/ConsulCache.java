@@ -13,6 +13,7 @@ import com.orbitz.consul.option.QueryOptions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.Console;
 import java.math.BigInteger;
 import java.util.Collections;
 import java.util.HashSet;
@@ -28,6 +29,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.concurrent.locks.ReentrantLock;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkState;
@@ -57,6 +59,7 @@ public class ConsulCache<K, V> {
     private final ScheduledExecutorService executorService = Executors.newSingleThreadScheduledExecutor(
             new ThreadFactoryBuilder().setDaemon(true).build());
     private final CopyOnWriteArrayList<Listener<K, V>> listeners = new CopyOnWriteArrayList<Listener<K, V>>();
+    private final ReentrantLock listenersStartingLock = new ReentrantLock();
 
     private final Function<V, K> keyConversion;
     private final CallbackConsumer<V> callBackConsumer;
@@ -92,8 +95,20 @@ public class ConsulCache<K, V> {
                     }
 
                     if (changed) {
-                        for (Listener<K, V> l : listeners) {
-                            l.notify(full);
+                        Boolean locked = false;
+                        if (state.get() == State.starting) {
+                            listenersStartingLock.lock();
+                            locked = true;
+                        }
+                        try {
+                            for (Listener<K, V> l : listeners) {
+                                l.notify(full);
+                            }
+                        }
+                        finally {
+                            if (locked) {
+                                listenersStartingLock.unlock();
+                            }
                         }
                     }
 
@@ -244,9 +259,22 @@ public class ConsulCache<K, V> {
     }
 
     public boolean addListener(Listener<K, V> listener) {
-        boolean added = listeners.add(listener);
-        if (state.get() == State.started) {
-            listener.notify(lastResponse.get());
+        Boolean locked = false;
+        boolean added;
+        if (state.get() == State.starting) {
+            listenersStartingLock.lock();
+            locked = true;
+        }
+        try {
+            added = listeners.add(listener);
+            if (state.get() == State.started) {
+                listener.notify(lastResponse.get());
+            }
+        }
+        finally {
+            if (locked) {
+                listenersStartingLock.unlock();
+            }
         }
         return added;
     }

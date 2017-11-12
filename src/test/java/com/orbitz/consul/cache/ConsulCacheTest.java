@@ -76,7 +76,7 @@ public class ConsulCacheTest extends BaseIntegrationTest {
         svHealth.start();
         svHealth.awaitInitialized(3, TimeUnit.SECONDS);
 
-        ServiceHealthKey serviceKey = ServiceHealthKey.of(serviceId, agent.getConfig().getAdvertiseAddr(), 8080);
+        ServiceHealthKey serviceKey = ServiceHealthKey.of(serviceId, agent.getDebugConfig().getAdvertiseAddrLAN(), 8080);
         ServiceHealth health = svHealth.getMap().get(serviceKey);
         assertEquals(serviceId, health.getService().getId());
 
@@ -109,8 +109,8 @@ public class ConsulCacheTest extends BaseIntegrationTest {
         Agent agent = client.agentClient().getAgent();
         Thread.sleep(100);
 
-        ServiceHealthKey serviceKey1 = ServiceHealthKey.of(serviceId, agent.getConfig().getAdvertiseAddr(), 8080);
-        ServiceHealthKey serviceKey2 = ServiceHealthKey.of(serviceId2, agent.getConfig().getAdvertiseAddr(), 8080);
+        ServiceHealthKey serviceKey1 = ServiceHealthKey.of(serviceId, agent.getDebugConfig().getAdvertiseAddrLAN(), 8080);
+        ServiceHealthKey serviceKey2 = ServiceHealthKey.of(serviceId2, agent.getDebugConfig().getAdvertiseAddrLAN(), 8080);
 
         ImmutableMap<ServiceHealthKey, ServiceHealth> healthMap = svHealth.getMap();
         assertEquals(healthMap.size(), 2);
