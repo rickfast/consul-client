@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static com.orbitz.consul.Consul.builder;
 import static org.junit.Assert.assertEquals;
@@ -88,6 +89,47 @@ public class ServiceHealthCacheTests extends BaseIntegrationTest {
         assertEquals(1, events.size());
         Map<ServiceHealthKey, ServiceHealth> event0 = events.get(0);
         assertEquals(0, event0.size());
+        svHealth.stop();
+    }
+
+    @Test
+    public void shouldNotifyLateListenersRaceCondition() throws Exception {
+        String serviceName = UUID.randomUUID().toString();
+
+        final ServiceHealthCache svHealth = ServiceHealthCache.newCache(client.healthClient(), serviceName);
+
+        final AtomicInteger eventCount = new AtomicInteger(0);
+        svHealth.addListener(new ConsulCache.Listener<ServiceHealthKey, ServiceHealth>() {
+            @Override
+            public void notify(Map<ServiceHealthKey, ServiceHealth> newValues) {
+                eventCount.incrementAndGet();
+
+                Thread t = new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        svHealth.addListener(new ConsulCache.Listener<ServiceHealthKey, ServiceHealth>() {
+                            @Override
+                            public void notify(Map<ServiceHealthKey, ServiceHealth> newValues) {
+                                eventCount.incrementAndGet();
+                            }
+                        });
+                    }
+                });
+                t.start();
+
+                try {
+                    Thread.sleep(500);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+
+        svHealth.start();
+        svHealth.awaitInitialized(1000, TimeUnit.MILLISECONDS);
+
+        Thread.sleep(1000);
+        assertEquals(2, eventCount.get());
         svHealth.stop();
     }
 }
