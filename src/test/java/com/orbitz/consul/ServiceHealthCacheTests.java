@@ -16,7 +16,6 @@ import com.orbitz.consul.option.QueryOptions;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import java.io.Console;
 import java.math.BigInteger;
 import java.net.UnknownHostException;
 import java.util.ArrayList;

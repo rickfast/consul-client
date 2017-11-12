@@ -13,7 +13,6 @@ import com.orbitz.consul.option.QueryOptions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.Console;
 import java.math.BigInteger;
 import java.util.Collections;
 import java.util.HashSet;
