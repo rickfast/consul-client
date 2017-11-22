@@ -1,12 +1,10 @@
 package com.orbitz.consul;
 
 import com.orbitz.consul.model.ConsulResponse;
-import com.orbitz.consul.model.catalog.CatalogNode;
-import com.orbitz.consul.model.catalog.CatalogRegistration;
-import com.orbitz.consul.model.catalog.CatalogService;
-import com.orbitz.consul.model.catalog.ImmutableCatalogRegistration;
+import com.orbitz.consul.model.catalog.*;
 import com.orbitz.consul.model.health.ImmutableService;
 import com.orbitz.consul.model.health.Node;
+import com.orbitz.consul.model.health.ServiceHealth;
 import com.orbitz.consul.option.ImmutableQueryOptions;
 import com.orbitz.consul.option.QueryOptions;
 import org.junit.Ignore;
@@ -135,4 +133,48 @@ public class CatalogTests extends BaseIntegrationTest {
 
         assertFalse(response.getResponse().isEmpty());
     }
+
+
+    @Test
+    public void shouldDeregisterWithDefaultDC() throws InterruptedException {
+        CatalogClient catalogClient = client.catalogClient();
+
+        String service = UUID.randomUUID().toString();
+        String serviceId = UUID.randomUUID().toString();
+
+        CatalogRegistration registration = ImmutableCatalogRegistration.builder()
+                .address("localhost")
+                .datacenter("dc1")
+                .node("node")
+                .service(ImmutableService.builder()
+                        .address("localhost")
+                        .addTags("sometag")
+                        .id(serviceId)
+                        .service(service)
+                        .port(8080)
+                        .build())
+                .build();
+
+        catalogClient.register(registration);
+
+        CatalogDeregistration deregistration = ImmutableCatalogDeregistration.builder()
+                .node("node")
+                .serviceId(serviceId)
+                .build();
+
+        catalogClient.deregister(deregistration);
+
+        Thread.sleep(1000L);
+        boolean found = false;
+
+        for (ServiceHealth health : client.healthClient().getAllServiceInstances(service).getResponse()) {
+            if (health.getService().getId().equals(serviceId)) {
+                found = true;
+            }
+        }
+
+        assertFalse(found);
+    }
+
+
 }
