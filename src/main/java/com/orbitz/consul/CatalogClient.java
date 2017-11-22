@@ -168,7 +168,18 @@ public class CatalogClient {
      * @param registration A {@link CatalogRegistration}
      */
     public void register(CatalogRegistration registration) {
-        handle(api.register(registration));
+        register(registration, QueryOptions.BLANK);
+    }
+
+    /**
+     * Registers a service or node.
+     * <p/>
+     * PUT /v1/catalog/register
+     *
+     * @param registration A {@link CatalogRegistration}
+     */
+    public void register(CatalogRegistration registration, QueryOptions options) {
+        handle(api.register(registration, options.toQuery()));
     }
 
     /**
@@ -179,7 +190,18 @@ public class CatalogClient {
      * @param deregistration A {@link CatalogDeregistration}
      */
     public void deregister(CatalogDeregistration deregistration) {
-        handle(api.deregister(deregistration));
+        deregister(deregistration, QueryOptions.BLANK);
+    }
+
+    /**
+     * Deregisters a service or node.
+     * <p/>
+     * PUT /v1/catalog/deregister
+     *
+     * @param deregistration A {@link CatalogDeregistration}
+     */
+    public void deregister(CatalogDeregistration deregistration, QueryOptions options) {
+        handle(api.deregister(deregistration, options.toQuery()));
     }
 
     /**
@@ -213,9 +235,11 @@ public class CatalogClient {
                                               @Query("node-meta") List<String> nodeMeta);
 
         @PUT("catalog/register")
-        Call<Void> register(@Body CatalogRegistration registration);
+        Call<Void> register(@Body CatalogRegistration registration, @QueryMap Map<String, Object> options);
 
         @PUT("catalog/deregister")
-        Call<Void> deregister(@Body CatalogDeregistration deregistration);
+        Call<Void> deregister(@Body CatalogDeregistration deregistration, @QueryMap Map<String, Object> options);
+
+
     }
 }
