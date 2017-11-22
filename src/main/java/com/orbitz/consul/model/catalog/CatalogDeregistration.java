@@ -14,7 +14,7 @@ import org.immutables.value.Value;
 public abstract class CatalogDeregistration {
 
     @JsonProperty("Datacenter")
-    public abstract String datacenter();
+    public abstract Optional<String> datacenter();
 
     @JsonProperty("Node")
     public abstract String node();
