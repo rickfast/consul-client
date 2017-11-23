@@ -5,7 +5,10 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.base.Optional;
+import com.google.common.collect.ImmutableList;
 import org.immutables.value.Value;
+
+import java.util.List;
 
 import static com.google.common.base.Preconditions.checkState;
 
@@ -44,6 +47,10 @@ public abstract class Check {
 
     @JsonProperty("ServiceID")
     public abstract Optional<String> getServiceId();
+
+    @JsonProperty("ServiceTags")
+    @JsonDeserialize(as = ImmutableList.class, contentAs = String.class)
+    public abstract List<String> getServiceTags();
 
     @JsonProperty("DeregisterCriticalServiceAfter")
     public abstract Optional<String> getDeregisterCriticalServiceAfter();
