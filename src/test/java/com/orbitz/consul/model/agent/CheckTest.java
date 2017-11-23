@@ -2,6 +2,10 @@ package com.orbitz.consul.model.agent;
 
 import org.junit.Test;
 
+import java.util.Collections;
+
+import static org.junit.Assert.assertEquals;
+
 public class CheckTest {
 
     @Test(expected = IllegalStateException.class)
@@ -32,5 +36,26 @@ public class CheckTest {
                 .script("/bin/echo \"hi\"")
                 .name("name")
                 .build();
+    }
+
+    @Test
+    public void serviceTagsAreNotNullWhenNotSpecified() {
+        Check check = ImmutableCheck.builder()
+                .name("name")
+                .id("id")
+                .build();
+
+        assertEquals(Collections.emptyList(), check.getServiceTags());
+    }
+
+    @Test
+    public void serviceTagsCanBeAddedToCheck() {
+        Check check = ImmutableCheck.builder()
+                .name("name")
+                .id("id")
+                .addServiceTags("myTag")
+                .build();
+
+        assertEquals(Collections.singletonList("myTag"), check.getServiceTags());
     }
 }
