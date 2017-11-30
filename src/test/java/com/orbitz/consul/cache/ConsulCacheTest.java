@@ -386,6 +386,7 @@ public class ConsulCacheTest extends BaseIntegrationTest {
         BigInteger index = new BigInteger("12");
         QueryOptions additionalOptions = ImmutableQueryOptions.builder()
                 .consistencyMode(ConsistencyMode.STALE)
+                .addTag("someTag")
                 .token("186596")
                 .near("156892")
                 .build();
@@ -394,6 +395,7 @@ public class ConsulCacheTest extends BaseIntegrationTest {
                 .index(index)
                 .wait("10s")
                 .consistencyMode(ConsistencyMode.STALE)
+                .addTag("someTag")
                 .token("186596")
                 .near("156892")
                 .build();

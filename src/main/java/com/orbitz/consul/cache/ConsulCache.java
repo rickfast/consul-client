@@ -221,13 +221,16 @@ public class ConsulCache<K, V> {
         checkArgument(!queryOptions.getIndex().isPresent() && !queryOptions.getWait().isPresent(),
                 "Index and wait cannot be overridden");
 
-        return ImmutableQueryOptions.builder()
+        ImmutableQueryOptions.Builder builder =  ImmutableQueryOptions.builder()
                 .from(watchDefaultParams(index, blockSeconds))
                 .token(queryOptions.getToken())
                 .consistencyMode(queryOptions.getConsistencyMode())
                 .near(queryOptions.getNear())
-                .datacenter(queryOptions.getDatacenter())
-                .build();
+                .datacenter(queryOptions.getDatacenter());
+        for (String tag : queryOptions.getTag()) {
+            builder.addTag(tag);
+        }
+        return builder.build();
     }
 
     private static QueryOptions watchDefaultParams(final BigInteger index, final int blockSeconds) {
