@@ -255,7 +255,6 @@
                                 <excludes>
                                     <exclude>org.slf4j:slf4j-api</exclude>
                                     <exclude>org.immutables:values</exclude>
-                                    <exclude>com.google.guava:guava</exclude>
                                 </excludes>
                             </artifactSet>
                             <relocations>
@@ -283,6 +282,10 @@
                                     <pattern>com.fasterxml</pattern>
                                     <shadedPattern>com.orbitz.fasterxml</shadedPattern>
                                 </relocation>
+                              <relocation>
+                                <pattern>com.google</pattern>
+                                <shadedPattern>com.orbitz.google</shadedPattern>
+                              </relocation>
                             </relocations>
                         </configuration>
                     </execution>
