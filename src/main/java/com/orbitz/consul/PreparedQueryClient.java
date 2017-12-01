@@ -1,6 +1,5 @@
 package com.orbitz.consul;
 
-import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableMap;
 import com.orbitz.consul.async.Callback;
 import com.orbitz.consul.model.query.PreparedQuery;
@@ -15,6 +14,7 @@ import retrofit2.http.*;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import static com.orbitz.consul.util.Http.extract;
 import static com.orbitz.consul.util.Http.extractBasicResponse;
@@ -111,7 +111,7 @@ public class PreparedQueryClient {
     public Optional<StoredQuery> getPreparedQuery(String id, final String dc) {
         List<StoredQuery> result = extract(api.getPreparedQuery(id, dcQuery(dc)));
 
-        return result.isEmpty() ? Optional.<StoredQuery>absent() : Optional.of(result.get(0));
+        return result.isEmpty() ? Optional.empty() : Optional.of(result.get(0));
     }
 
     /**

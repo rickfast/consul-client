@@ -1,6 +1,6 @@
 package com.orbitz.consul.option;
 
-import com.google.common.base.Optional;
+import java.util.Optional;
 
 import java.util.HashMap;
 import java.util.Map;

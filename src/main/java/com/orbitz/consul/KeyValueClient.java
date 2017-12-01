@@ -1,7 +1,7 @@
 package com.orbitz.consul;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.google.common.base.Optional;
+import java.util.Optional;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.primitives.UnsignedLongs;
 import com.orbitz.consul.async.ConsulResponseCallback;
@@ -66,7 +66,7 @@ public class KeyValueClient {
      * GET /v1/kv/{key}
      *
      * @param key The key to retrieve.
-     * @return An {@link Optional} containing the value or {@link Optional#absent()}
+     * @return An {@link Optional} containing the value or {@link Optional.empty()()}
      */
     public Optional<Value> getValue(String key) {
         return getValue(key, QueryOptions.BLANK);
@@ -77,7 +77,7 @@ public class KeyValueClient {
      * {@link com.orbitz.consul.model.kv.Value} for a spefici key from the
      * key/value store
      * @param key The key to retrieve
-     * @return An {@link Optional} containing the {@link ConsulResponse} or {@link Optional#absent()}
+     * @return An {@link Optional} containing the {@link ConsulResponse} or {@link Optional.empty()()}
      */
     public Optional<ConsulResponse<Value>> getConsulResponseWithValue(String key) {
         return getConsulResponseWithValue(key, QueryOptions.BLANK);
@@ -91,7 +91,7 @@ public class KeyValueClient {
      *
      * @param key The key to retrieve.
      * @param queryOptions The query options.
-     * @return An {@link Optional} containing the value or {@link Optional#absent()}
+     * @return An {@link Optional} containing the value or {@link Optional.empty()()}
      */
     public Optional<Value> getValue(String key, QueryOptions queryOptions) {
         try {
@@ -102,7 +102,7 @@ public class KeyValueClient {
             }
         }
 
-        return Optional.absent();
+        return Optional.empty();
     }
 
     /**
@@ -113,7 +113,7 @@ public class KeyValueClient {
      *
      * @param key The key to retrieve.
      * @param queryOptions The query options.
-     * @return An {@link Optional} containing the ConsulResponse or {@link Optional#absent()}
+     * @return An {@link Optional} containing the ConsulResponse or {@link Optional#empty()}
      */
     public Optional<ConsulResponse<Value>> getConsulResponseWithValue(String key, QueryOptions queryOptions) {
         try {
@@ -132,7 +132,7 @@ public class KeyValueClient {
             }
         }
 
-        return Optional.absent();
+        return Optional.empty();
     }
 
     /**
@@ -165,7 +165,7 @@ public class KeyValueClient {
     }
 
     private Optional<Value> getSingleValue(List<Value> values) {
-        return values != null && values.size() != 0 ? Optional.of(values.get(0)) : Optional.<Value>absent();
+        return values != null && values.size() != 0 ? Optional.of(values.get(0)) : Optional.empty();
     }
 
     /**
@@ -259,13 +259,13 @@ public class KeyValueClient {
      *
      * @param key The key to retrieve.
      * @return An {@link Optional} containing the value as a string or
-     * {@link Optional#absent()}
+     * {@link Optional#empty()}
      */
     public Optional<String> getValueAsString(String key) {
-        for (Value v: getValue(key).asSet()) {
+        for (Value v: getValue(key).map(Collections::singleton).orElse(Collections.emptySet())) {
             return v.getValueAsString();
         }
-        return Optional.absent();
+        return Optional.empty();
     }
 
     /**
@@ -431,11 +431,11 @@ public class KeyValueClient {
      *
      * @param key The key to retrieve.
      * @return An {@link Optional} containing the value as a string or
-     * {@link Optional#absent()}
+     * {@link Optional#empty()}
      */
     public Optional<String> getSession(String key) {
         Optional<Value> value = getValue(key);
-        return value.isPresent() ? value.get().getSession() : Optional.<String>absent();
+        return value.isPresent() ? value.get().getSession() : Optional.empty();
     }
 
     /**

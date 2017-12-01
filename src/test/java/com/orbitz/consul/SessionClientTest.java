@@ -61,7 +61,7 @@ public class SessionClientTest extends BaseIntegrationTest {
         assertFalse(keyValueClient.acquireLock(key, value.getName().get(), sessionId));
         assertEquals(sessionId, keyValueClient.getSession(key).get());
 
-        SessionInfo sessionInfo = sessionClient.getSessionInfo(sessionId).orNull();
+        SessionInfo sessionInfo = sessionClient.getSessionInfo(sessionId).orElse(null);
         assertNotNull(sessionInfo);
         assertEquals(sessionId, sessionInfo.getId());
     }

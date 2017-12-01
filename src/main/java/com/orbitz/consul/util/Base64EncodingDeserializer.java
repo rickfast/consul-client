@@ -3,7 +3,7 @@ package com.orbitz.consul.util;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonDeserializer;
-import com.google.common.base.Optional;
+import java.util.Optional;
 import com.google.common.io.BaseEncoding;
 import org.apache.commons.lang3.StringUtils;
 
@@ -24,6 +24,6 @@ public class Base64EncodingDeserializer extends JsonDeserializer<Optional<String
         if (StringUtils.isNotEmpty(value)) {
             return Optional.of(new String(BaseEncoding.base64().decode(value)));
         }
-        return Optional.absent();
+        return Optional.empty();
     }
 }

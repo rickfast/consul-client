@@ -1,6 +1,6 @@
 package com.orbitz.consul;
 
-import com.google.common.base.Optional;
+import java.util.Optional;
 import com.orbitz.consul.async.ConsulResponseCallback;
 import com.orbitz.consul.model.ConsulResponse;
 import com.orbitz.consul.model.kv.ImmutableOperation;
