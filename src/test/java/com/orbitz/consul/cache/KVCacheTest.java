@@ -1,7 +1,6 @@
 package com.orbitz.consul.cache;
 
 import com.google.common.base.Function;
-import com.google.common.base.Optional;
 import com.orbitz.consul.model.kv.ImmutableValue;
 import com.orbitz.consul.model.kv.Value;
 import junitparams.JUnitParamsRunner;
@@ -10,6 +9,8 @@ import junitparams.naming.TestCaseName;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
+import java.util.Optional;
 
 @RunWith(JUnitParamsRunner.class)
 public class KVCacheTest {
@@ -49,7 +50,7 @@ public class KVCacheTest {
                 .lockIndex(1234567890)
                 .flags(1234567890)
                 .key(key)
-                .value(Optional.<String>absent())
+                .value(Optional.<String>empty())
                 .build();
     }
 }

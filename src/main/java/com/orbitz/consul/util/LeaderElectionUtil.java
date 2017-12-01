@@ -1,6 +1,6 @@
 package com.orbitz.consul.util;
 
-import com.google.common.base.Optional;
+import java.util.Optional;
 import com.orbitz.consul.Consul;
 import com.orbitz.consul.KeyValueClient;
 import com.orbitz.consul.model.kv.Value;
@@ -23,7 +23,7 @@ public class LeaderElectionUtil {
                 return value.get().getValueAsString();
             }
         }
-        return Optional.absent();
+        return Optional.empty();
     }
 
     public Optional<String> electNewLeaderForService(final String serviceName, final String info) {

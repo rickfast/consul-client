@@ -1,6 +1,6 @@
 package com.orbitz.consul;
 
-import com.google.common.base.Optional;
+import java.util.Optional;
 import com.google.common.net.HostAndPort;
 import com.orbitz.consul.model.query.ImmutablePreparedQuery;
 import com.orbitz.consul.model.query.ImmutableServiceQuery;

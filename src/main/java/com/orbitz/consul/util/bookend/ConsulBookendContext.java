@@ -1,6 +1,6 @@
 package com.orbitz.consul.util.bookend;
 
-import com.google.common.base.Optional;
+import java.util.Optional;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -23,6 +23,6 @@ public class ConsulBookendContext {
 
     @SuppressWarnings("unchecked")
     public <T> Optional<T> get(String key, Class<T> klazz) {
-        return Optional.fromNullable((T) data.get(key));
+        return Optional.ofNullable((T) data.get(key));
     }
 }

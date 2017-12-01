@@ -1,6 +1,5 @@
 package com.orbitz.consul;
 
-import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.net.HostAndPort;
 import com.orbitz.consul.model.State;
@@ -16,6 +15,7 @@ import java.net.URL;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import static com.orbitz.consul.util.Http.extract;
 import static com.orbitz.consul.util.Http.handle;
@@ -138,7 +138,7 @@ public class AgentClient {
         Registration registration = ImmutableRegistration
                 .builder()
                 .port(port)
-                .check(Optional.fromNullable(check))
+                .check(Optional.ofNullable(check))
                 .name(name)
                 .id(id)
                 .addTags(tags)
@@ -250,7 +250,7 @@ public class AgentClient {
             .name(name)
             .script(script)
             .interval(String.format("%ss", interval))
-            .notes(Optional.fromNullable(notes))
+            .notes(Optional.ofNullable(notes))
             .build();
 
         registerCheck(check);
@@ -272,7 +272,7 @@ public class AgentClient {
                 .name(name)
                 .http(http.toExternalForm())
                 .interval(String.format("%ss", interval))
-                .notes(Optional.fromNullable(notes))
+                .notes(Optional.ofNullable(notes))
                 .build();
 
         registerCheck(check);
@@ -294,7 +294,7 @@ public class AgentClient {
                 .name(name)
                 .tcp(tcp.toString())
                 .interval(String.format("%ss", interval))
-                .notes(Optional.fromNullable(notes))
+                .notes(Optional.ofNullable(notes))
                 .build();
 
         registerCheck(check);
@@ -325,7 +325,7 @@ public class AgentClient {
                 .id(checkId)
                 .name(name)
                 .ttl(String.format("%ss", ttl))
-                .notes(Optional.fromNullable(notes))
+                .notes(Optional.ofNullable(notes))
                 .build();
 
         registerCheck(check);

@@ -5,7 +5,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import com.google.common.base.Optional;
+import java.util.Optional;
 import com.google.common.io.BaseEncoding;
 import com.orbitz.consul.util.UnsignedLongDeserializer;
 
@@ -46,7 +46,7 @@ public abstract class Value {
                     new String(BaseEncoding.base64().decode(getValue().get()))
             );
         } else {
-            return Optional.absent();
+            return Optional.empty();
         }
 
     }
