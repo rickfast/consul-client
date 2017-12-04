@@ -260,7 +260,6 @@
                                 <excludes>
                                     <exclude>org.slf4j:slf4j-api</exclude>
                                     <exclude>org.immutables:values</exclude>
-                                    <exclude>com.google.guava:guava</exclude>
                                 </excludes>
                             </artifactSet>
                             <relocations>
