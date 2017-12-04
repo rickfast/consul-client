@@ -12,7 +12,7 @@ Installation
 
 ### Note
 
-As of `1.0.0`, this library requires Java 8. 
+As of `1.0.0`, this library requires Java 8.
 
 ### Note
 
@@ -22,7 +22,7 @@ In 0.11.X and 0.12.x, the Consul JAR is a shaded JAR, with most dependencies inc
 
 ### Bintray:
 
-Grab the latest binary (1.0.0) [here](http://dl.bintray.com/orbitz/consul-client/com/orbitz/consul/consul-client/0.13.11/#consul-client-0.13.11.jar).
+Grab the latest binary (1.0.0) [here](http://dl.bintray.com/orbitz/consul-client/com/orbitz/consul/consul-client/1.0.0/#consul-client-1.0.0.jar).
 
 ### Gradle:
 
@@ -63,7 +63,7 @@ dependencies {
 Basic Usage
 -----------
 
-### Example 1: Register and check your service in with Consul.  
+### Example 1: Register and check your service in with Consul.
 
 ```java
 Consul consul = Consul.builder().build(); // connect to Consul on localhost
@@ -99,7 +99,7 @@ String value = kvClient.getValueAsString("foo").get(); // bar
 
 ### Example 4: Blocking call for value.
 
-A blocking is used to wait for a potential changes in the key value store. 
+A blocking is used to wait for a potential changes in the key value store.
 
 ```java
 // Set a read timeout to a larger value then we will block.
@@ -121,7 +121,7 @@ ConsulResponseCallback<Optional<Value>> callback = new ConsulResponseCallback<Op
             Value v = consulResponse.getResponse().get();
             LOGGER.info("Value is: {}", v.getValue());
         }
-        
+
 	index.set(consulResponse.getIndex());
         watch();
     }
@@ -158,7 +158,7 @@ svHealth.addListener(new ConsulCache.Listener<HostAndPort, ServiceHealth>() {
     }
 });
 svHealth.start();
-```         
+```
 
 ### Example 6: Find Raft peers.
 
