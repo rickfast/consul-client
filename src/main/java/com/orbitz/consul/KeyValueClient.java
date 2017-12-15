@@ -264,10 +264,7 @@ public class KeyValueClient {
      * {@link Optional#empty()}
      */
     public Optional<String> getValueAsString(String key) {
-        for (Value v: getValue(key).map(Collections::singleton).orElse(Collections.emptySet())) {
-            return v.getValueAsString();
-        }
-        return Optional.empty();
+        return getValueAsString(key, Charset.defaultCharset());
     }
 
     /**
@@ -297,15 +294,7 @@ public class KeyValueClient {
      * @return A list of zero to many string values.
      */
     public List<String> getValuesAsString(String key) {
-        List<String> result = new ArrayList<String>();
-
-        for(Value value : getValues(key)) {
-            if (value.getValueAsString().isPresent()) {
-                result.add(value.getValueAsString().get());
-            }
-        }
-
-        return result;
+        return getValuesAsString(key, Charset.defaultCharset());
     }
 
     /**
@@ -395,21 +384,7 @@ public class KeyValueClient {
      * @return <code>true</code> if the value was successfully indexed.
      */
     public boolean putValue(String key, String value, long flags, PutOptions putOptions) {
-
-        checkArgument(StringUtils.isNotEmpty(key), "Key must be defined");
-        Map<String, Object> query = putOptions.toQuery();
-
-        if (flags != 0) {
-            query.put("flags", UnsignedLongs.toString(flags));
-        }
-
-        if (value == null) {
-            return extract(api.putValue(trimLeadingSlash(key),
-                    query));
-        } else {
-            return extract(api.putValue(trimLeadingSlash(key),
-                    RequestBody.create(MediaType.parse("text/plain"), value), query));
-        }
+        return putValue(key, value, flags, putOptions, Charset.defaultCharset());
     }
 
     /**
