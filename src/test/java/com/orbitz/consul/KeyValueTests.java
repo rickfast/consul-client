@@ -1,5 +1,6 @@
 package com.orbitz.consul;
 
+import java.nio.charset.Charset;
 import java.util.Optional;
 import com.orbitz.consul.async.ConsulResponseCallback;
 import com.orbitz.consul.model.ConsulResponse;
@@ -11,6 +12,7 @@ import com.orbitz.consul.model.session.ImmutableSession;
 import com.orbitz.consul.model.session.SessionCreatedResponse;
 import com.orbitz.consul.option.ImmutableDeleteOptions;
 import com.orbitz.consul.option.ImmutableDeleteOptions.Builder;
+import com.orbitz.consul.option.PutOptions;
 import com.orbitz.consul.option.QueryOptions;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang3.RandomStringUtils;
@@ -32,6 +34,7 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 public class KeyValueTests extends BaseIntegrationTest {
+    private static final Charset TEST_CHARSET = Charset.forName("IBM297");
 
     @Test
     public void shouldPutAndReceiveString() throws UnknownHostException {
@@ -44,6 +47,16 @@ public class KeyValueTests extends BaseIntegrationTest {
     }
 
     @Test
+    public void shouldPutAndReceiveStringWithAnotherCharset() throws UnknownHostException {
+        KeyValueClient keyValueClient = client.keyValueClient();
+        String key = UUID.randomUUID().toString();
+        String value = UUID.randomUUID().toString();
+
+        assertTrue(keyValueClient.putValue(key, value, TEST_CHARSET));
+        assertEquals(value, keyValueClient.getValueAsString(key, TEST_CHARSET).get());
+    }
+
+    @Test
     public void shouldPutAndReceiveValue() throws UnknownHostException {
         KeyValueClient keyValueClient = client.keyValueClient();
         String key = UUID.randomUUID().toString();
@@ -52,6 +65,19 @@ public class KeyValueTests extends BaseIntegrationTest {
         assertTrue(keyValueClient.putValue(key, value));
         Value received = keyValueClient.getValue(key).get();
         assertEquals(value, received.getValueAsString().get());
+        assertEquals(0L, received.getFlags());
+
+    }
+
+    @Test
+    public void shouldPutAndReceiveValueWithAnotherCharset() throws UnknownHostException {
+        KeyValueClient keyValueClient = client.keyValueClient();
+        String key = UUID.randomUUID().toString();
+        String value = UUID.randomUUID().toString();
+
+        assertTrue(keyValueClient.putValue(key, value, TEST_CHARSET));
+        Value received = keyValueClient.getValue(key).get();
+        assertEquals(value, received.getValueAsString(TEST_CHARSET).get());
         assertEquals(0L, received.getFlags());
 
     }
@@ -71,12 +97,38 @@ public class KeyValueTests extends BaseIntegrationTest {
     }
 
     @Test
+    public void shouldPutAndReceiveWithFlagsAndCharset() throws UnknownHostException {
+        KeyValueClient keyValueClient = client.keyValueClient();
+        String key = UUID.randomUUID().toString();
+        String value = UUID.randomUUID().toString();
+        long flags = UUID.randomUUID().getMostSignificantBits();
+
+        assertTrue(keyValueClient.putValue(key, value, flags, TEST_CHARSET));
+        Value received = keyValueClient.getValue(key).get();
+        assertEquals(value, received.getValueAsString(TEST_CHARSET).get());
+        assertEquals(flags, received.getFlags());
+
+    }
+
+    @Test
     public void putNullValue() {
 
         KeyValueClient keyValueClient = client.keyValueClient();
         String key = UUID.randomUUID().toString();
 
         assertTrue(keyValueClient.putValue(key));
+
+        Value received = keyValueClient.getValue(key).get();
+        assertFalse(received.getValue().isPresent());
+    }
+
+    @Test
+    public void putNullValueWithAnotherCharset() {
+
+        KeyValueClient keyValueClient = client.keyValueClient();
+        String key = UUID.randomUUID().toString();
+
+        assertTrue(keyValueClient.putValue(key, null, 0, PutOptions.BLANK, TEST_CHARSET));
 
         Value received = keyValueClient.getValue(key).get();
         assertFalse(received.getValue().isPresent());
@@ -98,6 +150,24 @@ public class KeyValueTests extends BaseIntegrationTest {
                 add(value2);
             }
         }, new HashSet<String>(keyValueClient.getValuesAsString(key)));
+    }
+
+    @Test
+    public void shouldPutAndReceiveStringsWithAnotherCharset() throws UnknownHostException {
+        KeyValueClient keyValueClient = client.keyValueClient();
+        String key = UUID.randomUUID().toString();
+        String key2 = key + "/" + UUID.randomUUID().toString();
+        final String value = UUID.randomUUID().toString();
+        final String value2 = UUID.randomUUID().toString();
+
+        assertTrue(keyValueClient.putValue(key, value, TEST_CHARSET));
+        assertTrue(keyValueClient.putValue(key2, value2, TEST_CHARSET));
+        assertEquals(new HashSet<String>() {
+            {
+                add(value);
+                add(value2);
+            }
+        }, new HashSet<String>(keyValueClient.getValuesAsString(key, TEST_CHARSET)));
     }
 
     @Test

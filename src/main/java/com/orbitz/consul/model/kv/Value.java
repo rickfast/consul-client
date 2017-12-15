@@ -5,9 +5,11 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import java.util.Optional;
 import com.google.common.io.BaseEncoding;
 import com.orbitz.consul.util.UnsignedLongDeserializer;
+
+import java.nio.charset.Charset;
+import java.util.Optional;
 
 @org.immutables.value.Value.Immutable
 @JsonDeserialize(as = ImmutableValue.class)
@@ -40,10 +42,16 @@ public abstract class Value {
     @JsonIgnore
     @org.immutables.value.Value.Lazy
     public Optional<String> getValueAsString() {
+        return getValueAsString(Charset.defaultCharset());
+    }
+
+    @JsonIgnore
+    @org.immutables.value.Value.Lazy
+    public Optional<String> getValueAsString(Charset charset) {
 
         if (getValue().isPresent()) {
             return Optional.of(
-                    new String(BaseEncoding.base64().decode(getValue().get()))
+                    new String(BaseEncoding.base64().decode(getValue().get()), charset)
             );
         } else {
             return Optional.empty();
