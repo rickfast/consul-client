@@ -1,6 +1,8 @@
 package com.orbitz.consul;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+
+import java.nio.charset.Charset;
 import java.util.Optional;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.primitives.UnsignedLongs;
@@ -269,6 +271,23 @@ public class KeyValueClient {
     }
 
     /**
+     * Retrieves a string value for a specific key from the key/value store.
+     *
+     * GET /v1/kv/{key}
+     *
+     * @param key The key to retrieve.
+     * @param charset The charset of the value
+     * @return An {@link Optional} containing the value as a string or
+     * {@link Optional#empty()}
+     */
+    public Optional<String> getValueAsString(String key, Charset charset) {
+        for (Value v: getValue(key).map(Collections::singleton).orElse(Collections.emptySet())) {
+            return v.getValueAsString(charset);
+        }
+        return Optional.empty();
+    }
+
+    /**
      * Retrieves a list of string values for a specific key from the key/value
      * store.
      *
@@ -283,6 +302,28 @@ public class KeyValueClient {
         for(Value value : getValues(key)) {
             if (value.getValueAsString().isPresent()) {
                 result.add(value.getValueAsString().get());
+            }
+        }
+
+        return result;
+    }
+
+    /**
+     * Retrieves a list of string values for a specific key from the key/value
+     * store.
+     *
+     * GET /v1/kv/{key}?recurse
+     *
+     * @param key The key to retrieve.
+     * @param charset The charset of the value
+     * @return A list of zero to many string values.
+     */
+    public List<String> getValuesAsString(String key, Charset charset) {
+        List<String> result = new ArrayList<String>();
+
+        for(Value value : getValues(key)) {
+            if (value.getValueAsString(charset).isPresent()) {
+                result.add(value.getValueAsString(charset).get());
             }
         }
 
@@ -315,11 +356,34 @@ public class KeyValueClient {
      *
      * @param key The key to use as index.
      * @param value The value to index.
+     * @return <code>true</code> if the value was successfully indexed.
+     */
+    public boolean putValue(String key, String value, Charset charset) {
+        return putValue(key, value, 0L, PutOptions.BLANK, charset);
+    }
+
+    /**
+     * Puts a value into the key/value store.
+     *
+     * @param key The key to use as index.
+     * @param value The value to index.
      * @param flags The flags for this key.
      * @return <code>true</code> if the value was successfully indexed.
      */
     public boolean putValue(String key, String value, long flags) {
         return putValue(key, value, flags, PutOptions.BLANK);
+    }
+
+    /**
+     * Puts a value into the key/value store.
+     *
+     * @param key The key to use as index.
+     * @param value The value to index.
+     * @param flags The flags for this key.
+     * @return <code>true</code> if the value was successfully indexed.
+     */
+    public boolean putValue(String key, String value, long flags, Charset charset) {
+        return putValue(key, value, flags, PutOptions.BLANK, charset);
     }
 
     /**
@@ -345,6 +409,32 @@ public class KeyValueClient {
         } else {
             return extract(api.putValue(trimLeadingSlash(key),
                     RequestBody.create(MediaType.parse("text/plain"), value), query));
+        }
+    }
+
+    /**
+     * Puts a value into the key/value store.
+     *
+     * @param key The key to use as index.
+     * @param value The value to index.
+     * @param putOptions PUT options (e.g. wait, acquire).
+     * @return <code>true</code> if the value was successfully indexed.
+     */
+    public boolean putValue(String key, String value, long flags, PutOptions putOptions, Charset charset) {
+
+        checkArgument(StringUtils.isNotEmpty(key), "Key must be defined");
+        Map<String, Object> query = putOptions.toQuery();
+
+        if (flags != 0) {
+            query.put("flags", UnsignedLongs.toString(flags));
+        }
+
+        if (value == null) {
+            return extract(api.putValue(trimLeadingSlash(key),
+                    query));
+        } else {
+            return extract(api.putValue(trimLeadingSlash(key),
+                    RequestBody.create(MediaType.parse("text/plain; charset=" + charset.name()), value), query));
         }
     }
 
