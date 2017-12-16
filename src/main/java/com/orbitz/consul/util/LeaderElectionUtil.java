@@ -18,12 +18,12 @@ public class LeaderElectionUtil {
     public Optional<String> getLeaderInfoForService(final String serviceName) {
         String key = getServiceKey(serviceName);
         Optional<Value> value = client.keyValueClient().getValue(key);
-        if(value.isPresent()){
-            if(value.get().getSession().isPresent()) {
-                return value.get().getValueAsString();
+        return value.flatMap(val -> {
+            if(val.getSession().isPresent()) {
+                return val.getValueAsString();
             }
-        }
-        return Optional.empty();
+            return Optional.empty();
+        });
     }
 
     public Optional<String> electNewLeaderForService(final String serviceName, final String info) {

@@ -278,10 +278,7 @@ public class KeyValueClient {
      * {@link Optional#empty()}
      */
     public Optional<String> getValueAsString(String key, Charset charset) {
-        for (Value v: getValue(key).map(Collections::singleton).orElse(Collections.emptySet())) {
-            return v.getValueAsString(charset);
-        }
-        return Optional.empty();
+        return getValue(key).flatMap(v -> v.getValueAsString(charset));
     }
 
     /**
@@ -311,9 +308,7 @@ public class KeyValueClient {
         List<String> result = new ArrayList<String>();
 
         for(Value value : getValues(key)) {
-            if (value.getValueAsString(charset).isPresent()) {
-                result.add(value.getValueAsString(charset).get());
-            }
+            value.getValueAsString(charset).ifPresent(result::add);
         }
 
         return result;
@@ -499,8 +494,7 @@ public class KeyValueClient {
      * {@link Optional#empty()}
      */
     public Optional<String> getSession(String key) {
-        Optional<Value> value = getValue(key);
-        return value.isPresent() ? value.get().getSession() : Optional.empty();
+        return getValue(key).flatMap(Value::getSession);
     }
 
     /**
