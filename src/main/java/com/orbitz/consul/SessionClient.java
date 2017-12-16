@@ -76,7 +76,7 @@ public class SessionClient {
      */
     public Optional<SessionInfo> renewSession(final String dc, final String sessionId) {
         List<SessionInfo> sessionInfo = extract(api.renewSession(sessionId,
-                ImmutableMap.<String, String>of(), dcQuery(dc)));
+                ImmutableMap.of(), dcQuery(dc)));
 
         return sessionInfo == null || sessionInfo.isEmpty() ? Optional.empty() :
                 Optional.of(sessionInfo.get(0));

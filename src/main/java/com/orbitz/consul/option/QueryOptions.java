@@ -47,14 +47,14 @@ public abstract class QueryOptions implements ParamAdder {
     @Value.Derived
     public List<String> getNodeMetaQuery() {
         return getNodeMeta() == null
-                ? Collections.<String>emptyList()
+                ? Collections.emptyList()
                 : ImmutableList.copyOf(getNodeMeta());
     }
 
     @Value.Derived
     public List<String> getTagsQuery() {
         return getTag() == null
-                ? Collections.<String>emptyList()
+                ? Collections.emptyList()
                 : ImmutableList.copyOf(getTag());
     }
 

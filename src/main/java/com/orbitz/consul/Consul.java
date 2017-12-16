@@ -510,7 +510,7 @@ public class Consul {
                  * using daemon thread so shutdown is not blocked (issue #133)
                  */
                 executorService = new ThreadPoolExecutor(0, Integer.MAX_VALUE, 60, TimeUnit.SECONDS,
-                        new SynchronousQueue<Runnable>(), Util.threadFactory("OkHttp Dispatcher", true));
+                        new SynchronousQueue<>(), Util.threadFactory("OkHttp Dispatcher", true));
             }
 
             try {

@@ -152,7 +152,7 @@ public class KeyValueClient {
             @Override
             public void onComplete(ConsulResponse<List<Value>> consulResponse) {
                 callback.onComplete(
-                        new ConsulResponse<Optional<Value>>(getSingleValue(consulResponse.getResponse()),
+                        new ConsulResponse<>(getSingleValue(consulResponse.getResponse()),
                                 consulResponse.getLastContact(),
                                 consulResponse.isKnownLeader(), consulResponse.getIndex()));
             }
@@ -214,7 +214,7 @@ public class KeyValueClient {
 
         List<Value> result = extract(api.getValue(trimLeadingSlash(key), query), NOT_FOUND_404);
 
-        return result == null ? Collections.<Value>emptyList() : result;
+        return result == null ? Collections.emptyList() : result;
     }
 
     /**
@@ -305,7 +305,7 @@ public class KeyValueClient {
      * @return A list of zero to many string values.
      */
     public List<String> getValuesAsString(String key, Charset charset) {
-        List<String> result = new ArrayList<String>();
+        List<String> result = new ArrayList<>();
 
         for(Value value : getValues(key)) {
             value.getValueAsString(charset).ifPresent(result::add);
@@ -417,7 +417,7 @@ public class KeyValueClient {
      * @return A list of zero to many keys.
      */
     public List<String> getKeys(String key) {
-        return extract(api.getKeys(trimLeadingSlash(key), ImmutableMap.<String, Object>of("keys", "true")));
+        return extract(api.getKeys(trimLeadingSlash(key), ImmutableMap.of("keys", "true")));
     }
 
     /**
@@ -540,8 +540,8 @@ public class KeyValueClient {
     public ConsulResponse<TxResponse> performTransaction(ConsistencyMode consistency, Operation... operations) {
 
         Map<String, Object> query = consistency == ConsistencyMode.DEFAULT
-                ? ImmutableMap.<String, Object>of()
-                : ImmutableMap.<String, Object>of(consistency.toParam().get(), "true");
+                ? ImmutableMap.of()
+                : ImmutableMap.of(consistency.toParam().get(), "true");
 
         try {
             return extractConsulResponse(api.performTransaction(RequestBody.create(MediaType.parse("application/json"),

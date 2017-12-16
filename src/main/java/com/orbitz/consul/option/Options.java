@@ -6,7 +6,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class Options {
-    private Options(){};
+    private Options(){}
 
     static void optionallyAdd(Map<String, Object> data, String key, @SuppressWarnings("OptionalUsedAsFieldOrParameterType") Optional<?> val) {
         val.ifPresent(value -> data.put(key, value.toString()));

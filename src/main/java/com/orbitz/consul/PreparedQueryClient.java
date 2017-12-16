@@ -118,7 +118,7 @@ public class PreparedQueryClient {
      * @return A {@link QueryResults} object containing service instances.
      */
     public QueryResults execute(String nameOrId) {
-        return extract(api.execute(nameOrId, Collections.<String, Object>emptyMap()));
+        return extract(api.execute(nameOrId, Collections.emptyMap()));
     }
 
     /**

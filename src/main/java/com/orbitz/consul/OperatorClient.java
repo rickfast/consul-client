@@ -23,7 +23,7 @@ public class OperatorClient {
     }
 
     public RaftConfiguration getRaftConfiguration() {
-        return extract(api.getConfiguration(ImmutableMap.<String, String>of()));
+        return extract(api.getConfiguration(ImmutableMap.of()));
     }
 
     public RaftConfiguration getRaftConfiguration(String datacenter) {
@@ -43,7 +43,7 @@ public class OperatorClient {
     }
 
     public void deletePeer(String address) {
-        handle(api.deletePeer(address, ImmutableMap.<String, String>of()));
+        handle(api.deletePeer(address, ImmutableMap.of()));
     }
 
     public void deletePeer(String address, String datacenter) {
