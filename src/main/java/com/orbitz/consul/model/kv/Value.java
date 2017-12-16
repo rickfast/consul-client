@@ -48,14 +48,6 @@ public abstract class Value {
     @JsonIgnore
     @org.immutables.value.Value.Lazy
     public Optional<String> getValueAsString(Charset charset) {
-
-        if (getValue().isPresent()) {
-            return Optional.of(
-                    new String(BaseEncoding.base64().decode(getValue().get()), charset)
-            );
-        } else {
-            return Optional.empty();
-        }
-
+        return getValue().map(s -> new String(BaseEncoding.base64().decode(s), charset));
     }
 }

@@ -413,11 +413,7 @@ public class AgentClient {
      */
     public void check(String checkId, State state, String note) throws NotRegisteredException {
         try {
-            Map<String, String> query = Collections.emptyMap();
-
-            if (note != null) {
-                query = ImmutableMap.of("note", note);
-            }
+            Map<String, String> query = note == null ? Collections.emptyMap() : ImmutableMap.of("note", note);
 
             handle(api.check(state.getPath(), checkId, query));
         } catch (Exception ex) {
@@ -546,12 +542,8 @@ public class AgentClient {
      * @return <code>true</code> if successful, otherwise <code>false</code>.
      */
     public boolean join(String address, boolean wan) {
-        Map<String, String> query = Collections.emptyMap();
+        Map<String, String> query = wan ? ImmutableMap.of("wan", "1") : Collections.emptyMap();
         boolean result = true;
-
-        if (wan) {
-            query = ImmutableMap.of("wan", "1");
-        }
 
         try {
             handle(api.join(address, query));

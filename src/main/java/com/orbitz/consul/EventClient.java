@@ -107,11 +107,7 @@ public class EventClient {
      *  a list of {@link com.orbitz.consul.model.event.Event} objects.
      */
     public EventResponse listEvents(String name, QueryOptions queryOptions) {
-        Map<String, String> query = Collections.emptyMap();
-
-        if (StringUtils.isNotEmpty(name)) {
-            query = ImmutableMap.of("name", name);
-        }
+        Map<String, String> query = StringUtils.isNotEmpty(name) ? ImmutableMap.of("name", name) : Collections.emptyMap();
 
         return response(api.listEvents(query));
     }
@@ -164,11 +160,7 @@ public class EventClient {
      * @param callback The callback to asynchronously process the result.
      */
     public void listEvents(String name, QueryOptions queryOptions, EventResponseCallback callback) {
-        Map<String, String> query = Collections.emptyMap();
-
-        if (StringUtils.isNotEmpty(name)) {
-            query = ImmutableMap.of("name", name);
-        }
+        Map<String, String> query = StringUtils.isNotEmpty(name) ? ImmutableMap.of("name", name) : Collections.emptyMap();
 
         response(api.listEvents(query), callback);
     }

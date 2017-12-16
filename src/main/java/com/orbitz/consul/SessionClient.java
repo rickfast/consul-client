@@ -60,12 +60,7 @@ public class SessionClient {
     }
 
     private Map<String, String> dcQuery(String dc) {
-        Map<String, String> query = Collections.emptyMap();
-
-        if (dc != null) {
-            query = ImmutableMap.of("dc", dc);
-        }
-        return query;
+        return dc != null ? ImmutableMap.of("dc", dc) : Collections.emptyMap();
     }
 
     public Optional<SessionInfo> renewSession(final String sessionId) {
@@ -81,9 +76,9 @@ public class SessionClient {
      */
     public Optional<SessionInfo> renewSession(final String dc, final String sessionId) {
         List<SessionInfo> sessionInfo = extract(api.renewSession(sessionId,
-                ImmutableMap.<String, String>of(), dcQuery(dc)));
+                ImmutableMap.of(), dcQuery(dc)));
 
-        return sessionInfo != null && sessionInfo.isEmpty() ? Optional.empty() :
+        return sessionInfo == null || sessionInfo.isEmpty() ? Optional.empty() :
                 Optional.of(sessionInfo.get(0));
     }
 
@@ -134,7 +129,7 @@ public class SessionClient {
     public Optional<SessionInfo> getSessionInfo(final String sessionId, final String dc) {
         List<SessionInfo> sessionInfo = extract(api.getSessionInfo(sessionId, dcQuery(dc)));
 
-        return sessionInfo != null && sessionInfo.isEmpty() ? Optional.empty() :
+        return sessionInfo == null || sessionInfo.isEmpty() ? Optional.empty() :
                 Optional.of(sessionInfo.get(0));
     }
 

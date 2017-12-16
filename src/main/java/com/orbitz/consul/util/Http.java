@@ -110,8 +110,6 @@ public class Http {
         long lastContact = lastContactHeaderValue == null ? 0 : Long.valueOf(lastContactHeaderValue);
         boolean knownLeader = knownLeaderHeaderValue == null ? false : Boolean.valueOf(knownLeaderHeaderValue);
 
-        ConsulResponse<T> consulResponse = new ConsulResponse<>(response.body(), lastContact, knownLeader, index);
-
-        return consulResponse;
+        return new ConsulResponse<>(response.body(), lastContact, knownLeader, index);
     }
 }

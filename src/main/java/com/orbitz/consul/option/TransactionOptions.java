@@ -28,9 +28,7 @@ public abstract class TransactionOptions implements ParamAdder {
         Map<String, Object> result = new HashMap<>();
 
         Optional<String> consistencyMode = getConsistencyMode().toParam();
-        if (consistencyMode.isPresent()) {
-            result.put(consistencyMode.get(), "true");
-        }
+        consistencyMode.ifPresent(s -> result.put(s, "true"));
 
         optionallyAdd(result, "dc", getDatacenter());
 

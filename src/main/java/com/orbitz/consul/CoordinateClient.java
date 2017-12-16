@@ -45,12 +45,7 @@ public class CoordinateClient {
     }
 
     private Map<String, String> dcQuery(String dc) {
-        Map<String, String> query = Collections.emptyMap();
-
-        if (dc != null) {
-            query = ImmutableMap.of("dc", dc);
-        }
-        return query;
+        return dc != null ? ImmutableMap.of("dc", dc) : Collections.emptyMap();
     }
 
     /**

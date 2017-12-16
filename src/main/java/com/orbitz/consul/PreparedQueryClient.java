@@ -58,10 +58,7 @@ public class PreparedQueryClient {
     }
 
     private Map<String, String> dcQuery(String dc) {
-        if (dc != null) {
-            return ImmutableMap.of("dc", dc);
-        }
-        return Collections.emptyMap();
+        return dc != null ? ImmutableMap.of("dc", dc): Collections.emptyMap();
     }
     
     /**
@@ -121,7 +118,7 @@ public class PreparedQueryClient {
      * @return A {@link QueryResults} object containing service instances.
      */
     public QueryResults execute(String nameOrId) {
-        return extract(api.execute(nameOrId, Collections.<String, Object>emptyMap()));
+        return extract(api.execute(nameOrId, Collections.emptyMap()));
     }
 
     /**

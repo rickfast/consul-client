@@ -49,15 +49,15 @@ public class ConsulCache<K, V> {
     static final String BACKOFF_DELAY_PROPERTY = "com.orbitz.consul.cache.backOffDelay";
     private static final long BACKOFF_DELAY_QTY_IN_MS = getBackOffDelayInMs(System.getProperties());
 
-    private final AtomicReference<BigInteger> latestIndex = new AtomicReference<BigInteger>(null);
+    private final AtomicReference<BigInteger> latestIndex = new AtomicReference<>(null);
     private final AtomicLong lastContact = new AtomicLong();
     private final AtomicBoolean isKnownLeader = new AtomicBoolean();
-    private final AtomicReference<ImmutableMap<K, V>> lastResponse = new AtomicReference<ImmutableMap<K, V>>(null);
-    private final AtomicReference<State> state = new AtomicReference<State>(State.latent);
+    private final AtomicReference<ImmutableMap<K, V>> lastResponse = new AtomicReference<>(null);
+    private final AtomicReference<State> state = new AtomicReference<>(State.latent);
     private final CountDownLatch initLatch = new CountDownLatch(1);
     private final ScheduledExecutorService executorService = Executors.newSingleThreadScheduledExecutor(
             new ThreadFactoryBuilder().setDaemon(true).build());
-    private final CopyOnWriteArrayList<Listener<K, V>> listeners = new CopyOnWriteArrayList<Listener<K, V>>();
+    private final CopyOnWriteArrayList<Listener<K, V>> listeners = new CopyOnWriteArrayList<>();
     private final ReentrantLock listenersStartingLock = new ReentrantLock();
 
     private final Function<V, K> keyConversion;
@@ -128,12 +128,7 @@ public class ConsulCache<K, V> {
                 }
                 LOGGER.error(String.format("Error getting response from consul. will retry in %d %s", BACKOFF_DELAY_QTY_IN_MS, TimeUnit.MILLISECONDS), throwable);
 
-                executorService.schedule(new Runnable() {
-                    @Override
-                    public void run() {
-                        runCallback();
-                    }
-                }, BACKOFF_DELAY_QTY_IN_MS, TimeUnit.MILLISECONDS);
+                executorService.schedule(ConsulCache.this::runCallback, BACKOFF_DELAY_QTY_IN_MS, TimeUnit.MILLISECONDS);
             }
         };
     }
@@ -155,12 +150,12 @@ public class ConsulCache<K, V> {
         return TimeUnit.SECONDS.toMillis(10);
     }
 
-    public void start() throws Exception {
+    public void start() {
         checkState(state.compareAndSet(State.latent, State.starting),"Cannot transition from state %s to %s", state.get(), State.starting);
         runCallback();
     }
 
-    public void stop() throws Exception {
+    public void stop() {
         State previous = state.getAndSet(State.stopped);
         if (previous != State.stopped) {
             executorService.shutdownNow();
