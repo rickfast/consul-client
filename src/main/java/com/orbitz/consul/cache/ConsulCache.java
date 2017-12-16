@@ -128,12 +128,7 @@ public class ConsulCache<K, V> {
                 }
                 LOGGER.error(String.format("Error getting response from consul. will retry in %d %s", BACKOFF_DELAY_QTY_IN_MS, TimeUnit.MILLISECONDS), throwable);
 
-                executorService.schedule(new Runnable() {
-                    @Override
-                    public void run() {
-                        runCallback();
-                    }
-                }, BACKOFF_DELAY_QTY_IN_MS, TimeUnit.MILLISECONDS);
+                executorService.schedule(ConsulCache.this::runCallback, BACKOFF_DELAY_QTY_IN_MS, TimeUnit.MILLISECONDS);
             }
         };
     }

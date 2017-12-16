@@ -3,12 +3,8 @@ package com.orbitz.consul.cache;
 import com.google.common.base.Function;
 import com.google.common.net.HostAndPort;
 import com.orbitz.consul.HealthClient;
-import com.orbitz.consul.async.ConsulResponseCallback;
 import com.orbitz.consul.model.health.ServiceHealth;
 import com.orbitz.consul.option.QueryOptions;
-
-import java.math.BigInteger;
-import java.util.List;
 
 public class ServiceHealthCache extends ConsulCache<ServiceHealthKey, ServiceHealth> {
 
@@ -34,15 +30,12 @@ public class ServiceHealthCache extends ConsulCache<ServiceHealthKey, ServiceHea
             final QueryOptions queryOptions,
             final Function<ServiceHealth, ServiceHealthKey> keyExtractor) {
 
-        CallbackConsumer<ServiceHealth> callbackConsumer = new CallbackConsumer<ServiceHealth>() {
-            @Override
-            public void consume(BigInteger index, ConsulResponseCallback<List<ServiceHealth>> callback) {
-                QueryOptions params = watchParams(index, watchSeconds, queryOptions);
-                if (passing) {
-                    healthClient.getHealthyServiceInstances(serviceName, params, callback);
-                } else {
-                    healthClient.getAllServiceInstances(serviceName, params, callback);
-                }
+        CallbackConsumer<ServiceHealth> callbackConsumer = (index, callback) -> {
+            QueryOptions params = watchParams(index, watchSeconds, queryOptions);
+            if (passing) {
+                healthClient.getHealthyServiceInstances(serviceName, params, callback);
+            } else {
+                healthClient.getAllServiceInstances(serviceName, params, callback);
             }
         };
 
@@ -56,14 +49,7 @@ public class ServiceHealthCache extends ConsulCache<ServiceHealthKey, ServiceHea
             final int watchSeconds,
             final QueryOptions queryOptions) {
 
-        Function<ServiceHealth, ServiceHealthKey> keyExtractor = new Function<ServiceHealth, ServiceHealthKey>() {
-            @Override
-            public ServiceHealthKey apply(ServiceHealth input) {
-                return ServiceHealthKey.fromServiceHealth(input);
-            }
-        };
-
-        return newCache(healthClient, serviceName, passing, watchSeconds, queryOptions, keyExtractor);
+        return newCache(healthClient, serviceName, passing, watchSeconds, queryOptions, ServiceHealthKey::fromServiceHealth);
     }
     
     public static ServiceHealthCache newCache(

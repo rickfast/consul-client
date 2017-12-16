@@ -5,17 +5,20 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.io.BaseEncoding;
 import com.google.common.net.HostAndPort;
+import com.orbitz.consul.util.Jackson;
 import com.orbitz.consul.util.bookend.ConsulBookend;
 import com.orbitz.consul.util.bookend.ConsulBookendInterceptor;
-import com.orbitz.consul.util.Jackson;
-import okhttp3.*;
+import okhttp3.Dispatcher;
+import okhttp3.HttpUrl;
+import okhttp3.Interceptor;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
 import okhttp3.internal.Util;
 import retrofit2.Retrofit;
 import retrofit2.converter.jackson.JacksonConverterFactory;
 
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLContext;
-import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.Proxy;
 import java.net.URL;
@@ -292,18 +295,15 @@ public class Consul {
         public Builder withBasicAuth(String username, String password) {
             String credentials = username + ":" + password;
             final String basic = "Basic " + BaseEncoding.base64().encode(credentials.getBytes());
-            basicAuthInterceptor = new Interceptor() {
-                @Override
-                public Response intercept(Chain chain) throws IOException {
-                    Request original = chain.request();
+            basicAuthInterceptor = chain -> {
+                Request original = chain.request();
 
-                    Request.Builder requestBuilder = original.newBuilder()
-                            .header("Authorization", basic)
-                            .method(original.method(), original.body());
+                Request.Builder requestBuilder = original.newBuilder()
+                        .header("Authorization", basic)
+                        .method(original.method(), original.body());
 
-                    Request request = requestBuilder.build();
-                    return chain.proceed(request);
-                }
+                Request request = requestBuilder.build();
+                return chain.proceed(request);
             };
 
             return this;
@@ -316,26 +316,23 @@ public class Consul {
          * @return The builder.
          */
         public Builder withAclToken(final String token) {
-            aclTokenInterceptor = new Interceptor() {
-                @Override
-                public Response intercept(Chain chain) throws IOException {
-                    Request original = chain.request();
+            aclTokenInterceptor = chain -> {
+                Request original = chain.request();
 
-                    HttpUrl originalUrl = original.url();
-                    String rewrittenUrl;
-                    if (originalUrl.queryParameterNames().isEmpty()) {
-                        rewrittenUrl = originalUrl.url().toExternalForm() + "?token=" + token;
-                    } else {
-                        rewrittenUrl = originalUrl.url().toExternalForm() + "&token=" + token;
-                    }
-
-                    Request.Builder requestBuilder = original.newBuilder()
-                            .url(rewrittenUrl)
-                            .method(original.method(), original.body());
-
-                    Request request = requestBuilder.build();
-                    return chain.proceed(request);
+                HttpUrl originalUrl = original.url();
+                String rewrittenUrl;
+                if (originalUrl.queryParameterNames().isEmpty()) {
+                    rewrittenUrl = originalUrl.url().toExternalForm() + "?token=" + token;
+                } else {
+                    rewrittenUrl = originalUrl.url().toExternalForm() + "&token=" + token;
                 }
+
+                Request.Builder requestBuilder = original.newBuilder()
+                        .url(rewrittenUrl)
+                        .method(original.method(), original.body());
+
+                Request request = requestBuilder.build();
+                return chain.proceed(request);
             };
 
             return this;
@@ -348,18 +345,14 @@ public class Consul {
          * @return The builder.
          */
         public Builder withHeaders(final Map<String, String> headers) {
-            headerInterceptor = new Interceptor() {
+            headerInterceptor = chain -> {
+                Request.Builder requestBuilder = chain.request().newBuilder();
 
-                @Override
-                public Response intercept(Chain chain) throws IOException {
-                    Request.Builder requestBuilder = chain.request().newBuilder();
-
-                    for (Map.Entry<String, String> header : headers.entrySet()) {
-                        requestBuilder.addHeader(header.getKey(), header.getValue());
-                    }
-
-                    return chain.proceed(requestBuilder.build());
+                for (Map.Entry<String, String> header : headers.entrySet()) {
+                    requestBuilder.addHeader(header.getKey(), header.getValue());
                 }
+
+                return chain.proceed(requestBuilder.build());
             };
 
             return this;

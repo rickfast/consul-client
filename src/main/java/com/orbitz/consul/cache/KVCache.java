@@ -4,12 +4,8 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
 import com.orbitz.consul.KeyValueClient;
-import com.orbitz.consul.async.ConsulResponseCallback;
 import com.orbitz.consul.model.kv.Value;
 import com.orbitz.consul.option.QueryOptions;
-
-import java.math.BigInteger;
-import java.util.List;
 
 public class KVCache extends ConsulCache<String, Value> {
 
@@ -19,21 +15,18 @@ public class KVCache extends ConsulCache<String, Value> {
 
     @VisibleForTesting
     static Function<Value, String> getKeyExtractorFunction(final String rootPath) {
-        return new Function<Value, String>() {
-            @Override
-            public String apply(Value input) {
-                Preconditions.checkNotNull(input, "Input to key extractor is null");
-                Preconditions.checkNotNull(input.getKey(), "Input to key extractor has no key");
+        return input -> {
+            Preconditions.checkNotNull(input, "Input to key extractor is null");
+            Preconditions.checkNotNull(input.getKey(), "Input to key extractor has no key");
 
-                if (rootPath.equals(input.getKey())) {
-                    return "";
-                }
-                int lastSlashIndex = rootPath.lastIndexOf("/");
-                if (lastSlashIndex >= 0) {
-                    return input.getKey().substring(lastSlashIndex+1);
-                }
-                return input.getKey();
+            if (rootPath.equals(input.getKey())) {
+                return "";
             }
+            int lastSlashIndex = rootPath.lastIndexOf("/");
+            if (lastSlashIndex >= 0) {
+                return input.getKey().substring(lastSlashIndex+1);
+            }
+            return input.getKey();
         };
     }
 
@@ -47,12 +40,9 @@ public class KVCache extends ConsulCache<String, Value> {
 
         final Function<Value, String> keyExtractor = getKeyExtractorFunction(keyPath);
 
-        final CallbackConsumer<Value> callbackConsumer = new CallbackConsumer<Value>() {
-            @Override
-            public void consume(BigInteger index, ConsulResponseCallback<List<Value>> callback) {
-                QueryOptions params = watchParams(index, watchSeconds, queryOptions);
-                kvClient.getValues(keyPath, params, callback);
-            }
+        final CallbackConsumer<Value> callbackConsumer = (index, callback) -> {
+            QueryOptions params = watchParams(index, watchSeconds, queryOptions);
+            kvClient.getValues(keyPath, params, callback);
         };
 
         return new KVCache(keyExtractor, callbackConsumer);
