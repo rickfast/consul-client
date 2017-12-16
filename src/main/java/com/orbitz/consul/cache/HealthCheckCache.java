@@ -27,12 +27,10 @@ public class HealthCheckCache extends ConsulCache<String, HealthCheck> {
             final QueryOptions queryOptions,
             Function<HealthCheck, String> keyExtractor) {
 
-        CallbackConsumer<HealthCheck> callbackConsumer = (index, callback) -> {
+        return new HealthCheckCache(keyExtractor, (index, callback) -> {
             QueryOptions params = watchParams(index, watchSeconds, queryOptions);
             healthClient.getChecksByState(state, params, callback);
-        };
-
-        return new HealthCheckCache(keyExtractor, callbackConsumer);
+        });
     }
 
     public static HealthCheckCache newCache(

@@ -58,10 +58,7 @@ public class PreparedQueryClient {
     }
 
     private Map<String, String> dcQuery(String dc) {
-        if (dc != null) {
-            return ImmutableMap.of("dc", dc);
-        }
-        return Collections.emptyMap();
+        return dc != null ? ImmutableMap.of("dc", dc): Collections.emptyMap();
     }
     
     /**

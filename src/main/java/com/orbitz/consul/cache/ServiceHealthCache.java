@@ -30,16 +30,14 @@ public class ServiceHealthCache extends ConsulCache<ServiceHealthKey, ServiceHea
             final QueryOptions queryOptions,
             final Function<ServiceHealth, ServiceHealthKey> keyExtractor) {
 
-        CallbackConsumer<ServiceHealth> callbackConsumer = (index, callback) -> {
+        return new ServiceHealthCache(keyExtractor, (index, callback) -> {
             QueryOptions params = watchParams(index, watchSeconds, queryOptions);
             if (passing) {
                 healthClient.getHealthyServiceInstances(serviceName, params, callback);
             } else {
                 healthClient.getAllServiceInstances(serviceName, params, callback);
             }
-        };
-
-        return new ServiceHealthCache(keyExtractor, callbackConsumer);
+        });
     }
 
     public static ServiceHealthCache newCache(

@@ -150,12 +150,12 @@ public class ConsulCache<K, V> {
         return TimeUnit.SECONDS.toMillis(10);
     }
 
-    public void start() throws Exception {
+    public void start() {
         checkState(state.compareAndSet(State.latent, State.starting),"Cannot transition from state %s to %s", state.get(), State.starting);
         runCallback();
     }
 
-    public void stop() throws Exception {
+    public void stop() {
         State previous = state.getAndSet(State.stopped);
         if (previous != State.stopped) {
             executorService.shutdownNow();

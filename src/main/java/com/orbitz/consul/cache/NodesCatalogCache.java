@@ -17,9 +17,8 @@ public class NodesCatalogCache extends ConsulCache<String, Node> {
             final QueryOptions queryOptions,
             final int watchSeconds) {
 
-        CallbackConsumer<Node> callbackConsumer = (index, callback) -> catalogClient.getNodes(watchParams(index, watchSeconds, queryOptions), callback);
-
-        return new NodesCatalogCache(Node::getNode, callbackConsumer);
+        return new NodesCatalogCache(Node::getNode, (index, callback) ->
+                catalogClient.getNodes(watchParams(index, watchSeconds, queryOptions), callback));
 
     }
 

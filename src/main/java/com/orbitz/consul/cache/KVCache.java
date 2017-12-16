@@ -40,12 +40,10 @@ public class KVCache extends ConsulCache<String, Value> {
 
         final Function<Value, String> keyExtractor = getKeyExtractorFunction(keyPath);
 
-        final CallbackConsumer<Value> callbackConsumer = (index, callback) -> {
+        return new KVCache(keyExtractor, (index, callback) -> {
             QueryOptions params = watchParams(index, watchSeconds, queryOptions);
             kvClient.getValues(keyPath, params, callback);
-        };
-
-        return new KVCache(keyExtractor, callbackConsumer);
+        });
     }
 
     @VisibleForTesting
