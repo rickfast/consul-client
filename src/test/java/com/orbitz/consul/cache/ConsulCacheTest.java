@@ -413,24 +413,4 @@ public class ConsulCacheTest extends BaseIntegrationTest {
                 .build();
         ConsulCache.watchParams(index, 10, additionalOptions);
     }
-
-    @Test
-    public void testDefaultBackOffDelay() {
-        Properties properties = new Properties();
-        Assert.assertEquals(10000L, ConsulCache.getBackOffDelayInMs(properties));
-    }
-
-    @Test
-    public void testBackOffDelayFromProperties() {
-        Properties properties = new Properties();
-        properties.setProperty(ConsulCache.BACKOFF_DELAY_PROPERTY, "500");
-        Assert.assertEquals(500L, ConsulCache.getBackOffDelayInMs(properties));
-    }
-
-    @Test
-    public void testBackOffDelayDoesNotThrow() {
-        Properties properties = new Properties();
-        properties.setProperty(ConsulCache.BACKOFF_DELAY_PROPERTY, "unparseableLong");
-        Assert.assertEquals(10000L, ConsulCache.getBackOffDelayInMs(properties));
-    }
 }

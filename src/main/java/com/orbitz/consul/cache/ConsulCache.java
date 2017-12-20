@@ -2,7 +2,6 @@ package com.orbitz.consul.cache;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Function;
-import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.orbitz.consul.ConsulException;
@@ -18,7 +17,6 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.CountDownLatch;
@@ -44,10 +42,6 @@ public class ConsulCache<K, V> {
     enum State {latent, starting, started, stopped }
 
     private final static Logger LOGGER = LoggerFactory.getLogger(ConsulCache.class);
-
-    @VisibleForTesting
-    static final String BACKOFF_DELAY_PROPERTY = "com.orbitz.consul.cache.backOffDelay";
-    private static final long BACKOFF_DELAY_QTY_IN_MS = getBackOffDelayInMs(System.getProperties());
 
     private final AtomicReference<BigInteger> latestIndex = new AtomicReference<>(null);
     private final AtomicLong lastContact = new AtomicLong();
@@ -126,28 +120,11 @@ public class ConsulCache<K, V> {
                 if (!isRunning()) {
                     return;
                 }
-                LOGGER.error(String.format("Error getting response from consul. will retry in %d %s", BACKOFF_DELAY_QTY_IN_MS, TimeUnit.MILLISECONDS), throwable);
+                LOGGER.error(String.format("Error getting response from consul. will retry in %d %s", CacheConfig.get().getBackOffDelayInMs(), TimeUnit.MILLISECONDS), throwable);
 
-                executorService.schedule(ConsulCache.this::runCallback, BACKOFF_DELAY_QTY_IN_MS, TimeUnit.MILLISECONDS);
+                executorService.schedule(ConsulCache.this::runCallback, CacheConfig.get().getBackOffDelayInMs(), TimeUnit.MILLISECONDS);
             }
         };
-    }
-
-    @VisibleForTesting
-    static long getBackOffDelayInMs(Properties properties) {
-        String backOffDelay = null;
-        try {
-            backOffDelay = properties.getProperty(BACKOFF_DELAY_PROPERTY);
-            if (!Strings.isNullOrEmpty(backOffDelay)) {
-                return Long.parseLong(backOffDelay);
-            }
-        } catch (Exception ex) {
-            LOGGER.warn(backOffDelay != null ?
-                    String.format("Error parsing property variable %s: %s", BACKOFF_DELAY_PROPERTY, backOffDelay) :
-                    String.format("Error extracting property variable %s", BACKOFF_DELAY_PROPERTY),
-                    ex);
-        }
-        return TimeUnit.SECONDS.toMillis(10);
     }
 
     public void start() {
