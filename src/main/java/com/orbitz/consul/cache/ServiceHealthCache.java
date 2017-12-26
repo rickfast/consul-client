@@ -1,10 +1,11 @@
 package com.orbitz.consul.cache;
 
-import com.google.common.base.Function;
 import com.google.common.net.HostAndPort;
 import com.orbitz.consul.HealthClient;
 import com.orbitz.consul.model.health.ServiceHealth;
 import com.orbitz.consul.option.QueryOptions;
+
+import java.util.function.Function;
 
 public class ServiceHealthCache extends ConsulCache<ServiceHealthKey, ServiceHealth> {
 

@@ -1,9 +1,10 @@
 package com.orbitz.consul.cache;
 
-import com.google.common.base.Function;
 import com.orbitz.consul.HealthClient;
 import com.orbitz.consul.model.health.HealthCheck;
 import com.orbitz.consul.option.QueryOptions;
+
+import java.util.function.Function;
 
 public class HealthCheckCache extends ConsulCache<String, HealthCheck> {
 

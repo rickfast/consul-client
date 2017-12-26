@@ -1,9 +1,10 @@
 package com.orbitz.consul.cache;
 
-import com.google.common.base.Function;
 import com.orbitz.consul.CatalogClient;
 import com.orbitz.consul.model.health.Node;
 import com.orbitz.consul.option.QueryOptions;
+
+import java.util.function.Function;
 
 
 public class NodesCatalogCache extends ConsulCache<String, Node> {
