@@ -34,6 +34,26 @@ public class HealthCheckCache extends ConsulCache<String, HealthCheck> {
         });
     }
 
+    /**
+     * Factory method to construct a string/{@link HealthCheck} map for a particular {@link com.orbitz.consul.model.State}.
+     * <p/>
+     * Keys will be the {@link HealthCheck#getCheckId()}.
+     *
+     * @param healthClient the {@link HealthClient}
+     * @param state        the state fo filter checks
+     * @return a cache object
+     */
+    @Deprecated
+    public static HealthCheckCache newCache(
+            final HealthClient healthClient,
+            final com.orbitz.consul.model.State state,
+            final int watchSeconds,
+            final QueryOptions queryOptions,
+            @SuppressWarnings("Guava") com.google.common.base.Function<HealthCheck, String> keyExtractor) {
+
+        return newCache(healthClient, state, watchSeconds, queryOptions, (Function<HealthCheck, String>) keyExtractor);
+    }
+
     public static HealthCheckCache newCache(
             final HealthClient healthClient,
             final com.orbitz.consul.model.State state,

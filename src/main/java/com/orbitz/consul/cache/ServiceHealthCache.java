@@ -41,6 +41,29 @@ public class ServiceHealthCache extends ConsulCache<ServiceHealthKey, ServiceHea
         });
     }
 
+    /**
+     * Factory method to construct a string/{@link ServiceHealth} map for a particular service.
+     * <p/>
+     * Keys will be a {@link HostAndPort} object made up of the service's address/port combo
+     *
+     * @param healthClient the {@link HealthClient}
+     * @param serviceName  the name of the service
+     * @param passing      include only passing services?
+     * @return a cache object
+     */
+    @Deprecated
+    public static ServiceHealthCache newCache(
+            final HealthClient healthClient,
+            final String serviceName,
+            final boolean passing,
+            final int watchSeconds,
+            final QueryOptions queryOptions,
+            @SuppressWarnings("Guava") final com.google.common.base.Function<ServiceHealth, ServiceHealthKey> keyExtractor) {
+
+        return newCache(healthClient, serviceName, passing, watchSeconds, queryOptions, (Function<ServiceHealth, ServiceHealthKey>) keyExtractor);
+    }
+
+
     public static ServiceHealthCache newCache(
             final HealthClient healthClient,
             final String serviceName,
