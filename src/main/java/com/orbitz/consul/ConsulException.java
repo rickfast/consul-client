@@ -44,7 +44,7 @@ public class ConsulException extends RuntimeException {
     static String message(Response response) {
         try {
             ResponseBody responseBody = response.errorBody();
-            return responseBody == null ? "" : responseBody.string();
+            return responseBody == null ? response.message() : responseBody.string();
         } catch (IOException e) {
             return response.message();
         }
