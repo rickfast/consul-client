@@ -1,6 +1,5 @@
 package com.orbitz.consul.cache;
 
-import com.google.common.base.Function;
 import com.orbitz.consul.model.kv.ImmutableValue;
 import com.orbitz.consul.model.kv.Value;
 import junitparams.JUnitParamsRunner;
@@ -11,6 +10,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import java.util.Optional;
+import java.util.function.Function;
 
 @RunWith(JUnitParamsRunner.class)
 public class KVCacheTest {
