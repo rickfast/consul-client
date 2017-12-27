@@ -14,6 +14,8 @@ class CacheConfig {
     static String CONFIG_CACHE_PATH = "com.orbitz.consul.cache";
     @VisibleForTesting
     static String BACKOFF_DELAY = "backOffDelay";
+    private static String TIMEOUT_AUTO_ENABLED = "timeout.autoAdjustment.enable";
+    private static String TIMEOUT_AUTO_MARGIN = "timeout.autoAdjustment.margin";
 
     private static final Supplier<CacheConfig> INSTANCE = Suppliers.memoize(CacheConfig::new);
 
@@ -45,6 +47,31 @@ class CacheConfig {
             return config.getDuration(BACKOFF_DELAY);
         } catch (Exception ex) {
             throw new RuntimeException(String.format("Error extracting config variable %s", BACKOFF_DELAY), ex);
+        }
+    }
+
+    /**
+     * Is the automatic adjustment of read timeout enabled?
+     * @throws RuntimeException if an error occurs while retrieving the configuration property.
+     */
+    boolean isTimeoutAutoAdjustmentEnabled() {
+        try {
+            return config.getBoolean(TIMEOUT_AUTO_ENABLED);
+        } catch (Exception ex) {
+            throw new RuntimeException(String.format("Error extracting config variable %s", TIMEOUT_AUTO_ENABLED), ex);
+        }
+    }
+
+    /**
+     * Gets the margin of the read timeout for caches.
+     * The margin represents the additional amount of time given to the read timeout, in addition to the wait duration.
+     * @throws RuntimeException if an error occurs while retrieving the configuration property.
+     */
+    Duration getTimeoutAutoAdjustmentMargin() {
+        try {
+            return config.getDuration(TIMEOUT_AUTO_MARGIN);
+        } catch (Exception ex) {
+            throw new RuntimeException(String.format("Error extracting config variable %s", TIMEOUT_AUTO_ENABLED), ex);
         }
     }
 }
