@@ -37,8 +37,7 @@ import static com.google.common.base.Preconditions.checkState;
  *
  * @param <V>
  */
-public class ConsulCache<K, V> {
-
+public class ConsulCache<K, V> implements AutoCloseable {
     enum State {latent, starting, started, stopped }
 
     private final static Logger LOGGER = LoggerFactory.getLogger(ConsulCache.class);
@@ -137,6 +136,11 @@ public class ConsulCache<K, V> {
         if (previous != State.stopped) {
             executorService.shutdownNow();
         }
+    }
+
+    @Override
+    public void close() throws Exception {
+        stop();
     }
 
     private void runCallback() {
