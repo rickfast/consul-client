@@ -41,7 +41,6 @@
         <junitparams.version>1.0.5</junitparams.version>
         <mockito.version>1.10.19</mockito.version>
         <retrofit.version>2.3.0</retrofit.version>
-        <refrofit.jackson.version>2.0.2</refrofit.jackson.version>
         <slf4j.version>1.7.21</slf4j.version>
         <typesafe.version>1.3.2</typesafe.version>
     </properties>
@@ -86,7 +85,7 @@
         <dependency>
             <groupId>com.squareup.retrofit2</groupId>
             <artifactId>converter-jackson</artifactId>
-            <version>${refrofit.jackson.version}</version>
+            <version>${retrofit.version}</version>
         </dependency>
         <dependency>
             <groupId>com.google.guava</groupId>
