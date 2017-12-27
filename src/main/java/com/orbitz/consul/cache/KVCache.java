@@ -1,11 +1,12 @@
 package com.orbitz.consul.cache;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
 import com.orbitz.consul.KeyValueClient;
 import com.orbitz.consul.model.kv.Value;
 import com.orbitz.consul.option.QueryOptions;
+
+import java.util.function.Function;
 
 public class KVCache extends ConsulCache<String, Value> {
 

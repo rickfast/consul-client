@@ -224,8 +224,7 @@ public class EventClient {
 
     private static EventResponse eventResponse(Response<List<Event>> response) {
         String indexHeaderValue = response.headers().get("X-Consul-Index");
-
-        BigInteger index = new BigInteger(indexHeaderValue);
+        BigInteger index = indexHeaderValue == null ? BigInteger.ZERO : new BigInteger(indexHeaderValue);
 
         return ImmutableEventResponse.of(response.body(), index);
     }
