@@ -6,13 +6,10 @@ import com.google.common.base.Preconditions;
 import com.google.common.io.BaseEncoding;
 import com.google.common.net.HostAndPort;
 import com.orbitz.consul.util.Jackson;
+import com.orbitz.consul.cache.TimeoutInterceptor;
 import com.orbitz.consul.util.bookend.ConsulBookend;
 import com.orbitz.consul.util.bookend.ConsulBookendInterceptor;
-import okhttp3.Dispatcher;
-import okhttp3.HttpUrl;
-import okhttp3.Interceptor;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
+import okhttp3.*;
 import okhttp3.internal.Util;
 import retrofit2.Retrofit;
 import retrofit2.converter.jackson.JacksonConverterFactory;
@@ -591,6 +588,8 @@ public class Consul {
             if (writeTimeoutMillis != null) {
                 builder.writeTimeout(writeTimeoutMillis, TimeUnit.MILLISECONDS);
             }
+
+            builder.addInterceptor(new TimeoutInterceptor());
 
             Dispatcher dispatcher = new Dispatcher(executorService);
             dispatcher.setMaxRequests(Integer.MAX_VALUE);
