@@ -5,6 +5,7 @@ import com.google.common.base.Suppliers;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 
+import java.time.Duration;
 import java.util.function.Supplier;
 
 class CacheConfig {
@@ -36,12 +37,12 @@ class CacheConfig {
 
     /**
      * Gets the back-off delay used in caches.
-     * @return back-off delay in milliseconds
+     * @return back-off delay
      * @throws RuntimeException if an error occurs while retrieving the configuration property.
      */
-    long getBackOffDelayInMs() {
+    Duration getBackOffDelay() {
         try {
-            return config.getLong(BACKOFF_DELAY);
+            return config.getDuration(BACKOFF_DELAY);
         } catch (Exception ex) {
             throw new RuntimeException(String.format("Error extracting config variable %s", BACKOFF_DELAY), ex);
         }

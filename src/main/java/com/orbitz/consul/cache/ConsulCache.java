@@ -120,9 +120,9 @@ public class ConsulCache<K, V> {
                 if (!isRunning()) {
                     return;
                 }
-                LOGGER.error(String.format("Error getting response from consul. will retry in %d %s", CacheConfig.get().getBackOffDelayInMs(), TimeUnit.MILLISECONDS), throwable);
+                LOGGER.error(String.format("Error getting response from consul. will retry in %d %s", CacheConfig.get().getBackOffDelay().toMillis(), TimeUnit.MILLISECONDS), throwable);
 
-                executorService.schedule(ConsulCache.this::runCallback, CacheConfig.get().getBackOffDelayInMs(), TimeUnit.MILLISECONDS);
+                executorService.schedule(ConsulCache.this::runCallback, CacheConfig.get().getBackOffDelay().toMillis(), TimeUnit.MILLISECONDS);
             }
         };
     }

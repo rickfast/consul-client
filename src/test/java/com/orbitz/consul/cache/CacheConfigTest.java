@@ -11,7 +11,7 @@ public class CacheConfigTest {
 
     @Test
     public void testDefaultBackOffDelay() {
-        Assert.assertEquals(10000L, CacheConfig.get().getBackOffDelayInMs());
+        Assert.assertEquals(10000L, CacheConfig.get().getBackOffDelay().toMillis());
     }
 
     @Test
@@ -22,6 +22,6 @@ public class CacheConfigTest {
 
         Config config = ConfigFactory.parseProperties(properties);
         CacheConfig cacheConfig = new CacheConfig(config);
-        Assert.assertEquals(500L, cacheConfig.getBackOffDelayInMs());
+        Assert.assertEquals(500L, cacheConfig.getBackOffDelay().toMillis());
     }
 }
