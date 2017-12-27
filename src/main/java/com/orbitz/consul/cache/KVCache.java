@@ -2,6 +2,7 @@ package com.orbitz.consul.cache;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
+import com.google.common.primitives.Ints;
 import com.orbitz.consul.KeyValueClient;
 import com.orbitz.consul.model.kv.Value;
 import com.orbitz.consul.option.QueryOptions;
@@ -80,6 +81,6 @@ public class KVCache extends ConsulCache<String, Value> {
     public static KVCache newCache(
             final KeyValueClient kvClient,
             final String rootPath) {
-        return newCache(kvClient, rootPath, 10);
+        return newCache(kvClient, rootPath, Ints.checkedCast(CacheConfig.get().getWatchDuration().getSeconds()));
     }
 }

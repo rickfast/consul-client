@@ -14,6 +14,9 @@ class CacheConfig {
     static String CONFIG_CACHE_PATH = "com.orbitz.consul.cache";
     @VisibleForTesting
     static String BACKOFF_DELAY = "backOffDelay";
+    @VisibleForTesting
+    static String WATCH_DURATION = "watch";
+
     private static String TIMEOUT_AUTO_ENABLED = "timeout.autoAdjustment.enable";
     private static String TIMEOUT_AUTO_MARGIN = "timeout.autoAdjustment.margin";
 
@@ -22,7 +25,8 @@ class CacheConfig {
     private final Config config;
 
     private CacheConfig() {
-         this(ConfigFactory.load());
+         this(ConfigFactory.load().withFallback(
+                 ConfigFactory.parseResources("defaults.conf")));
     }
 
     @VisibleForTesting
@@ -73,5 +77,26 @@ class CacheConfig {
         } catch (Exception ex) {
             throw new RuntimeException(String.format("Error extracting config variable %s", TIMEOUT_AUTO_ENABLED), ex);
         }
+    }
+
+    /**
+     * Gets the default watch duration for caches.
+     * @throws RuntimeException if an error occurs while retrieving the configuration property.
+     */
+    Duration getWatchDuration() {
+        Duration duration;
+        try {
+            duration = config.getDuration(WATCH_DURATION);
+        } catch (Exception ex) {
+            throw new RuntimeException(String.format("Error extracting config variable %s", WATCH_DURATION), ex);
+        }
+
+        // Watch duration is limited to 10 minutes, see https://www.consul.io/api/index.html#blocking-queries
+        if (duration.isNegative() || duration.compareTo(Duration.ofMinutes(10)) > 0) {
+            throw new RuntimeException(String.format("Invalid watch duration: {}ms (must be between 0 and 10 minutes",
+                    duration.toMillis()));
+        }
+
+        return duration;
     }
 }
