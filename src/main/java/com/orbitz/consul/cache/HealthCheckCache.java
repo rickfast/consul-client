@@ -1,5 +1,6 @@
 package com.orbitz.consul.cache;
 
+import com.google.common.primitives.Ints;
 import com.orbitz.consul.HealthClient;
 import com.orbitz.consul.model.health.HealthCheck;
 import com.orbitz.consul.option.QueryOptions;
@@ -51,7 +52,7 @@ public class HealthCheckCache extends ConsulCache<String, HealthCheck> {
     }
 
     public static HealthCheckCache newCache(final HealthClient healthClient, final com.orbitz.consul.model.State state) {
-        return newCache(healthClient, state, 10);
+        return newCache(healthClient, state, Ints.checkedCast(CacheConfig.get().getWatchDuration().getSeconds()));
     }
 
 }

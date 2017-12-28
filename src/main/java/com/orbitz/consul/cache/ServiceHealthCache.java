@@ -1,6 +1,7 @@
 package com.orbitz.consul.cache;
 
 import com.google.common.net.HostAndPort;
+import com.google.common.primitives.Ints;
 import com.orbitz.consul.HealthClient;
 import com.orbitz.consul.model.health.ServiceHealth;
 import com.orbitz.consul.option.QueryOptions;
@@ -41,7 +42,6 @@ public class ServiceHealthCache extends ConsulCache<ServiceHealthKey, ServiceHea
         });
     }
 
-
     public static ServiceHealthCache newCache(
             final HealthClient healthClient,
             final String serviceName,
@@ -62,6 +62,7 @@ public class ServiceHealthCache extends ConsulCache<ServiceHealthKey, ServiceHea
     }
 
     public static ServiceHealthCache newCache(final HealthClient healthClient, final String serviceName) {
-        return newCache(healthClient, serviceName, true, QueryOptions.BLANK, 10);
+        return newCache(healthClient, serviceName, true, QueryOptions.BLANK,
+                Ints.checkedCast(CacheConfig.get().getWatchDuration().getSeconds()));
     }
 }

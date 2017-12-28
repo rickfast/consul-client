@@ -1,11 +1,11 @@
 package com.orbitz.consul.cache;
 
+import com.google.common.primitives.Ints;
 import com.orbitz.consul.CatalogClient;
 import com.orbitz.consul.model.health.Node;
 import com.orbitz.consul.option.QueryOptions;
 
 import java.util.function.Function;
-
 
 public class NodesCatalogCache extends ConsulCache<String, Node> {
 
@@ -24,7 +24,8 @@ public class NodesCatalogCache extends ConsulCache<String, Node> {
     }
 
     public static NodesCatalogCache newCache(final CatalogClient catalogClient) {
-        return newCache(catalogClient, QueryOptions.BLANK, 10);
+        return newCache(catalogClient, QueryOptions.BLANK,
+                Ints.checkedCast(CacheConfig.get().getWatchDuration().getSeconds()));
     }
 
 }
