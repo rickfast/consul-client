@@ -19,6 +19,7 @@ class CacheConfig {
 
     private static String TIMEOUT_AUTO_ENABLED = "timeout.autoAdjustment.enable";
     private static String TIMEOUT_AUTO_MARGIN = "timeout.autoAdjustment.margin";
+    private static String REQUEST_RATE_LIMITER = "minTimeBetweenRequests";
 
     private static final Supplier<CacheConfig> INSTANCE = Suppliers.memoize(CacheConfig::new);
 
@@ -98,5 +99,17 @@ class CacheConfig {
         }
 
         return duration;
+    }
+
+    /**
+     * Gets the minimum time between two requests for caches.
+     * @throws RuntimeException if an error occurs while retrieving the configuration property.
+     */
+    Duration getMinimumDurationBetweenRequests() {
+        try {
+            return config.getDuration(REQUEST_RATE_LIMITER);
+        } catch (Exception ex) {
+            throw new RuntimeException(String.format("Error extracting config variable %s", REQUEST_RATE_LIMITER), ex);
+        }
     }
 }
