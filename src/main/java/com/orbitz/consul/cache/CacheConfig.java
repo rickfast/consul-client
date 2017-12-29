@@ -94,7 +94,7 @@ class CacheConfig {
 
         // Watch duration is limited to 10 minutes, see https://www.consul.io/api/index.html#blocking-queries
         if (duration.isNegative() || duration.compareTo(Duration.ofMinutes(10)) > 0) {
-            throw new RuntimeException(String.format("Invalid watch duration: {}ms (must be between 0 and 10 minutes",
+            throw new RuntimeException(String.format("Invalid watch duration: %s ms (must be between 0 and 10 minutes",
                     duration.toMillis()));
         }
 
