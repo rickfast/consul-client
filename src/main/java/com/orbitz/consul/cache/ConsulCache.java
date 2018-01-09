@@ -1,6 +1,7 @@
 package com.orbitz.consul.cache;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.orbitz.consul.ConsulException;
@@ -12,6 +13,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.math.BigInteger;
+import java.time.Duration;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -52,6 +54,7 @@ public class ConsulCache<K, V> implements AutoCloseable {
             new ThreadFactoryBuilder().setDaemon(true).build());
     private final CopyOnWriteArrayList<Listener<K, V>> listeners = new CopyOnWriteArrayList<>();
     private final ReentrantLock listenersStartingLock = new ReentrantLock();
+    private final Stopwatch stopWatch = Stopwatch.createUnstarted();
 
     private final Function<V, K> keyConversion;
     private final CallbackConsumer<V> callBackConsumer;
@@ -72,8 +75,10 @@ public class ConsulCache<K, V> implements AutoCloseable {
                     if (!isRunning()) {
                         return;
                     }
+                    Duration elapsedTime = stopWatch.elapsed();
                     updateIndex(consulResponse);
-                    LOGGER.debug("Consul cache updated (index={})", latestIndex);
+                    LOGGER.debug("Consul cache updated (index={}), request duration: {} ms",
+                            latestIndex, elapsedTime.toMillis());
 
                     ImmutableMap<K, V> full = convertToMap(consulResponse);
 
@@ -107,7 +112,15 @@ public class ConsulCache<K, V> implements AutoCloseable {
                     if (state.compareAndSet(State.starting, State.started)) {
                         initLatch.countDown();
                     }
-                    runCallback();
+
+                    Duration timeToWait = CacheConfig.get().getMinimumDurationBetweenRequests().minus(elapsedTime);
+                    if (timeToWait.isNegative() || timeToWait.isZero()) {
+                        runCallback();
+                    } else {
+                        executorService.schedule(ConsulCache.this::runCallback,
+                                timeToWait.toMillis(), TimeUnit.MILLISECONDS);
+                    }
+
                 } else {
                     onFailure(new ConsulException("Consul cluster has no elected leader"));
                 }
@@ -133,6 +146,9 @@ public class ConsulCache<K, V> implements AutoCloseable {
 
     public void stop() {
         State previous = state.getAndSet(State.stopped);
+        if (stopWatch.isRunning()) {
+            stopWatch.stop();
+        }
         if (previous != State.stopped) {
             executorService.shutdownNow();
         }
@@ -145,6 +161,7 @@ public class ConsulCache<K, V> implements AutoCloseable {
 
     private void runCallback() {
         if (isRunning()) {
+            stopWatch.reset().start();
             callBackConsumer.consume(latestIndex.get(), responseCallback);
         }
     }
