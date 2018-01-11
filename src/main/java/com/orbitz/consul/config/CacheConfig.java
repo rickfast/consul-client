@@ -1,12 +1,10 @@
 package com.orbitz.consul.config;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.Suppliers;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 
 import java.time.Duration;
-import java.util.function.Supplier;
 
 public class CacheConfig {
 
@@ -21,26 +19,13 @@ public class CacheConfig {
     private static String TIMEOUT_AUTO_MARGIN = "timeout.autoAdjustment.margin";
     private static String REQUEST_RATE_LIMITER = "minTimeBetweenRequests";
 
-    private static final Supplier<CacheConfig> INSTANCE = Suppliers.memoize(CacheConfig::new);
-
     private final Config config;
-
-    private CacheConfig() {
-         this(ConfigFactory.load());
-    }
 
     public CacheConfig(Config config) {
         this.config = config
                 .withFallback(ConfigFactory.parseResources("consul-client-reference.conf"))
                 .withFallback(ConfigFactory.parseResources("consul-client-defaults.conf"))
                 .getConfig(CONFIG_CACHE_PATH);
-    }
-
-    /**
-     * Gets the instance of the cache configuration
-     */
-    public static CacheConfig get() {
-        return INSTANCE.get();
     }
 
     /**

@@ -2,6 +2,7 @@ package com.orbitz.consul.config;
 
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
+import org.junit.Before;
 import org.junit.Test;
 
 import java.time.Duration;
@@ -11,9 +12,16 @@ import static org.junit.Assert.assertEquals;
 
 public class CacheConfigTest {
 
+    private CacheConfig defaultConfig;
+
+    @Before
+    public void setUp() {
+        defaultConfig = new CacheConfig(ConfigFactory.empty());
+    }
+
     @Test
     public void testDefaultBackOffDelay() {
-        assertEquals(10000L, CacheConfig.get().getBackOffDelay().toMillis());
+        assertEquals(10000L, defaultConfig.getBackOffDelay().toMillis());
     }
 
     @Test
@@ -29,7 +37,7 @@ public class CacheConfigTest {
 
     @Test
     public void testDefaultWatchDuration() {
-        assertEquals(10000L, CacheConfig.get().getWatchDuration().toMillis());
+        assertEquals(10000L, defaultConfig.getWatchDuration().toMillis());
     }
 
     @Test

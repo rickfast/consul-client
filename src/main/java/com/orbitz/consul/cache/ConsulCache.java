@@ -60,13 +60,16 @@ public class ConsulCache<K, V> implements AutoCloseable {
     private final Function<V, K> keyConversion;
     private final CallbackConsumer<V> callBackConsumer;
     private final ConsulResponseCallback<List<V>> responseCallback;
+    private final CacheConfig config;
 
     ConsulCache(
             Function<V, K> keyConversion,
-            CallbackConsumer<V> callbackConsumer) {
+            CallbackConsumer<V> callbackConsumer,
+            CacheConfig config) {
 
         this.keyConversion = keyConversion;
         this.callBackConsumer = callbackConsumer;
+        this.config = config;
 
         this.responseCallback = new ConsulResponseCallback<List<V>>() {
             @Override
@@ -114,7 +117,7 @@ public class ConsulCache<K, V> implements AutoCloseable {
                         initLatch.countDown();
                     }
 
-                    Duration timeToWait = CacheConfig.get().getMinimumDurationBetweenRequests().minus(elapsedTime);
+                    Duration timeToWait = config.getMinimumDurationBetweenRequests().minus(elapsedTime);
                     if (timeToWait.isNegative() || timeToWait.isZero()) {
                         runCallback();
                     } else {
@@ -133,9 +136,11 @@ public class ConsulCache<K, V> implements AutoCloseable {
                 if (!isRunning()) {
                     return;
                 }
-                LOGGER.error(String.format("Error getting response from consul. will retry in %d %s", CacheConfig.get().getBackOffDelay().toMillis(), TimeUnit.MILLISECONDS), throwable);
+                LOGGER.error(String.format("Error getting response from consul. will retry in %d %s",
+                        config.getBackOffDelay().toMillis(), TimeUnit.MILLISECONDS), throwable);
 
-                executorService.schedule(ConsulCache.this::runCallback, CacheConfig.get().getBackOffDelay().toMillis(), TimeUnit.MILLISECONDS);
+                executorService.schedule(ConsulCache.this::runCallback,
+                        config.getBackOffDelay().toMillis(), TimeUnit.MILLISECONDS);
             }
         };
     }

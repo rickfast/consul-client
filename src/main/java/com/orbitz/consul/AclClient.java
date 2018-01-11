@@ -1,5 +1,6 @@
 package com.orbitz.consul;
 
+import com.orbitz.consul.config.ConsulConfig;
 import com.orbitz.consul.model.acl.AclResponse;
 import com.orbitz.consul.model.acl.AclToken;
 import com.orbitz.consul.model.acl.AclTokenId;
@@ -14,11 +15,12 @@ import java.util.List;
 
 import static com.orbitz.consul.util.Http.*;
 
-public class AclClient {
+public class AclClient extends BaseClient {
 
     private final Api api;
 
-    AclClient(Retrofit retrofit) {
+    AclClient(Retrofit retrofit, ConsulConfig config) {
+        super(config);
         this.api = retrofit.create(Api.class);
     }
 
