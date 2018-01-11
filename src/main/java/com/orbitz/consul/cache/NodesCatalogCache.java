@@ -2,6 +2,7 @@ package com.orbitz.consul.cache;
 
 import com.google.common.primitives.Ints;
 import com.orbitz.consul.CatalogClient;
+import com.orbitz.consul.config.CacheConfig;
 import com.orbitz.consul.model.health.Node;
 import com.orbitz.consul.option.QueryOptions;
 

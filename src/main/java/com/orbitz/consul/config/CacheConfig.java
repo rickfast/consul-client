@@ -1,4 +1,4 @@
-package com.orbitz.consul.cache;
+package com.orbitz.consul.config;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Suppliers;
@@ -8,7 +8,7 @@ import com.typesafe.config.ConfigFactory;
 import java.time.Duration;
 import java.util.function.Supplier;
 
-class CacheConfig {
+public class CacheConfig {
 
     @VisibleForTesting
     static String CONFIG_CACHE_PATH = "com.orbitz.consul.cache";
@@ -38,7 +38,7 @@ class CacheConfig {
     /**
      * Gets the instance of the cache configuration
      */
-    static CacheConfig get() {
+    public static CacheConfig get() {
         return INSTANCE.get();
     }
 
@@ -47,7 +47,7 @@ class CacheConfig {
      * @return back-off delay
      * @throws RuntimeException if an error occurs while retrieving the configuration property.
      */
-    Duration getBackOffDelay() {
+    public Duration getBackOffDelay() {
         try {
             return config.getDuration(BACKOFF_DELAY);
         } catch (Exception ex) {
@@ -59,7 +59,7 @@ class CacheConfig {
      * Is the automatic adjustment of read timeout enabled?
      * @throws RuntimeException if an error occurs while retrieving the configuration property.
      */
-    boolean isTimeoutAutoAdjustmentEnabled() {
+    public boolean isTimeoutAutoAdjustmentEnabled() {
         try {
             return config.getBoolean(TIMEOUT_AUTO_ENABLED);
         } catch (Exception ex) {
@@ -72,7 +72,7 @@ class CacheConfig {
      * The margin represents the additional amount of time given to the read timeout, in addition to the wait duration.
      * @throws RuntimeException if an error occurs while retrieving the configuration property.
      */
-    Duration getTimeoutAutoAdjustmentMargin() {
+    public Duration getTimeoutAutoAdjustmentMargin() {
         try {
             return config.getDuration(TIMEOUT_AUTO_MARGIN);
         } catch (Exception ex) {
@@ -84,7 +84,7 @@ class CacheConfig {
      * Gets the default watch duration for caches.
      * @throws RuntimeException if an error occurs while retrieving the configuration property.
      */
-    Duration getWatchDuration() {
+    public Duration getWatchDuration() {
         Duration duration;
         try {
             duration = config.getDuration(WATCH_DURATION);
@@ -105,7 +105,7 @@ class CacheConfig {
      * Gets the minimum time between two requests for caches.
      * @throws RuntimeException if an error occurs while retrieving the configuration property.
      */
-    Duration getMinimumDurationBetweenRequests() {
+    public Duration getMinimumDurationBetweenRequests() {
         try {
             return config.getDuration(REQUEST_RATE_LIMITER);
         } catch (Exception ex) {

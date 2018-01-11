@@ -4,6 +4,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.primitives.Ints;
 import com.orbitz.consul.KeyValueClient;
+import com.orbitz.consul.config.CacheConfig;
 import com.orbitz.consul.model.kv.Value;
 import com.orbitz.consul.option.QueryOptions;
 
