@@ -26,13 +26,13 @@ public class CacheConfig {
     private final Config config;
 
     private CacheConfig() {
-         this(ConfigFactory.load().withFallback(
-                 ConfigFactory.parseResources("defaults.conf")));
+         this(ConfigFactory.load());
     }
 
-    @VisibleForTesting
-    CacheConfig(Config config) {
-        this.config = config.getConfig(CONFIG_CACHE_PATH);
+    public CacheConfig(Config config) {
+        this.config = config
+                .withFallback(ConfigFactory.parseResources("defaults.conf"))
+                .getConfig(CONFIG_CACHE_PATH);
     }
 
     /**
