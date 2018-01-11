@@ -31,7 +31,8 @@ public class CacheConfig {
 
     public CacheConfig(Config config) {
         this.config = config
-                .withFallback(ConfigFactory.parseResources("defaults.conf"))
+                .withFallback(ConfigFactory.parseResources("consul-client-reference.conf"))
+                .withFallback(ConfigFactory.parseResources("consul-client-defaults.conf"))
                 .getConfig(CONFIG_CACHE_PATH);
     }
 
