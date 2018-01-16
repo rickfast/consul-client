@@ -1,5 +1,6 @@
 package com.orbitz.consul;
 
+import com.orbitz.consul.config.ConsulConfig;
 import retrofit2.Call;
 import retrofit2.Retrofit;
 import retrofit2.http.GET;
@@ -8,7 +9,7 @@ import java.util.List;
 
 import static com.orbitz.consul.util.Http.extract;
 
-public class StatusClient {
+public class StatusClient extends BaseClient {
 
     private final Api api;
 
@@ -17,7 +18,8 @@ public class StatusClient {
      *
      * @param retrofit The {@link Retrofit} to build a client from.
      */
-    StatusClient(Retrofit retrofit) {
+    StatusClient(Retrofit retrofit, ConsulConfig config) {
+        super(config);
         this.api = retrofit.create(Api.class);
     }
 

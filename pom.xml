@@ -320,10 +320,6 @@
                                     <pattern>com.google</pattern>
                                     <shadedPattern>com.orbitz.google</shadedPattern>
                                 </relocation>
-                                <relocation>
-                                    <pattern>com.typesafe</pattern>
-                                    <shadedPattern>com.orbitz.typesafe</shadedPattern>
-                                </relocation>
                             </relocations>
                         </configuration>
                     </execution>

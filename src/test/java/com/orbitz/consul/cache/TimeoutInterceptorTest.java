@@ -1,5 +1,6 @@
 package com.orbitz.consul.cache;
 
+import com.orbitz.consul.config.CacheConfig;
 import junitparams.JUnitParamsRunner;
 import junitparams.Parameters;
 import junitparams.naming.TestCaseName;

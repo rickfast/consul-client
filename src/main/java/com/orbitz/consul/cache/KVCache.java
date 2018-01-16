@@ -4,6 +4,8 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.primitives.Ints;
 import com.orbitz.consul.KeyValueClient;
+import com.orbitz.consul.config.CacheConfig;
+import com.orbitz.consul.model.health.ServiceHealth;
 import com.orbitz.consul.model.kv.Value;
 import com.orbitz.consul.option.QueryOptions;
 
@@ -11,8 +13,10 @@ import java.util.function.Function;
 
 public class KVCache extends ConsulCache<String, Value> {
 
-    private KVCache(Function<Value, String> keyConversion, ConsulCache.CallbackConsumer<Value> callbackConsumer) {
-        super(keyConversion, callbackConsumer);
+    private KVCache(Function<Value, String> keyConversion,
+                    ConsulCache.CallbackConsumer<Value> callbackConsumer,
+                    CacheConfig config) {
+        super(keyConversion, callbackConsumer, config);
     }
 
     @VisibleForTesting
@@ -39,13 +43,14 @@ public class KVCache extends ConsulCache<String, Value> {
             final QueryOptions queryOptions) {
 
         final String keyPath = prepareRootPath(rootPath);
-
         final Function<Value, String> keyExtractor = getKeyExtractorFunction(keyPath);
 
-        return new KVCache(keyExtractor, (index, callback) -> {
+        final CallbackConsumer<Value> callbackConsumer = (index, callback) -> {
             QueryOptions params = watchParams(index, watchSeconds, queryOptions);
             kvClient.getValues(keyPath, params, callback);
-        });
+        };
+
+        return new KVCache(keyExtractor, callbackConsumer, kvClient.getConfig().getCacheConfig());
     }
 
     @VisibleForTesting
@@ -81,6 +86,8 @@ public class KVCache extends ConsulCache<String, Value> {
     public static KVCache newCache(
             final KeyValueClient kvClient,
             final String rootPath) {
-        return newCache(kvClient, rootPath, Ints.checkedCast(CacheConfig.get().getWatchDuration().getSeconds()));
+        CacheConfig config = kvClient.getConfig().getCacheConfig();
+        int watchSeconds = Ints.checkedCast(config.getWatchDuration().getSeconds());
+        return newCache(kvClient, rootPath, watchSeconds);
     }
 }

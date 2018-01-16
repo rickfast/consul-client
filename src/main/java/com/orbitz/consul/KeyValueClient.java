@@ -7,6 +7,7 @@ import java.util.Optional;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.primitives.UnsignedLongs;
 import com.orbitz.consul.async.ConsulResponseCallback;
+import com.orbitz.consul.config.ConsulConfig;
 import com.orbitz.consul.model.ConsulResponse;
 import com.orbitz.consul.model.kv.Operation;
 import com.orbitz.consul.model.kv.TxResponse;
@@ -47,7 +48,7 @@ import static com.orbitz.consul.util.Strings.trimLeadingSlash;
 /**
  * HTTP Client for /v1/kv/ endpoints.
  */
-public class KeyValueClient {
+public class KeyValueClient extends BaseClient {
 
     public static final int NOT_FOUND_404 = 404;
     private final Api api;
@@ -57,7 +58,8 @@ public class KeyValueClient {
      *
      * @param retrofit The {@link Retrofit} to build a client from.
      */
-    KeyValueClient(Retrofit retrofit) {
+    KeyValueClient(Retrofit retrofit, ConsulConfig config) {
+        super(config);
         this.api = retrofit.create(Api.class);
     }
 
