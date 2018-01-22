@@ -11,8 +11,10 @@ import java.util.function.Function;
 
 public class ServiceHealthCache extends ConsulCache<ServiceHealthKey, ServiceHealth> {
 
-    private ServiceHealthCache(Function<ServiceHealth, ServiceHealthKey> keyConversion, CallbackConsumer<ServiceHealth> callbackConsumer) {
-        super(keyConversion, callbackConsumer);
+    private ServiceHealthCache(Function<ServiceHealth, ServiceHealthKey> keyConversion,
+                               CallbackConsumer<ServiceHealth> callbackConsumer,
+                               CacheConfig cacheConfig) {
+        super(keyConversion, callbackConsumer, cacheConfig);
     }
 
     /**
@@ -33,14 +35,16 @@ public class ServiceHealthCache extends ConsulCache<ServiceHealthKey, ServiceHea
             final QueryOptions queryOptions,
             final Function<ServiceHealth, ServiceHealthKey> keyExtractor) {
 
-        return new ServiceHealthCache(keyExtractor, (index, callback) -> {
+        final CallbackConsumer<ServiceHealth> callbackConsumer = (index, callback) -> {
             QueryOptions params = watchParams(index, watchSeconds, queryOptions);
             if (passing) {
                 healthClient.getHealthyServiceInstances(serviceName, params, callback);
             } else {
                 healthClient.getAllServiceInstances(serviceName, params, callback);
             }
-        });
+        };
+
+        return new ServiceHealthCache(keyExtractor, callbackConsumer, healthClient.getConfig().getCacheConfig());
     }
 
     public static ServiceHealthCache newCache(
@@ -63,7 +67,8 @@ public class ServiceHealthCache extends ConsulCache<ServiceHealthKey, ServiceHea
     }
 
     public static ServiceHealthCache newCache(final HealthClient healthClient, final String serviceName) {
-        return newCache(healthClient, serviceName, true, QueryOptions.BLANK,
-                Ints.checkedCast(CacheConfig.get().getWatchDuration().getSeconds()));
+        CacheConfig cacheConfig = healthClient.getConfig().getCacheConfig();
+        int watchSeconds = Ints.checkedCast(cacheConfig.getWatchDuration().getSeconds());
+        return newCache(healthClient, serviceName, true, QueryOptions.BLANK, watchSeconds);
     }
 }

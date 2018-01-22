@@ -534,7 +534,9 @@ public class Consul {
                         this.sslContext,
                         this.hostnameVerifier,
                         this.proxy,
-                        Jackson.MAPPER, executorService);
+                        Jackson.MAPPER,
+                        executorService,
+                        config);
             } catch (MalformedURLException e) {
                 throw new RuntimeException(e);
             }
@@ -564,7 +566,9 @@ public class Consul {
         }
 
 
-        private Retrofit createRetrofit(String url, SSLContext sslContext, HostnameVerifier hostnameVerifier, Proxy proxy, ObjectMapper mapper, ExecutorService executorService) throws MalformedURLException {
+        private Retrofit createRetrofit(String url, SSLContext sslContext, HostnameVerifier hostnameVerifier,
+                                        Proxy proxy, ObjectMapper mapper, ExecutorService executorService,
+                                        ClientConfig clientConfig) throws MalformedURLException {
             final OkHttpClient.Builder builder = new OkHttpClient.Builder();
 
             if (basicAuthInterceptor != null) {
@@ -607,7 +611,7 @@ public class Consul {
                 builder.writeTimeout(writeTimeoutMillis, TimeUnit.MILLISECONDS);
             }
 
-            builder.addInterceptor(new TimeoutInterceptor());
+            builder.addInterceptor(new TimeoutInterceptor(clientConfig.getCacheConfig()));
 
             Dispatcher dispatcher = new Dispatcher(executorService);
             dispatcher.setMaxRequests(Integer.MAX_VALUE);

@@ -1,6 +1,5 @@
 package com.orbitz.consul.cache;
 
-import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Strings;
 import com.orbitz.consul.config.CacheConfig;
 import okhttp3.Interceptor;
@@ -19,12 +18,7 @@ public class TimeoutInterceptor implements Interceptor {
 
     private CacheConfig config;
 
-    public TimeoutInterceptor() {
-        this(CacheConfig.get());
-    }
-
-    @VisibleForTesting
-    TimeoutInterceptor(CacheConfig config) {
+    public TimeoutInterceptor(CacheConfig config) {
         this.config = config;
     }
 

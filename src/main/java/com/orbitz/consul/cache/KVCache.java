@@ -12,8 +12,10 @@ import java.util.function.Function;
 
 public class KVCache extends ConsulCache<String, Value> {
 
-    private KVCache(Function<Value, String> keyConversion, ConsulCache.CallbackConsumer<Value> callbackConsumer) {
-        super(keyConversion, callbackConsumer);
+    private KVCache(Function<Value, String> keyConversion,
+                    ConsulCache.CallbackConsumer<Value> callbackConsumer,
+                    CacheConfig cacheConfig) {
+        super(keyConversion, callbackConsumer, cacheConfig);
     }
 
     @VisibleForTesting
@@ -43,10 +45,12 @@ public class KVCache extends ConsulCache<String, Value> {
 
         final Function<Value, String> keyExtractor = getKeyExtractorFunction(keyPath);
 
-        return new KVCache(keyExtractor, (index, callback) -> {
+        final ConsulCache.CallbackConsumer<Value> callbackConsumer = (index, callback) -> {
             QueryOptions params = watchParams(index, watchSeconds, queryOptions);
             kvClient.getValues(keyPath, params, callback);
-        });
+        };
+
+        return new KVCache(keyExtractor, callbackConsumer, kvClient.getConfig().getCacheConfig());
     }
 
     @VisibleForTesting
@@ -79,9 +83,9 @@ public class KVCache extends ConsulCache<String, Value> {
      * @param rootPath the root path
      * @return the cache object
      */
-    public static KVCache newCache(
-            final KeyValueClient kvClient,
-            final String rootPath) {
-        return newCache(kvClient, rootPath, Ints.checkedCast(CacheConfig.get().getWatchDuration().getSeconds()));
+    public static KVCache newCache(final KeyValueClient kvClient, final String rootPath) {
+        CacheConfig cacheConfig = kvClient.getConfig().getCacheConfig();
+        int watchSeconds = Ints.checkedCast(cacheConfig.getWatchDuration().getSeconds());
+        return newCache(kvClient, rootPath, watchSeconds);
     }
 }
