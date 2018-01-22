@@ -1,106 +1,133 @@
 package com.orbitz.consul.config;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.Suppliers;
-import com.typesafe.config.Config;
-import com.typesafe.config.ConfigFactory;
+import com.google.common.base.Preconditions;
 
 import java.time.Duration;
-import java.util.function.Supplier;
+import java.util.Optional;
+
+import static java.util.Optional.empty;
 
 public class CacheConfig {
 
     @VisibleForTesting
-    static String CONFIG_CACHE_PATH = "com.orbitz.consul.cache";
+    static final Duration DEFAULT_WATCH_DURATION = Duration.ofSeconds(10);
     @VisibleForTesting
-    static String BACKOFF_DELAY = "backOffDelay";
+    static final Duration DEFAULT_BACKOFF_DELAY = Duration.ofSeconds(10);
     @VisibleForTesting
-    static String WATCH_DURATION = "watch";
+    static final Duration DEFAULT_MIN_DELAY_BETWEEN_REQUESTS = Duration.ZERO;
+    @VisibleForTesting
+    static final boolean DEFAULT_TIMEOUT_AUTO_ADJUSTMENT_ENABLED = true;
+    @VisibleForTesting
+    static final Duration DEFAULT_TIMEOUT_AUTO_ADJUSTMENT_MARGIN = Duration.ofSeconds(2);
 
-    private static String TIMEOUT_AUTO_ENABLED = "timeout.autoAdjustment.enable";
-    private static String TIMEOUT_AUTO_MARGIN = "timeout.autoAdjustment.margin";
-    private static String REQUEST_RATE_LIMITER = "minTimeBetweenRequests";
+    private final Duration backOffDelay;
+    private final Duration minDelayBetweenRequests;
+    private final Duration timeoutAutoAdjustmentMargin;
+    private final boolean timeoutAutoAdjustmentEnabled;
 
-    private final Config config;
-
-    public CacheConfig() {
-         this(ConfigFactory.load().withFallback(
-                 ConfigFactory.parseResources("defaults.conf")));
+    private CacheConfig(Duration backOffDelay, Duration minDelayBetweenRequests,
+                        boolean timeoutAutoAdjustmentEnabled, Duration timeoutAutoAdjustmentMargin) {
+        this.backOffDelay = backOffDelay;
+        this.minDelayBetweenRequests = minDelayBetweenRequests;
+        this.timeoutAutoAdjustmentEnabled = timeoutAutoAdjustmentEnabled;
+        this.timeoutAutoAdjustmentMargin = timeoutAutoAdjustmentMargin;
     }
 
-    @VisibleForTesting
-    CacheConfig(Config config) {
-        this.config = config.getConfig(CONFIG_CACHE_PATH);
+    /**
+     * Gets the default watch duration for caches.
+     */
+    public Duration getWatchDuration() {
+        return DEFAULT_WATCH_DURATION;
     }
 
     /**
      * Gets the back-off delay used in caches.
-     * @return back-off delay
-     * @throws RuntimeException if an error occurs while retrieving the configuration property.
      */
     public Duration getBackOffDelay() {
-        try {
-            return config.getDuration(BACKOFF_DELAY);
-        } catch (Exception ex) {
-            throw new RuntimeException(String.format("Error extracting config variable %s", BACKOFF_DELAY), ex);
-        }
+        return backOffDelay;
     }
 
     /**
      * Is the automatic adjustment of read timeout enabled?
-     * @throws RuntimeException if an error occurs while retrieving the configuration property.
      */
     public boolean isTimeoutAutoAdjustmentEnabled() {
-        try {
-            return config.getBoolean(TIMEOUT_AUTO_ENABLED);
-        } catch (Exception ex) {
-            throw new RuntimeException(String.format("Error extracting config variable %s", TIMEOUT_AUTO_ENABLED), ex);
-        }
+       return timeoutAutoAdjustmentEnabled;
     }
 
     /**
      * Gets the margin of the read timeout for caches.
      * The margin represents the additional amount of time given to the read timeout, in addition to the wait duration.
-     * @throws RuntimeException if an error occurs while retrieving the configuration property.
      */
     public Duration getTimeoutAutoAdjustmentMargin() {
-        try {
-            return config.getDuration(TIMEOUT_AUTO_MARGIN);
-        } catch (Exception ex) {
-            throw new RuntimeException(String.format("Error extracting config variable %s", TIMEOUT_AUTO_ENABLED), ex);
-        }
-    }
-
-    /**
-     * Gets the default watch duration for caches.
-     * @throws RuntimeException if an error occurs while retrieving the configuration property.
-     */
-    public Duration getWatchDuration() {
-        Duration duration;
-        try {
-            duration = config.getDuration(WATCH_DURATION);
-        } catch (Exception ex) {
-            throw new RuntimeException(String.format("Error extracting config variable %s", WATCH_DURATION), ex);
-        }
-
-        // Watch duration is limited to 10 minutes, see https://www.consul.io/api/index.html#blocking-queries
-        if (duration.isNegative() || duration.compareTo(Duration.ofMinutes(10)) > 0) {
-            throw new RuntimeException(String.format("Invalid watch duration: %s ms (must be between 0 and 10 minutes",
-                    duration.toMillis()));
-        }
-
-        return duration;
+        return timeoutAutoAdjustmentMargin;
     }
 
     /**
      * Gets the minimum time between two requests for caches.
-     * @throws RuntimeException if an error occurs while retrieving the configuration property.
      */
     public Duration getMinimumDurationBetweenRequests() {
-        try {
-            return config.getDuration(REQUEST_RATE_LIMITER);
-        } catch (Exception ex) {
-            throw new RuntimeException(String.format("Error extracting config variable %s", REQUEST_RATE_LIMITER), ex);
+        return minDelayBetweenRequests;
+    }
+
+    /**
+     * Creates a new {@link CacheConfig.Builder} object.
+     *
+     * @return A new Consul builder.
+     */
+    public static Builder builder() {
+        return new Builder();
+    }
+
+    public static class Builder {
+        private Duration backOffDelay;
+        private Duration minDelayBetweenRequests;
+        private Duration timeoutAutoAdjustmentMargin;
+        private Boolean timeoutAutoAdjustmentEnabled;
+
+        public Builder() {
+
+        }
+
+        /**
+         * Sets the back-off delay used in caches.
+         */
+        public Builder withBackOffDelay(Duration delay) {
+            this.backOffDelay = Preconditions.checkNotNull(delay, "Delay cannot be null");
+            return this;
+        }
+
+        /**
+         * Sets the minimum time between two requests for caches.
+         */
+        public Builder withMinDelayBetweenRequests(Duration delay) {
+            this.minDelayBetweenRequests = Preconditions.checkNotNull(delay, "Delay cannot be null");
+            return this;
+        }
+
+        /**
+         * Enable/Disable the automatic adjustment of read timeout
+         */
+        public Builder withTimeoutAutoAdjustmentEnabled(boolean enabled) {
+            this.timeoutAutoAdjustmentEnabled = enabled;
+            return this;
+        }
+
+        /**
+         * Sets the margin of the read timeout for caches.
+         * The margin represents the additional amount of time given to the read timeout, in addition to the wait duration.
+         */
+        public Builder withTimeoutAutoAdjustmentMargin(Duration margin) {
+            this.timeoutAutoAdjustmentMargin = Preconditions.checkNotNull(margin, "Margin cannot be null");
+            return this;
+        }
+
+        public CacheConfig build() {
+            return new CacheConfig(
+                    backOffDelay != null ? backOffDelay : DEFAULT_BACKOFF_DELAY,
+                    minDelayBetweenRequests != null ? minDelayBetweenRequests : DEFAULT_MIN_DELAY_BETWEEN_REQUESTS,
+                    timeoutAutoAdjustmentEnabled != null ? timeoutAutoAdjustmentEnabled : DEFAULT_TIMEOUT_AUTO_ADJUSTMENT_ENABLED,
+                    timeoutAutoAdjustmentMargin != null ? timeoutAutoAdjustmentMargin : DEFAULT_TIMEOUT_AUTO_ADJUSTMENT_MARGIN);
         }
     }
 }

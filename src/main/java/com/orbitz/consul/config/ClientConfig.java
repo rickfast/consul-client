@@ -7,7 +7,7 @@ public class ClientConfig {
     private CacheConfig cacheConfig;
 
     public ClientConfig() {
-        this(new CacheConfig());
+        this(CacheConfig.builder().build());
     }
 
     public ClientConfig(CacheConfig cacheConfig) {

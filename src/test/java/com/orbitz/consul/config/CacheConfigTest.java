@@ -1,67 +1,65 @@
 package com.orbitz.consul.config;
 
-import com.typesafe.config.Config;
-import com.typesafe.config.ConfigFactory;
+import junitparams.JUnitParamsRunner;
+import junitparams.Parameters;
+import junitparams.naming.TestCaseName;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 
 import java.time.Duration;
-import java.util.Properties;
 
 import static org.junit.Assert.assertEquals;
 
+@RunWith(JUnitParamsRunner.class)
 public class CacheConfigTest {
 
     @Test
-    public void testDefaultBackOffDelay() {
-        CacheConfig config = new CacheConfig();
-        assertEquals(10000L, config.getBackOffDelay().toMillis());
+    public void testDefaults() {
+        CacheConfig config = CacheConfig.builder().build();
+        assertEquals(CacheConfig.DEFAULT_BACKOFF_DELAY, config.getBackOffDelay());
+        assertEquals(CacheConfig.DEFAULT_WATCH_DURATION, config.getWatchDuration());
+        assertEquals(CacheConfig.DEFAULT_MIN_DELAY_BETWEEN_REQUESTS, config.getMinimumDurationBetweenRequests());
+        assertEquals(CacheConfig.DEFAULT_TIMEOUT_AUTO_ADJUSTMENT_ENABLED, config.isTimeoutAutoAdjustmentEnabled());
+        assertEquals(CacheConfig.DEFAULT_TIMEOUT_AUTO_ADJUSTMENT_MARGIN, config.getTimeoutAutoAdjustmentMargin());
     }
 
     @Test
-    public void testBackOffDelayFromProperties() {
-        String property = String.format("%s.%s", CacheConfig.CONFIG_CACHE_PATH, CacheConfig.BACKOFF_DELAY);
-        Properties properties = new Properties();
-        properties.setProperty(property, "500");
-
-        Config config = ConfigFactory.parseProperties(properties);
-        CacheConfig cacheConfig = new CacheConfig(config);
-        assertEquals(500L, cacheConfig.getBackOffDelay().toMillis());
+    @Parameters(method = "getDurationSamples")
+    @TestCaseName("Delay: {0}")
+    public void testOverrideBackOffDelay(Duration backOffDelay) {
+        CacheConfig config = CacheConfig.builder().withBackOffDelay(backOffDelay).build();
+        assertEquals(backOffDelay, config.getBackOffDelay());
     }
 
     @Test
-    public void testDefaultWatchDuration() {
-        CacheConfig config = new CacheConfig();
-        assertEquals(10000L, config.getWatchDuration().toMillis());
+    @Parameters(method = "getDurationSamples")
+    @TestCaseName("Delay: {0}")
+    public void testOverrideMinDelayBetweenRequests(Duration delayBetweenRequests) {
+        CacheConfig config = CacheConfig.builder().withMinDelayBetweenRequests(delayBetweenRequests).build();
+        assertEquals(delayBetweenRequests, config.getMinimumDurationBetweenRequests());
     }
 
     @Test
-    public void testMaxWatchDuration() {
-        assertEquals(Duration.ofMinutes(10), getWatchDuration("10 minutes"));
+    @Parameters({"true", "false"})
+    @TestCaseName("Enabled: {0}")
+    public void testOverrideTimeoutAutoAdjustmentEnabled(boolean enabled) {
+        CacheConfig config = CacheConfig.builder().withTimeoutAutoAdjustmentEnabled(enabled).build();
+        assertEquals(enabled, config.isTimeoutAutoAdjustmentEnabled());
     }
 
     @Test
-    public void testMinWatchDuration() {
-        assertEquals(Duration.ofSeconds(0), getWatchDuration("0 second"));
+    @Parameters(method = "getDurationSamples")
+    @TestCaseName("Margin: {0}")
+    public void testOverrideTimeoutAutoAdjustmentMargin(Duration margin) {
+        CacheConfig config = CacheConfig.builder().withTimeoutAutoAdjustmentMargin(margin).build();
+        assertEquals(margin, config.getTimeoutAutoAdjustmentMargin());
     }
 
-    @Test(expected = RuntimeException.class)
-    public void testNegativeWatchDuration() {
-        getWatchDuration("-1 second");
-    }
-
-    @Test(expected = RuntimeException.class)
-    public void testTooLongWatchDuration() {
-        getWatchDuration("11 minutes");
-    }
-
-    @Test(expected = RuntimeException.class)
-    public void testInvalidWatchDuration() {
-        getWatchDuration("invalid duration in second");
-    }
-
-    private Duration getWatchDuration(String duration) {
-        String config = String.format("%s.%s: %s", CacheConfig.CONFIG_CACHE_PATH, CacheConfig.WATCH_DURATION, duration);
-        CacheConfig cacheConfig = new CacheConfig(ConfigFactory.parseString(config));
-        return cacheConfig.getWatchDuration();
+    public Object getDurationSamples() {
+        return new Object[]{
+                Duration.ZERO,
+                Duration.ofSeconds(2),
+                Duration.ofMinutes(10)
+        };
     }
 }
