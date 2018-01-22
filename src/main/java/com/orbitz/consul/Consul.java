@@ -5,6 +5,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.io.BaseEncoding;
 import com.google.common.net.HostAndPort;
+import com.orbitz.consul.config.CacheConfig;
 import com.orbitz.consul.config.ClientConfig;
 import com.orbitz.consul.util.Jackson;
 import com.orbitz.consul.cache.TimeoutInterceptor;
@@ -243,6 +244,7 @@ public class Consul {
         private Long readTimeoutMillis;
         private Long writeTimeoutMillis;
         private ExecutorService executorService;
+        private ClientConfig clientConfig;
 
         {
             try {
@@ -493,6 +495,19 @@ public class Consul {
         }
 
         /**
+         * Sets the configuration for the clients.
+         * The configuration will fallback on the library default configuration if elements are not set.
+         *
+         * @param clientConfig the configuration to use.
+         * @return The Builder
+         */
+        public Builder withClientConfiguration(ClientConfig clientConfig) {
+            this.clientConfig = clientConfig;
+
+            return this;
+        }
+
+        /**
          * Constructs a new {@link Consul} client.
          *
          * @return A new Consul client.
@@ -511,6 +526,8 @@ public class Consul {
                         new SynchronousQueue<>(), Util.threadFactory("OkHttp Dispatcher", true));
             }
 
+            ClientConfig config = (clientConfig != null) ? clientConfig : new ClientConfig();
+
             try {
                 retrofit = createRetrofit(
                         buildUrl(this.url),
@@ -522,7 +539,6 @@ public class Consul {
                 throw new RuntimeException(e);
             }
 
-            final ClientConfig config = new ClientConfig();
             AgentClient agentClient = new AgentClient(retrofit, config);
             HealthClient healthClient = new HealthClient(retrofit, config);
             KeyValueClient keyValueClient = new KeyValueClient(retrofit, config);

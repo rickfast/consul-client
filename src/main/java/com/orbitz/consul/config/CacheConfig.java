@@ -25,7 +25,7 @@ public class CacheConfig {
 
     private final Config config;
 
-    private CacheConfig() {
+    public CacheConfig() {
          this(ConfigFactory.load().withFallback(
                  ConfigFactory.parseResources("defaults.conf")));
     }
