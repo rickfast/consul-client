@@ -43,7 +43,6 @@
         <retrofit.version>2.3.0</retrofit.version>
         <okhttp.version>3.9.0</okhttp.version>
         <slf4j.version>1.7.21</slf4j.version>
-        <typesafe.version>1.3.2</typesafe.version>
     </properties>
     <distributionManagement>
         <snapshotRepository>
@@ -169,11 +168,6 @@
             <artifactId>commons-codec</artifactId>
             <version>${commonscodec.version}</version>
             <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.typesafe</groupId>
-            <artifactId>config</artifactId>
-            <version>${typesafe.version}</version>
         </dependency>
     </dependencies>
     <profiles>
@@ -319,10 +313,6 @@
                                 <relocation>
                                     <pattern>com.google</pattern>
                                     <shadedPattern>com.orbitz.google</shadedPattern>
-                                </relocation>
-                                <relocation>
-                                    <pattern>com.typesafe</pattern>
-                                    <shadedPattern>com.orbitz.typesafe</shadedPattern>
                                 </relocation>
                             </relocations>
                         </configuration>
