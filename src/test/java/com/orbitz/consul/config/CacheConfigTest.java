@@ -1,8 +1,8 @@
-package com.orbitz.consul.cache;
+package com.orbitz.consul.config;
 
+import com.orbitz.consul.config.CacheConfig;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
-import org.junit.Assert;
 import org.junit.Test;
 
 import java.time.Duration;

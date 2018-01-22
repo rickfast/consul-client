@@ -2,6 +2,7 @@ package com.orbitz.consul.cache;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Strings;
+import com.orbitz.consul.config.CacheConfig;
 import okhttp3.Interceptor;
 import okhttp3.Request;
 import okhttp3.Response;
