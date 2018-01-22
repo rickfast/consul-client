@@ -21,8 +21,6 @@ public class CacheConfig {
     private static String TIMEOUT_AUTO_MARGIN = "timeout.autoAdjustment.margin";
     private static String REQUEST_RATE_LIMITER = "minTimeBetweenRequests";
 
-    private static final Supplier<CacheConfig> INSTANCE = Suppliers.memoize(CacheConfig::new);
-
     private final Config config;
 
     public CacheConfig() {
@@ -33,13 +31,6 @@ public class CacheConfig {
     @VisibleForTesting
     CacheConfig(Config config) {
         this.config = config.getConfig(CONFIG_CACHE_PATH);
-    }
-
-    /**
-     * Gets the instance of the cache configuration
-     */
-    public static CacheConfig get() {
-        return INSTANCE.get();
     }
 
     /**

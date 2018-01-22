@@ -5,6 +5,7 @@ import com.google.common.collect.ImmutableMap;
 import com.orbitz.consul.BaseIntegrationTest;
 import com.orbitz.consul.HealthClient;
 import com.orbitz.consul.KeyValueClient;
+import com.orbitz.consul.config.CacheConfig;
 import com.orbitz.consul.model.ConsulResponse;
 import com.orbitz.consul.model.State;
 import com.orbitz.consul.model.agent.Agent;
@@ -27,6 +28,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.fail;
+import static org.mockito.Mockito.mock;
 
 public class ConsulCacheTest extends BaseIntegrationTest {
 
@@ -361,8 +363,9 @@ public class ConsulCacheTest extends BaseIntegrationTest {
                 return "SAME_KEY";
             }
         };
-        final List<Value> response = Arrays.asList(Mockito.mock(Value.class), Mockito.mock(Value.class));
-        final ConsulCache<String, Value> consulCache = new ConsulCache<>(keyExtractor, null);
+        final List<Value> response = Arrays.asList(mock(Value.class), mock(Value.class));
+        CacheConfig cacheConfig = mock(CacheConfig.class);
+        final ConsulCache<String, Value> consulCache = new ConsulCache<>(keyExtractor, null, cacheConfig);
         final ConsulResponse<List<Value>> consulResponse = new ConsulResponse<>(response, 0, false, BigInteger.ONE);
         final ImmutableMap<String, Value> map = consulCache.convertToMap(consulResponse);
         assertNotNull(map);

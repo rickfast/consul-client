@@ -1,6 +1,5 @@
 package com.orbitz.consul.config;
 
-import com.orbitz.consul.config.CacheConfig;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 import org.junit.Test;
@@ -14,7 +13,8 @@ public class CacheConfigTest {
 
     @Test
     public void testDefaultBackOffDelay() {
-        assertEquals(10000L, CacheConfig.get().getBackOffDelay().toMillis());
+        CacheConfig config = new CacheConfig();
+        assertEquals(10000L, config.getBackOffDelay().toMillis());
     }
 
     @Test
@@ -30,7 +30,8 @@ public class CacheConfigTest {
 
     @Test
     public void testDefaultWatchDuration() {
-        assertEquals(10000L, CacheConfig.get().getWatchDuration().toMillis());
+        CacheConfig config = new CacheConfig();
+        assertEquals(10000L, config.getWatchDuration().toMillis());
     }
 
     @Test
