@@ -1,6 +1,7 @@
 package com.orbitz.consul;
 
 import com.google.common.collect.ImmutableMap;
+import com.orbitz.consul.config.ClientConfig;
 import com.orbitz.consul.model.coordinate.Coordinate;
 import com.orbitz.consul.model.coordinate.Datacenter;
 import retrofit2.Call;
@@ -19,7 +20,7 @@ import static com.orbitz.consul.util.Http.extract;
  *
  * @see <a href="http://www.consul.io/docs/agent/http.html#agent">The Consul API Docs</a>
  */
-public class CoordinateClient {
+public class CoordinateClient extends BaseClient {
 
     private final Api api;
 
@@ -28,7 +29,8 @@ public class CoordinateClient {
      *
      * @param retrofit The {@link Retrofit} to build a client from.
      */
-    CoordinateClient(Retrofit retrofit) {
+    CoordinateClient(Retrofit retrofit, ClientConfig config) {
+        super(config);
         this.api = retrofit.create(Api.class);
     }
 

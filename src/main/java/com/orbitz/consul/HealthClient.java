@@ -2,6 +2,7 @@ package com.orbitz.consul;
 
 import com.google.common.collect.ImmutableMap;
 import com.orbitz.consul.async.ConsulResponseCallback;
+import com.orbitz.consul.config.ClientConfig;
 import com.orbitz.consul.model.ConsulResponse;
 import com.orbitz.consul.model.State;
 import com.orbitz.consul.model.health.HealthCheck;
@@ -23,7 +24,7 @@ import static com.orbitz.consul.util.Http.extractConsulResponse;
 /**
  * HTTP Client for /v1/health/ endpoints.
  */
-public class HealthClient {
+public class HealthClient extends BaseClient {
 
     private final Api api;
 
@@ -32,7 +33,8 @@ public class HealthClient {
      *
      * @param retrofit The {@link Retrofit} to build a client from.
      */
-    HealthClient(Retrofit retrofit) {
+    HealthClient(Retrofit retrofit, ClientConfig config) {
+        super(config);
         this.api = retrofit.create(Api.class);
     }
 

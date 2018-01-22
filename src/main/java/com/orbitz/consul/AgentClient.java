@@ -2,6 +2,7 @@ package com.orbitz.consul;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.net.HostAndPort;
+import com.orbitz.consul.config.ClientConfig;
 import com.orbitz.consul.model.State;
 import com.orbitz.consul.model.agent.*;
 import com.orbitz.consul.model.health.HealthCheck;
@@ -25,7 +26,7 @@ import static com.orbitz.consul.util.Http.handle;
  *
  * @see <a href="http://www.consul.io/docs/agent/http.html#agent">The Consul API Docs</a>
  */
-public class AgentClient {
+public class AgentClient extends BaseClient {
 
     private final Api api;
 
@@ -34,7 +35,8 @@ public class AgentClient {
      *
      * @param retrofit The {@link Retrofit} to build a client from.
      */
-    AgentClient(Retrofit retrofit) {
+    AgentClient(Retrofit retrofit, ClientConfig config) {
+        super(config);
         this.api = retrofit.create(Api.class);
     }
 

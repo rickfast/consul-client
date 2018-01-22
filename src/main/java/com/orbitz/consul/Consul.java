@@ -5,6 +5,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.io.BaseEncoding;
 import com.google.common.net.HostAndPort;
+import com.orbitz.consul.config.ClientConfig;
 import com.orbitz.consul.util.Jackson;
 import com.orbitz.consul.cache.TimeoutInterceptor;
 import com.orbitz.consul.util.bookend.ConsulBookend;
@@ -521,17 +522,18 @@ public class Consul {
                 throw new RuntimeException(e);
             }
 
-            AgentClient agentClient = new AgentClient(retrofit);
-            HealthClient healthClient = new HealthClient(retrofit);
-            KeyValueClient keyValueClient = new KeyValueClient(retrofit);
-            CatalogClient catalogClient = new CatalogClient(retrofit);
-            StatusClient statusClient = new StatusClient(retrofit);
-            SessionClient sessionClient = new SessionClient(retrofit);
-            EventClient eventClient = new EventClient(retrofit);
-            PreparedQueryClient preparedQueryClient = new PreparedQueryClient(retrofit);
-            CoordinateClient coordinateClient = new CoordinateClient(retrofit);
-            OperatorClient operatorClient = new OperatorClient(retrofit);
-            AclClient aclClient = new AclClient(retrofit);
+            final ClientConfig config = new ClientConfig();
+            AgentClient agentClient = new AgentClient(retrofit, config);
+            HealthClient healthClient = new HealthClient(retrofit, config);
+            KeyValueClient keyValueClient = new KeyValueClient(retrofit, config);
+            CatalogClient catalogClient = new CatalogClient(retrofit, config);
+            StatusClient statusClient = new StatusClient(retrofit, config);
+            SessionClient sessionClient = new SessionClient(retrofit, config);
+            EventClient eventClient = new EventClient(retrofit, config);
+            PreparedQueryClient preparedQueryClient = new PreparedQueryClient(retrofit, config);
+            CoordinateClient coordinateClient = new CoordinateClient(retrofit, config);
+            OperatorClient operatorClient = new OperatorClient(retrofit, config);
+            AclClient aclClient = new AclClient(retrofit, config);
 
             if (ping) {
                 agentClient.ping();

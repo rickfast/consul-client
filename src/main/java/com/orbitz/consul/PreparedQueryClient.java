@@ -2,6 +2,7 @@ package com.orbitz.consul;
 
 import com.google.common.collect.ImmutableMap;
 import com.orbitz.consul.async.Callback;
+import com.orbitz.consul.config.ClientConfig;
 import com.orbitz.consul.model.query.PreparedQuery;
 import com.orbitz.consul.model.query.QueryId;
 import com.orbitz.consul.model.query.QueryResults;
@@ -19,7 +20,7 @@ import java.util.Optional;
 import static com.orbitz.consul.util.Http.extract;
 import static com.orbitz.consul.util.Http.extractBasicResponse;
 
-public class PreparedQueryClient {
+public class PreparedQueryClient extends BaseClient {
 
     private final Api api;
 
@@ -28,7 +29,8 @@ public class PreparedQueryClient {
      *
      * @param retrofit The {@link Retrofit} to build a client from.
      */
-    PreparedQueryClient(Retrofit retrofit) {
+    PreparedQueryClient(Retrofit retrofit, ClientConfig config) {
+        super(config);
         this.api = retrofit.create(Api.class);
     }
 

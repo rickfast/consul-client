@@ -1,6 +1,7 @@
 package com.orbitz.consul;
 
 import com.google.common.collect.ImmutableMap;
+import com.orbitz.consul.config.ClientConfig;
 import com.orbitz.consul.model.session.Session;
 import com.orbitz.consul.model.session.SessionCreatedResponse;
 import com.orbitz.consul.model.session.SessionInfo;
@@ -21,7 +22,7 @@ import static com.orbitz.consul.util.Http.handle;
  *
  * @see <a href="http://www.consul.io/docs/agent/http.html#session">The Consul API Docs</a>
  */
-public class SessionClient {
+public class SessionClient extends BaseClient {
 
     private final Api api;
 
@@ -30,7 +31,8 @@ public class SessionClient {
      *
      * @param retrofit The {@link Retrofit} to build a client from.
      */
-    SessionClient(Retrofit retrofit) {
+    SessionClient(Retrofit retrofit, ClientConfig config) {
+        super(config);
         this.api = retrofit.create(Api.class);
     }
 
