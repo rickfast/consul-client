@@ -80,12 +80,12 @@ public class CacheConfig {
     }
 
     public static class Builder {
-        private Duration backOffDelay;
-        private Duration minDelayBetweenRequests;
-        private Duration timeoutAutoAdjustmentMargin;
-        private Boolean timeoutAutoAdjustmentEnabled;
+        private Duration backOffDelay = DEFAULT_BACKOFF_DELAY;
+        private Duration minDelayBetweenRequests = DEFAULT_MIN_DELAY_BETWEEN_REQUESTS;
+        private Duration timeoutAutoAdjustmentMargin = DEFAULT_TIMEOUT_AUTO_ADJUSTMENT_MARGIN;
+        private boolean timeoutAutoAdjustmentEnabled = DEFAULT_TIMEOUT_AUTO_ADJUSTMENT_ENABLED;
 
-        public Builder() {
+        private Builder() {
 
         }
 
@@ -123,11 +123,8 @@ public class CacheConfig {
         }
 
         public CacheConfig build() {
-            return new CacheConfig(
-                    backOffDelay != null ? backOffDelay : DEFAULT_BACKOFF_DELAY,
-                    minDelayBetweenRequests != null ? minDelayBetweenRequests : DEFAULT_MIN_DELAY_BETWEEN_REQUESTS,
-                    timeoutAutoAdjustmentEnabled != null ? timeoutAutoAdjustmentEnabled : DEFAULT_TIMEOUT_AUTO_ADJUSTMENT_ENABLED,
-                    timeoutAutoAdjustmentMargin != null ? timeoutAutoAdjustmentMargin : DEFAULT_TIMEOUT_AUTO_ADJUSTMENT_MARGIN);
+            return new CacheConfig(backOffDelay, minDelayBetweenRequests,
+                    timeoutAutoAdjustmentEnabled, timeoutAutoAdjustmentMargin);
         }
     }
 }
