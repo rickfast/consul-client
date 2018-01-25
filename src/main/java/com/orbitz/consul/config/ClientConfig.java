@@ -4,7 +4,7 @@ import com.google.common.base.Preconditions;
 
 public class ClientConfig {
 
-    private CacheConfig cacheConfig;
+    private final CacheConfig cacheConfig;
 
     public ClientConfig() {
         this(CacheConfig.builder().build());
