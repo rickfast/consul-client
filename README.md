@@ -12,7 +12,7 @@ Installation
 
 ### Note
 
-As of `1.0.0`, this library requires Java 8.
+As of `1.0.1`, this library requires Java 8.
 
 ### Note
 
@@ -22,7 +22,7 @@ In 0.11.X and 0.12.x, the Consul JAR is a shaded JAR, with most dependencies inc
 
 ### Bintray:
 
-Grab the latest binary (1.0.0) [here](http://dl.bintray.com/orbitz/consul-client/com/orbitz/consul/consul-client/1.0.0/#consul-client-1.0.0.jar).
+Grab the latest binary (1.0.1) [here](http://dl.bintray.com/orbitz/consul-client/com/orbitz/consul/consul-client/1.0.0/#consul-client-1.0.0.jar).
 
 ### Gradle:
 
@@ -32,7 +32,7 @@ repositories {
 }
 
 dependencies {
-    compile 'com.orbitz.consul:consul-client:1.0.0'
+    compile 'com.orbitz.consul:consul-client:1.0.1'
 }
 ```
 
@@ -43,7 +43,7 @@ dependencies {
     <dependency>
         <groupId>com.orbitz.consul</groupId>
         <artifactId>consul-client</artifactId>
-        <version>1.0.0</version>
+        <version>1.0.1</version>
     </dependency>
 </dependencies>
 
