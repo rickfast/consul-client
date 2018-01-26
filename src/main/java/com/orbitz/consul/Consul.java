@@ -5,6 +5,8 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.io.BaseEncoding;
 import com.google.common.net.HostAndPort;
+import com.orbitz.consul.config.CacheConfig;
+import com.orbitz.consul.config.ClientConfig;
 import com.orbitz.consul.util.Jackson;
 import com.orbitz.consul.cache.TimeoutInterceptor;
 import com.orbitz.consul.util.bookend.ConsulBookend;
@@ -242,6 +244,7 @@ public class Consul {
         private Long readTimeoutMillis;
         private Long writeTimeoutMillis;
         private ExecutorService executorService;
+        private ClientConfig clientConfig;
 
         {
             try {
@@ -492,6 +495,19 @@ public class Consul {
         }
 
         /**
+         * Sets the configuration for the clients.
+         * The configuration will fallback on the library default configuration if elements are not set.
+         *
+         * @param clientConfig the configuration to use.
+         * @return The Builder
+         */
+        public Builder withClientConfiguration(ClientConfig clientConfig) {
+            this.clientConfig = clientConfig;
+
+            return this;
+        }
+
+        /**
          * Constructs a new {@link Consul} client.
          *
          * @return A new Consul client.
@@ -510,28 +526,32 @@ public class Consul {
                         new SynchronousQueue<>(), Util.threadFactory("OkHttp Dispatcher", true));
             }
 
+            ClientConfig config = (clientConfig != null) ? clientConfig : new ClientConfig();
+
             try {
                 retrofit = createRetrofit(
                         buildUrl(this.url),
                         this.sslContext,
                         this.hostnameVerifier,
                         this.proxy,
-                        Jackson.MAPPER, executorService);
+                        Jackson.MAPPER,
+                        executorService,
+                        config);
             } catch (MalformedURLException e) {
                 throw new RuntimeException(e);
             }
 
-            AgentClient agentClient = new AgentClient(retrofit);
-            HealthClient healthClient = new HealthClient(retrofit);
-            KeyValueClient keyValueClient = new KeyValueClient(retrofit);
-            CatalogClient catalogClient = new CatalogClient(retrofit);
-            StatusClient statusClient = new StatusClient(retrofit);
-            SessionClient sessionClient = new SessionClient(retrofit);
-            EventClient eventClient = new EventClient(retrofit);
-            PreparedQueryClient preparedQueryClient = new PreparedQueryClient(retrofit);
-            CoordinateClient coordinateClient = new CoordinateClient(retrofit);
-            OperatorClient operatorClient = new OperatorClient(retrofit);
-            AclClient aclClient = new AclClient(retrofit);
+            AgentClient agentClient = new AgentClient(retrofit, config);
+            HealthClient healthClient = new HealthClient(retrofit, config);
+            KeyValueClient keyValueClient = new KeyValueClient(retrofit, config);
+            CatalogClient catalogClient = new CatalogClient(retrofit, config);
+            StatusClient statusClient = new StatusClient(retrofit, config);
+            SessionClient sessionClient = new SessionClient(retrofit, config);
+            EventClient eventClient = new EventClient(retrofit, config);
+            PreparedQueryClient preparedQueryClient = new PreparedQueryClient(retrofit, config);
+            CoordinateClient coordinateClient = new CoordinateClient(retrofit, config);
+            OperatorClient operatorClient = new OperatorClient(retrofit, config);
+            AclClient aclClient = new AclClient(retrofit, config);
 
             if (ping) {
                 agentClient.ping();
@@ -546,7 +566,9 @@ public class Consul {
         }
 
 
-        private Retrofit createRetrofit(String url, SSLContext sslContext, HostnameVerifier hostnameVerifier, Proxy proxy, ObjectMapper mapper, ExecutorService executorService) throws MalformedURLException {
+        private Retrofit createRetrofit(String url, SSLContext sslContext, HostnameVerifier hostnameVerifier,
+                                        Proxy proxy, ObjectMapper mapper, ExecutorService executorService,
+                                        ClientConfig clientConfig) throws MalformedURLException {
             final OkHttpClient.Builder builder = new OkHttpClient.Builder();
 
             if (basicAuthInterceptor != null) {
@@ -589,7 +611,7 @@ public class Consul {
                 builder.writeTimeout(writeTimeoutMillis, TimeUnit.MILLISECONDS);
             }
 
-            builder.addInterceptor(new TimeoutInterceptor());
+            builder.addInterceptor(new TimeoutInterceptor(clientConfig.getCacheConfig()));
 
             Dispatcher dispatcher = new Dispatcher(executorService);
             dispatcher.setMaxRequests(Integer.MAX_VALUE);

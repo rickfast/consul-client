@@ -2,6 +2,7 @@ package com.orbitz.consul.cache;
 
 import com.google.common.primitives.Ints;
 import com.orbitz.consul.CatalogClient;
+import com.orbitz.consul.config.CacheConfig;
 import com.orbitz.consul.model.health.Node;
 import com.orbitz.consul.option.QueryOptions;
 
@@ -9,8 +10,10 @@ import java.util.function.Function;
 
 public class NodesCatalogCache extends ConsulCache<String, Node> {
 
-    private NodesCatalogCache(Function<Node, String> keyConversion, CallbackConsumer<Node> callbackConsumer) {
-        super(keyConversion, callbackConsumer);
+    private NodesCatalogCache(Function<Node, String> keyConversion,
+                              CallbackConsumer<Node> callbackConsumer,
+                              CacheConfig cacheConfig) {
+        super(keyConversion, callbackConsumer, cacheConfig);
     }
 
     public static NodesCatalogCache newCache(
@@ -18,14 +21,16 @@ public class NodesCatalogCache extends ConsulCache<String, Node> {
             final QueryOptions queryOptions,
             final int watchSeconds) {
 
-        return new NodesCatalogCache(Node::getNode, (index, callback) ->
-                catalogClient.getNodes(watchParams(index, watchSeconds, queryOptions), callback));
+        final CallbackConsumer<Node> callbackConsumer = (index, callback) ->
+                catalogClient.getNodes(watchParams(index, watchSeconds, queryOptions), callback);
 
+        return new NodesCatalogCache(Node::getNode, callbackConsumer, catalogClient.getConfig().getCacheConfig());
     }
 
     public static NodesCatalogCache newCache(final CatalogClient catalogClient) {
-        return newCache(catalogClient, QueryOptions.BLANK,
-                Ints.checkedCast(CacheConfig.get().getWatchDuration().getSeconds()));
+        CacheConfig cacheConfig = catalogClient.getConfig().getCacheConfig();
+        int watchSeconds = Ints.checkedCast(cacheConfig.getWatchDuration().getSeconds());
+        return newCache(catalogClient, QueryOptions.BLANK, watchSeconds);
     }
 
 }

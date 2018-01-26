@@ -1,6 +1,7 @@
 package com.orbitz.consul;
 
 import com.google.common.collect.ImmutableMap;
+import com.orbitz.consul.config.ClientConfig;
 import com.orbitz.consul.model.operator.RaftConfiguration;
 import retrofit2.Call;
 import retrofit2.Retrofit;
@@ -14,11 +15,12 @@ import java.util.Map;
 import static com.orbitz.consul.util.Http.extract;
 import static com.orbitz.consul.util.Http.handle;
 
-public class OperatorClient {
+public class OperatorClient extends BaseClient {
 
     private final Api api;
 
-    OperatorClient(Retrofit retrofit) {
+    OperatorClient(Retrofit retrofit, ClientConfig config) {
+        super(config);
         this.api = retrofit.create(Api.class);
     }
 

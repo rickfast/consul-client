@@ -2,6 +2,7 @@ package com.orbitz.consul.cache;
 
 import com.google.common.primitives.Ints;
 import com.orbitz.consul.HealthClient;
+import com.orbitz.consul.config.CacheConfig;
 import com.orbitz.consul.model.health.HealthCheck;
 import com.orbitz.consul.option.QueryOptions;
 
@@ -9,8 +10,10 @@ import java.util.function.Function;
 
 public class HealthCheckCache extends ConsulCache<String, HealthCheck> {
 
-    private HealthCheckCache(Function<HealthCheck, String> keyConversion, CallbackConsumer<HealthCheck> callbackConsumer) {
-        super(keyConversion, callbackConsumer);
+    private HealthCheckCache(Function<HealthCheck, String> keyConversion,
+                             CallbackConsumer<HealthCheck> callbackConsumer,
+                             CacheConfig cacheConfig) {
+        super(keyConversion, callbackConsumer, cacheConfig);
     }
 
     /**
@@ -29,10 +32,11 @@ public class HealthCheckCache extends ConsulCache<String, HealthCheck> {
             final QueryOptions queryOptions,
             Function<HealthCheck, String> keyExtractor) {
 
-        return new HealthCheckCache(keyExtractor, (index, callback) -> {
+        final CallbackConsumer<HealthCheck> callbackConsumer = (index, callback) -> {
             QueryOptions params = watchParams(index, watchSeconds, queryOptions);
             healthClient.getChecksByState(state, params, callback);
-        });
+        };
+        return new HealthCheckCache(keyExtractor, callbackConsumer, healthClient.getConfig().getCacheConfig());
     }
 
     public static HealthCheckCache newCache(
@@ -52,7 +56,9 @@ public class HealthCheckCache extends ConsulCache<String, HealthCheck> {
     }
 
     public static HealthCheckCache newCache(final HealthClient healthClient, final com.orbitz.consul.model.State state) {
-        return newCache(healthClient, state, Ints.checkedCast(CacheConfig.get().getWatchDuration().getSeconds()));
+        CacheConfig cacheConfig = healthClient.getConfig().getCacheConfig();
+        int watchSeconds = Ints.checkedCast(cacheConfig.getWatchDuration().getSeconds());
+        return newCache(healthClient, state, watchSeconds);
     }
 
 }

@@ -2,6 +2,7 @@ package com.orbitz.consul;
 
 import com.google.common.collect.ImmutableMap;
 import com.orbitz.consul.async.EventResponseCallback;
+import com.orbitz.consul.config.ClientConfig;
 import com.orbitz.consul.model.EventResponse;
 import com.orbitz.consul.model.ImmutableEventResponse;
 import com.orbitz.consul.model.event.Event;
@@ -29,7 +30,7 @@ import static com.orbitz.consul.util.Http.extract;
  *
  * @see <a href="http://www.consul.io/docs/agent/http.html#event">The Consul API Docs</a>
  */
-public class EventClient {
+public class EventClient extends BaseClient {
 
     private final Api api;
 
@@ -38,7 +39,8 @@ public class EventClient {
      *
      * @param retrofit The {@link Retrofit} to build a client from.
      */
-    EventClient(Retrofit retrofit) {
+    EventClient(Retrofit retrofit, ClientConfig config) {
+        super(config);
         this.api = retrofit.create(Api.class);
     }
 

@@ -1,6 +1,7 @@
 package com.orbitz.consul;
 
 import com.orbitz.consul.async.ConsulResponseCallback;
+import com.orbitz.consul.config.ClientConfig;
 import com.orbitz.consul.model.ConsulResponse;
 import com.orbitz.consul.model.catalog.CatalogDeregistration;
 import com.orbitz.consul.model.catalog.CatalogNode;
@@ -22,7 +23,7 @@ import static com.orbitz.consul.util.Http.handle;
 /**
  * HTTP Client for /v1/catalog/ endpoints.
  */
-public class CatalogClient {
+public class CatalogClient extends BaseClient {
 
     private final Api api;
 
@@ -31,7 +32,8 @@ public class CatalogClient {
      *
      * @param retrofit The {@link Retrofit} to build a client from.
      */
-    CatalogClient(Retrofit retrofit) {
+    CatalogClient(Retrofit retrofit, ClientConfig config) {
+        super(config);
         this.api = retrofit.create(Api.class);
     }
 

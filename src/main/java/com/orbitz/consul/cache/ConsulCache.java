@@ -6,6 +6,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.orbitz.consul.ConsulException;
 import com.orbitz.consul.async.ConsulResponseCallback;
+import com.orbitz.consul.config.CacheConfig;
 import com.orbitz.consul.model.ConsulResponse;
 import com.orbitz.consul.option.ImmutableQueryOptions;
 import com.orbitz.consul.option.QueryOptions;
@@ -62,7 +63,8 @@ public class ConsulCache<K, V> implements AutoCloseable {
 
     ConsulCache(
             Function<V, K> keyConversion,
-            CallbackConsumer<V> callbackConsumer) {
+            CallbackConsumer<V> callbackConsumer,
+            CacheConfig cacheConfig) {
 
         this.keyConversion = keyConversion;
         this.callBackConsumer = callbackConsumer;
@@ -113,7 +115,7 @@ public class ConsulCache<K, V> implements AutoCloseable {
                         initLatch.countDown();
                     }
 
-                    Duration timeToWait = CacheConfig.get().getMinimumDurationBetweenRequests().minus(elapsedTime);
+                    Duration timeToWait = cacheConfig.getMinimumDurationBetweenRequests().minus(elapsedTime);
                     if (timeToWait.isNegative() || timeToWait.isZero()) {
                         runCallback();
                     } else {
@@ -132,9 +134,11 @@ public class ConsulCache<K, V> implements AutoCloseable {
                 if (!isRunning()) {
                     return;
                 }
-                LOGGER.error(String.format("Error getting response from consul. will retry in %d %s", CacheConfig.get().getBackOffDelay().toMillis(), TimeUnit.MILLISECONDS), throwable);
+                LOGGER.error(String.format("Error getting response from consul. will retry in %d %s",
+                        cacheConfig.getBackOffDelay().toMillis(), TimeUnit.MILLISECONDS), throwable);
 
-                executorService.schedule(ConsulCache.this::runCallback, CacheConfig.get().getBackOffDelay().toMillis(), TimeUnit.MILLISECONDS);
+                executorService.schedule(ConsulCache.this::runCallback,
+                        cacheConfig.getBackOffDelay().toMillis(), TimeUnit.MILLISECONDS);
             }
         };
     }
