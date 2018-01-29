@@ -56,7 +56,6 @@ public class ConsulCacheTest extends BaseIntegrationTest {
         }
     }
 
-
     @Test
     public void nodeCacheServicePassingTest() throws Exception {
         HealthClient healthClient = client.healthClient();
@@ -65,23 +64,24 @@ public class ConsulCacheTest extends BaseIntegrationTest {
 
         client.agentClient().register(8080, 20L, serviceName, serviceId);
         client.agentClient().pass(serviceId);
-        Agent agent = client.agentClient().getAgent();
         Thread.sleep(100);
 
-        ServiceHealthCache svHealth = ServiceHealthCache.newCache(healthClient, serviceName);
+        try (ServiceHealthCache svHealth = ServiceHealthCache.newCache(healthClient, serviceName)) {
+            svHealth.start();
+            svHealth.awaitInitialized(3, TimeUnit.SECONDS);
 
-        svHealth.start();
-        svHealth.awaitInitialized(3, TimeUnit.SECONDS);
+            ServiceHealthKey serviceKey = getServiceHealthKeyFromCache(svHealth, serviceId, 8080);
+            assertNotNull("Should find service key from serviceHealthCache", serviceKey);
 
-        ServiceHealthKey serviceKey = ServiceHealthKey.of(serviceId, agent.getDebugConfig().getAdvertiseAddrLAN(), 8080);
-        ServiceHealth health = svHealth.getMap().get(serviceKey);
-        assertEquals(serviceId, health.getService().getId());
+            ServiceHealth health = svHealth.getMap().get(serviceKey);
+            assertNotNull(health);
+            assertEquals(serviceId, health.getService().getId());
 
-        client.agentClient().fail(serviceId);
-        Thread.sleep(100);
-
-        health = svHealth.getMap().get(serviceKey);
-        assertNull(health);
+            client.agentClient().fail(serviceId);
+            Thread.sleep(100);
+            health = svHealth.getMap().get(serviceKey);
+            assertNull(health);
+        }
     }
 
     @Test
@@ -97,24 +97,32 @@ public class ConsulCacheTest extends BaseIntegrationTest {
         client.agentClient().register(8080, 20L, serviceName, serviceId2);
         client.agentClient().pass(serviceId2);
 
-        ServiceHealthCache svHealth = ServiceHealthCache.newCache(healthClient, serviceName);
+        try (ServiceHealthCache svHealth = ServiceHealthCache.newCache(healthClient, serviceName)) {
+            svHealth.start();
+            svHealth.awaitInitialized(3, TimeUnit.SECONDS);
 
-        svHealth.start();
-        svHealth.awaitInitialized(3, TimeUnit.SECONDS);
+            ServiceHealthKey serviceKey1 = getServiceHealthKeyFromCache(svHealth, serviceId, 8080);
+            assertNotNull("Should find service key 1 from serviceHealthCache", serviceKey1);
 
-        Agent agent = client.agentClient().getAgent();
-        Thread.sleep(100);
+            ServiceHealthKey serviceKey2 = getServiceHealthKeyFromCache(svHealth, serviceId2, 8080);
+            assertNotNull("Should find service key 2 from serviceHealthCache", serviceKey2);
 
-        ServiceHealthKey serviceKey1 = ServiceHealthKey.of(serviceId, agent.getDebugConfig().getAdvertiseAddrLAN(), 8080);
-        ServiceHealthKey serviceKey2 = ServiceHealthKey.of(serviceId2, agent.getDebugConfig().getAdvertiseAddrLAN(), 8080);
+            ImmutableMap<ServiceHealthKey, ServiceHealth> healthMap = svHealth.getMap();
+            assertEquals(healthMap.size(), 2);
+            ServiceHealth health =healthMap.get(serviceKey1);
+            ServiceHealth health2 = healthMap.get(serviceKey2);
 
-        ImmutableMap<ServiceHealthKey, ServiceHealth> healthMap = svHealth.getMap();
-        assertEquals(healthMap.size(), 2);
-        ServiceHealth health =healthMap.get(serviceKey1);
-        ServiceHealth health2 = healthMap.get(serviceKey2);
+            assertEquals(serviceId, health.getService().getId());
+            assertEquals(serviceId2, health2.getService().getId());
+        }
+    }
 
-        assertEquals(serviceId, health.getService().getId());
-        assertEquals(serviceId2, health2.getService().getId());
+    private ServiceHealthKey getServiceHealthKeyFromCache(ServiceHealthCache cache, String serviceId, int port) {
+        return cache.getMap().keySet()
+                .stream()
+                .filter(key -> serviceId.equals(key.getServiceId()) && (port == key.getPort()))
+                .findFirst()
+                .orElse(null);
     }
 
     @Test
