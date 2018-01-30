@@ -259,17 +259,19 @@ public class KeyValueTests extends BaseIntegrationTest {
         String key = UUID.randomUUID().toString();
         String value = "session_" + UUID.randomUUID().toString();
         SessionCreatedResponse response = sessionClient.createSession(ImmutableSession.builder().name(value).build());
-
         String sessionId = response.getId();
 
-        assertTrue(keyValueClient.acquireLock(key, value, sessionId));
-        assertTrue(keyValueClient.acquireLock(key, value, sessionId)); // No ideas why there was an assertFalse
+        try {
+            assertTrue(keyValueClient.acquireLock(key, value, sessionId));
+            assertTrue(keyValueClient.acquireLock(key, value, sessionId)); // No ideas why there was an assertFalse
 
-        assertTrue("SessionId must be present.", keyValueClient.getValue(key).get().getSession().isPresent());
-        assertTrue(keyValueClient.releaseLock(key, sessionId));
-        assertFalse("SessionId in the key value should be absent.", keyValueClient.getValue(key).get().getSession().isPresent());
-        keyValueClient.deleteKey(key);
-
+            assertTrue("SessionId must be present.", keyValueClient.getValue(key).get().getSession().isPresent());
+            assertTrue(keyValueClient.releaseLock(key, sessionId));
+            assertFalse("SessionId in the key value should be absent.", keyValueClient.getValue(key).get().getSession().isPresent());
+            keyValueClient.deleteKey(key);
+        } finally {
+            sessionClient.destroySession(sessionId);
+        }
     }
 
     @Test
@@ -285,13 +287,15 @@ public class KeyValueTests extends BaseIntegrationTest {
 
         String sessionValue = "session_" + UUID.randomUUID().toString();
         SessionCreatedResponse response = sessionClient.createSession(ImmutableSession.builder().name(sessionValue).build());
-
         String sessionId = response.getId();
 
-        assertTrue(keyValueClient.acquireLock(key, sessionValue, sessionId));
-        assertTrue(keyValueClient.acquireLock(key, sessionValue, sessionId)); // No ideas why there was an assertFalse
-        assertEquals(sessionId, keyValueClient.getSession(key).get());
-
+        try {
+            assertTrue(keyValueClient.acquireLock(key, sessionValue, sessionId));
+            assertTrue(keyValueClient.acquireLock(key, sessionValue, sessionId)); // No ideas why there was an assertFalse
+            assertEquals(sessionId, keyValueClient.getSession(key).get());
+        } finally {
+            sessionClient.destroySession(sessionId);
+        }
     }
 
     @Test
@@ -326,19 +330,23 @@ public class KeyValueTests extends BaseIntegrationTest {
         SessionCreatedResponse response2 = sessionClient.createSession(ImmutableSession.builder().name(sessionValue).build());
         String sessionId2 = response2.getId();
 
-        assertTrue(keyValueClient.acquireLock(key, sessionValue, sessionId));
-        // session-2 can't acquire the lock
-        assertFalse(keyValueClient.acquireLock(key, sessionValue2, sessionId2));
-        assertEquals(sessionId, keyValueClient.getSession(key).get());
+        try {
+            assertTrue(keyValueClient.acquireLock(key, sessionValue, sessionId));
+            // session-2 can't acquire the lock
+            assertFalse(keyValueClient.acquireLock(key, sessionValue2, sessionId2));
+            assertEquals(sessionId, keyValueClient.getSession(key).get());
 
-        keyValueClient.releaseLock(key, sessionId);
+            keyValueClient.releaseLock(key, sessionId);
 
-        // session-2 now can acquire the lock
-        assertTrue(keyValueClient.acquireLock(key, sessionValue2, sessionId2));
-        // session-1 can't acquire the lock anymore
-        assertFalse(keyValueClient.acquireLock(key, sessionValue, sessionId));
-        assertEquals(sessionId2, keyValueClient.getSession(key).get());
-
+            // session-2 now can acquire the lock
+            assertTrue(keyValueClient.acquireLock(key, sessionValue2, sessionId2));
+            // session-1 can't acquire the lock anymore
+            assertFalse(keyValueClient.acquireLock(key, sessionValue, sessionId));
+            assertEquals(sessionId2, keyValueClient.getSession(key).get());
+        } finally {
+            sessionClient.destroySession(sessionId);
+            sessionClient.destroySession(sessionId2);
+        }
     }
 
     @Test
