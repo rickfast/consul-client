@@ -255,11 +255,6 @@
                         <version>2.19.1</version>
                     </dependency>
                 </dependencies>
-                <configuration>
-                    <includes>
-                        <include>**/*Tests.java</include>
-                    </includes>
-                </configuration>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>

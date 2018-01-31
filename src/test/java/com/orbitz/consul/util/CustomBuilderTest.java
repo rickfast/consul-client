@@ -24,9 +24,7 @@ public class CustomBuilderTest extends BaseIntegrationTest{
                 .withWriteTimeoutMillis(900)
                 .build();
         Agent agent = client.agentClient().getAgent();
-
         assertNotNull(agent);
-        assertEquals("127.0.0.1", agent.getDebugConfig().getClientAddrs().get(0));
     }
 
 }

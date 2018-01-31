@@ -15,25 +15,19 @@ import com.orbitz.consul.model.kv.Value;
 import com.orbitz.consul.option.ConsistencyMode;
 import com.orbitz.consul.option.ImmutableQueryOptions;
 import com.orbitz.consul.option.QueryOptions;
-import org.junit.Assert;
 import org.junit.Test;
-import org.mockito.Mockito;
 
 import java.math.BigInteger;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.fail;
 import static org.mockito.Mockito.mock;
+import static org.junit.Assert.*;
 
 public class ConsulCacheTest extends BaseIntegrationTest {
 
     @Test
-    public void nodeCacheHealthCheckTest() throws Exception {
+    public void cacheShouldContainPassingTestsOnly() throws Exception {
         HealthClient healthClient = client.healthClient();
         String checkName = UUID.randomUUID().toString();
         String checkId = UUID.randomUUID().toString();
@@ -43,22 +37,22 @@ public class ConsulCacheTest extends BaseIntegrationTest {
             client.agentClient().passCheck(checkId);
             Thread.sleep(100);
 
-            HealthCheckCache hCheck = HealthCheckCache.newCache(healthClient, State.PASS);
+            try (HealthCheckCache hCheck = HealthCheckCache.newCache(healthClient, State.PASS)) {
+                hCheck.start();
+                hCheck.awaitInitialized(3, TimeUnit.SECONDS);
 
-            hCheck.start();
-            hCheck.awaitInitialized(3, TimeUnit.SECONDS);
+                HealthCheck check = hCheck.getMap().get(checkId);
+                assertEquals(checkId, check.getCheckId());
 
-            HealthCheck check = hCheck.getMap().get(checkId);
-            assertEquals(checkId, check.getCheckId());
+                client.agentClient().failCheck(checkId);
+                Thread.sleep(100);
 
-            client.agentClient().failCheck(checkId);
-            Thread.sleep(100);
-
-            check = hCheck.getMap().get(checkId);
-            assertNull(check);
+                check = hCheck.getMap().get(checkId);
+                assertNull(check);
+            }
         }
         finally {
-            client.agentClient().deregister(checkId);
+            client.agentClient().deregisterCheck(checkId);
         }
     }
 
@@ -70,24 +64,24 @@ public class ConsulCacheTest extends BaseIntegrationTest {
 
         client.agentClient().register(8080, 20L, serviceName, serviceId);
         client.agentClient().pass(serviceId);
-        Agent agent = client.agentClient().getAgent();
         Thread.sleep(100);
 
-        ServiceHealthCache svHealth = ServiceHealthCache.newCache(healthClient, serviceName);
+        try (ServiceHealthCache svHealth = ServiceHealthCache.newCache(healthClient, serviceName)) {
+            svHealth.start();
+            svHealth.awaitInitialized(3, TimeUnit.SECONDS);
 
-        svHealth.start();
-        svHealth.awaitInitialized(3, TimeUnit.SECONDS);
+            ServiceHealthKey serviceKey = getServiceHealthKeyFromCache(svHealth, serviceId, 8080)
+                    .orElseThrow(() -> new RuntimeException("Cannot find service key from serviceHealthCache"));
 
-        ServiceHealthKey serviceKey = ServiceHealthKey.of(serviceId, agent.getDebugConfig().getAdvertiseAddrLAN(), 8080);
-        ServiceHealth health = svHealth.getMap().get(serviceKey);
-        assertEquals(serviceId, health.getService().getId());
+            ServiceHealth health = svHealth.getMap().get(serviceKey);
+            assertNotNull(health);
+            assertEquals(serviceId, health.getService().getId());
 
-        client.agentClient().fail(serviceId);
-        Thread.sleep(100);
-
-        health = svHealth.getMap().get(serviceKey);
-        assertNull(health);
-
+            client.agentClient().fail(serviceId);
+            Thread.sleep(100);
+            health = svHealth.getMap().get(serviceKey);
+            assertNull(health);
+        }
     }
 
     @Test
@@ -103,24 +97,31 @@ public class ConsulCacheTest extends BaseIntegrationTest {
         client.agentClient().register(8080, 20L, serviceName, serviceId2);
         client.agentClient().pass(serviceId2);
 
-        ServiceHealthCache svHealth = ServiceHealthCache.newCache(healthClient, serviceName);
+        try (ServiceHealthCache svHealth = ServiceHealthCache.newCache(healthClient, serviceName)) {
+            svHealth.start();
+            svHealth.awaitInitialized(3, TimeUnit.SECONDS);
 
-        svHealth.start();
-        svHealth.awaitInitialized(3, TimeUnit.SECONDS);
+            ServiceHealthKey serviceKey1 = getServiceHealthKeyFromCache(svHealth, serviceId, 8080)
+                    .orElseThrow(() -> new RuntimeException("Cannot find service key 1 from serviceHealthCache"));
 
-        Agent agent = client.agentClient().getAgent();
-        Thread.sleep(100);
+            ServiceHealthKey serviceKey2 = getServiceHealthKeyFromCache(svHealth, serviceId2, 8080)
+                    .orElseThrow(() -> new RuntimeException("Cannot find service key 2 from serviceHealthCache"));
 
-        ServiceHealthKey serviceKey1 = ServiceHealthKey.of(serviceId, agent.getDebugConfig().getAdvertiseAddrLAN(), 8080);
-        ServiceHealthKey serviceKey2 = ServiceHealthKey.of(serviceId2, agent.getDebugConfig().getAdvertiseAddrLAN(), 8080);
+            ImmutableMap<ServiceHealthKey, ServiceHealth> healthMap = svHealth.getMap();
+            assertEquals(healthMap.size(), 2);
+            ServiceHealth health =healthMap.get(serviceKey1);
+            ServiceHealth health2 = healthMap.get(serviceKey2);
 
-        ImmutableMap<ServiceHealthKey, ServiceHealth> healthMap = svHealth.getMap();
-        assertEquals(healthMap.size(), 2);
-        ServiceHealth health =healthMap.get(serviceKey1);
-        ServiceHealth health2 = healthMap.get(serviceKey2);
+            assertEquals(serviceId, health.getService().getId());
+            assertEquals(serviceId2, health2.getService().getId());
+        }
+    }
 
-        assertEquals(serviceId, health.getService().getId());
-        assertEquals(serviceId2, health2.getService().getId());
+    private static Optional<ServiceHealthKey> getServiceHealthKeyFromCache(ServiceHealthCache cache, String serviceId, int port) {
+        return cache.getMap().keySet()
+                .stream()
+                .filter(key -> serviceId.equals(key.getServiceId()) && (port == key.getPort()))
+                .findFirst();
     }
 
     @Test
@@ -144,8 +145,8 @@ public class ConsulCacheTest extends BaseIntegrationTest {
 
         ImmutableMap<String, Value> map = nc.getMap();
         for (int i = 0; i < 5; i++) {
-            String keyStr = "" + i;
-            String valStr = keyStr;
+            String keyStr = String.format("%s/%s", root, i);
+            String valStr = String.valueOf(i);
             assertEquals(valStr, map.get(keyStr).getValueAsString().get());
         }
 
@@ -159,8 +160,8 @@ public class ConsulCacheTest extends BaseIntegrationTest {
 
         map = nc.getMap();
         for (int i = 0; i < 5; i++) {
-            String keyStr = "" + i;
-            String valStr = i % 2 == 0 ? "" + (i * 10) : keyStr;
+            String keyStr = String.format("%s/%s", root, i);
+            String valStr = i % 2 == 0 ? "" + (i * 10) : String.valueOf(i);
             assertEquals(valStr, map.get(keyStr).getValueAsString().get());
         }
 
@@ -172,44 +173,40 @@ public class ConsulCacheTest extends BaseIntegrationTest {
     public void testListeners() throws Exception {
         KeyValueClient kvClient = client.keyValueClient();
         String root = UUID.randomUUID().toString();
+        final List<Map<String, Value>> events = new ArrayList<>();
 
-        KVCache nc = KVCache.newCache(
-                kvClient, root, 10
-        );
+        try (KVCache nc = KVCache.newCache(kvClient, root, 10)) {
+            nc.addListener(events::add);
+            nc.start();
 
-        final List<Map<String, Value>> events = new ArrayList<Map<String, Value>>();
-        nc.addListener(new ConsulCache.Listener<String, Value>() {
-            @Override
-            public void notify(Map<String, Value> newValues) {
-                events.add(newValues);
+            if (!nc.awaitInitialized(1, TimeUnit.SECONDS)) {
+                fail("cache initialization failed");
             }
-        });
 
-        nc.start();
-
-        if (!nc.awaitInitialized(1, TimeUnit.SECONDS)) {
-            fail("cache initialization failed");
-        }
-
-        for (int i = 0; i < 5; i++) {
-            kvClient.putValue(root + "/" + i, String.valueOf(i));
-            Thread.sleep(100);
+            for (int keyIdx = 0; keyIdx < 5; keyIdx++) {
+                kvClient.putValue(String.format("%s/%s", root, keyIdx), String.valueOf(keyIdx));
+                Thread.sleep(100);
+            }
         }
 
         assertEquals(6, events.size());
+        for (int eventIdx = 1; eventIdx < 6; eventIdx++) {
+            Map<String, Value> map = events.get(eventIdx);
+            assertEquals(eventIdx, map.size());
 
-        for (int i = -1; i < 5; i++) {
+            for (int keyIdx = 0; keyIdx < eventIdx; keyIdx++) {
+                Optional<String> value = map
+                        .get(String.format("%s/%s", root, keyIdx))
+                        .getValueAsString();
 
-            Map<String, Value> map = events.get(i+1);
-            assertEquals(i + 1, map.size());
-            for (int j = 0; j < i; j++) {
-                String keyStr = "" + j;
-                String valStr = keyStr;
-                assertEquals(valStr, map.get(keyStr).getValueAsString().get());
+                if (!value.isPresent()) {
+                    fail(String.format("Missing value for event %s and key %s", eventIdx, keyIdx));
+                }
+                assertEquals(String.valueOf(keyIdx), value.get());
             }
         }
-        kvClient.deleteKeys(root);
 
+        kvClient.deleteKeys(root);
     }
 
     @Test
@@ -233,20 +230,14 @@ public class ConsulCacheTest extends BaseIntegrationTest {
             Thread.sleep(100);
         }
 
-        nc.addListener(new ConsulCache.Listener<String, Value>() {
-            @Override
-            public void notify(Map<String, Value> newValues) {
-                events.add(newValues);
-            }
-        });
-
+        nc.addListener(events::add);
         assertEquals(1, events.size());
 
         Map<String, Value> map = events.get(0);
         assertEquals(5, map.size());
         for (int j = 0; j < 5; j++) {
-            String keyStr = "" + j;
-            String valStr = keyStr;
+            String keyStr = String.format("%s/%s", root, j);
+            String valStr = String.valueOf(j);
             assertEquals(valStr, map.get(keyStr).getValueAsString().get());
         }
         kvClient.deleteKeys(root);
@@ -262,13 +253,7 @@ public class ConsulCacheTest extends BaseIntegrationTest {
         );
 
         final List<Map<String, Value>> events = new ArrayList<Map<String, Value>>();
-        nc.addListener(new ConsulCache.Listener<String, Value>() {
-            @Override
-            public void notify(Map<String, Value> newValues) {
-                events.add(newValues);
-            }
-        });
-
+        nc.addListener(events::add);
         nc.start();
 
         if (!nc.awaitInitialized(1, TimeUnit.SECONDS)) {
@@ -307,20 +292,12 @@ public class ConsulCacheTest extends BaseIntegrationTest {
     public void testLifeCycle() throws Exception {
         KeyValueClient kvClient = client.keyValueClient();
         String root = UUID.randomUUID().toString();
+        final List<Map<String, Value>> events = new ArrayList<>();
 
-        KVCache nc = KVCache.newCache(
-                kvClient, root, 10
-        );
-
-        final List<Map<String, Value>> events = new ArrayList<Map<String, Value>>();
-        nc.addListener(new ConsulCache.Listener<String, Value>() {
-            @Override
-            public void notify(Map<String, Value> newValues) {
-                events.add(newValues);
-            }
-        });
-
+        KVCache nc = KVCache.newCache(kvClient, root, 10);
+        nc.addListener(events::add);
         assertEquals(ConsulCache.State.latent, nc.getState());
+
         nc.start();
         assertEquals(ConsulCache.State.starting, nc.getState());
 
@@ -334,7 +311,8 @@ public class ConsulCacheTest extends BaseIntegrationTest {
             kvClient.putValue(root + "/" + i, String.valueOf(i));
             Thread.sleep(100);
         }
-        assertEquals(5, events.size());
+        assertEquals(6, events.size());
+
         nc.stop();
         assertEquals(ConsulCache.State.stopped, nc.getState());
 
@@ -344,7 +322,7 @@ public class ConsulCacheTest extends BaseIntegrationTest {
             Thread.sleep(100);
         }
 
-        assertEquals(5, events.size());
+        assertEquals(6, events.size());
 
         kvClient.deleteKeys(root);
 

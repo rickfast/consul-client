@@ -9,8 +9,7 @@ import static org.junit.Assert.assertEquals;
 public class CheckTest {
 
     @Test(expected = IllegalStateException.class)
-    public void testCheckType() throws Exception {
-
+    public void buildingCheckThrowsIfMissingMethod() {
         ImmutableCheck.builder()
                 .id("id")
                 .interval("10s")
@@ -19,8 +18,7 @@ public class CheckTest {
     }
 
     @Test(expected = IllegalStateException.class)
-    public void testCheckIntervalHttp() throws Exception {
-
+    public void buildingCheckWithHttpThrowsIfMissingInterval() {
         ImmutableCheck.builder()
                 .id("id")
                 .http("http://foo.local:1337/health")
@@ -29,8 +27,7 @@ public class CheckTest {
     }
 
     @Test(expected = IllegalStateException.class)
-    public void testCheckIntervalScript() throws Exception {
-
+    public void buildingCheckWithScriptThrowsIfMissingInterval() {
         ImmutableCheck.builder()
                 .id("id")
                 .script("/bin/echo \"hi\"")
@@ -41,6 +38,7 @@ public class CheckTest {
     @Test
     public void serviceTagsAreNotNullWhenNotSpecified() {
         Check check = ImmutableCheck.builder()
+                .ttl("")
                 .name("name")
                 .id("id")
                 .build();
@@ -51,6 +49,7 @@ public class CheckTest {
     @Test
     public void serviceTagsCanBeAddedToCheck() {
         Check check = ImmutableCheck.builder()
+                .ttl("")
                 .name("name")
                 .id("id")
                 .addServiceTags("myTag")
