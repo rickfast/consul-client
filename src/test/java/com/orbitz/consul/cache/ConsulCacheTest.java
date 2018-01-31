@@ -70,8 +70,8 @@ public class ConsulCacheTest extends BaseIntegrationTest {
             svHealth.start();
             svHealth.awaitInitialized(3, TimeUnit.SECONDS);
 
-            ServiceHealthKey serviceKey = getServiceHealthKeyFromCache(svHealth, serviceId, 8080);
-            assertNotNull("Should find service key from serviceHealthCache", serviceKey);
+            ServiceHealthKey serviceKey = getServiceHealthKeyFromCache(svHealth, serviceId, 8080)
+                    .orElseThrow(() -> new RuntimeException("Cannot find service key from serviceHealthCache"));
 
             ServiceHealth health = svHealth.getMap().get(serviceKey);
             assertNotNull(health);
@@ -101,11 +101,11 @@ public class ConsulCacheTest extends BaseIntegrationTest {
             svHealth.start();
             svHealth.awaitInitialized(3, TimeUnit.SECONDS);
 
-            ServiceHealthKey serviceKey1 = getServiceHealthKeyFromCache(svHealth, serviceId, 8080);
-            assertNotNull("Should find service key 1 from serviceHealthCache", serviceKey1);
+            ServiceHealthKey serviceKey1 = getServiceHealthKeyFromCache(svHealth, serviceId, 8080)
+                    .orElseThrow(() -> new RuntimeException("Cannot find service key 1 from serviceHealthCache"));
 
-            ServiceHealthKey serviceKey2 = getServiceHealthKeyFromCache(svHealth, serviceId2, 8080);
-            assertNotNull("Should find service key 2 from serviceHealthCache", serviceKey2);
+            ServiceHealthKey serviceKey2 = getServiceHealthKeyFromCache(svHealth, serviceId2, 8080)
+                    .orElseThrow(() -> new RuntimeException("Cannot find service key 2 from serviceHealthCache"));
 
             ImmutableMap<ServiceHealthKey, ServiceHealth> healthMap = svHealth.getMap();
             assertEquals(healthMap.size(), 2);
@@ -117,12 +117,11 @@ public class ConsulCacheTest extends BaseIntegrationTest {
         }
     }
 
-    private ServiceHealthKey getServiceHealthKeyFromCache(ServiceHealthCache cache, String serviceId, int port) {
+    private static Optional<ServiceHealthKey> getServiceHealthKeyFromCache(ServiceHealthCache cache, String serviceId, int port) {
         return cache.getMap().keySet()
                 .stream()
                 .filter(key -> serviceId.equals(key.getServiceId()) && (port == key.getPort()))
-                .findFirst()
-                .orElse(null);
+                .findFirst();
     }
 
     @Test
