@@ -21,6 +21,8 @@ import java.math.BigInteger;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
+import static org.hamcrest.CoreMatchers.anyOf;
+import static org.hamcrest.CoreMatchers.is;
 import static org.mockito.Mockito.mock;
 import static org.junit.Assert.*;
 
@@ -278,7 +280,7 @@ public class ConsulCacheTest extends BaseIntegrationTest {
 
         assertEquals(ConsulCache.State.latent, nc.getState());
         nc.start();
-        assertEquals(ConsulCache.State.starting, nc.getState());
+        assertThat(nc.getState(), anyOf(is(ConsulCache.State.starting), is(ConsulCache.State.started)));
 
         if (!nc.awaitInitialized(10, TimeUnit.SECONDS)) {
             fail("cache initialization failed");
@@ -299,7 +301,7 @@ public class ConsulCacheTest extends BaseIntegrationTest {
         assertEquals(ConsulCache.State.latent, nc.getState());
 
         nc.start();
-        assertEquals(ConsulCache.State.starting, nc.getState());
+        assertThat(nc.getState(), anyOf(is(ConsulCache.State.starting), is(ConsulCache.State.started)));
 
         if (!nc.awaitInitialized(1, TimeUnit.SECONDS)) {
             fail("cache initialization failed");
