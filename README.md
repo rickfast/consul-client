@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/OrbitzWorldwide/consul-client.svg?branch=master)](https://travis-ci.org/OrbitzWorldwide/consul-client)
+[![Build Status](https://travis-ci.org/rickfast/consul-client.svg?branch=master)](https://travis-ci.org/rickfast/consul-client)
 [ ![Download](https://api.bintray.com/packages/orbitz/consul-client/consul-client/images/download.svg) ](https://bintray.com/orbitz/consul-client/consul-client/_latestVersion)
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.orbitz.consul/consul-client/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.orbitz.consul/consul-client)
 
