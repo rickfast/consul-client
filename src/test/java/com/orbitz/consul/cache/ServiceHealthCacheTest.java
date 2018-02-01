@@ -1,35 +1,86 @@
-package com.orbitz.consul;
+package com.orbitz.consul.cache;
 
-import com.google.common.net.HostAndPort;
-import com.orbitz.consul.cache.ConsulCache;
-import com.orbitz.consul.cache.ServiceHealthCache;
-import com.orbitz.consul.cache.ServiceHealthKey;
-import com.orbitz.consul.model.ConsulResponse;
-import com.orbitz.consul.model.State;
-import com.orbitz.consul.model.agent.ImmutableRegistration;
-import com.orbitz.consul.model.agent.Registration;
-import com.orbitz.consul.model.health.HealthCheck;
+import com.google.common.collect.ImmutableMap;
+import com.orbitz.consul.BaseIntegrationTest;
+import com.orbitz.consul.HealthClient;
 import com.orbitz.consul.model.health.ServiceHealth;
-import com.orbitz.consul.model.kv.Value;
-import com.orbitz.consul.option.ImmutableQueryOptions;
-import com.orbitz.consul.option.QueryOptions;
-import org.junit.Ignore;
 import org.junit.Test;
 
-import java.math.BigInteger;
-import java.net.UnknownHostException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static com.orbitz.consul.Consul.builder;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
-public class ServiceHealthCacheTests extends BaseIntegrationTest {
+public class ServiceHealthCacheTest extends BaseIntegrationTest {
+
+    @Test
+    public void nodeCacheServicePassingTest() throws Exception {
+        HealthClient healthClient = client.healthClient();
+        String serviceName = UUID.randomUUID().toString();
+        String serviceId = UUID.randomUUID().toString();
+
+        client.agentClient().register(8080, 20L, serviceName, serviceId);
+        client.agentClient().pass(serviceId);
+        Thread.sleep(100);
+
+        try (ServiceHealthCache svHealth = ServiceHealthCache.newCache(healthClient, serviceName)) {
+            svHealth.start();
+            svHealth.awaitInitialized(3, TimeUnit.SECONDS);
+
+            ServiceHealthKey serviceKey = getServiceHealthKeyFromCache(svHealth, serviceId, 8080)
+                    .orElseThrow(() -> new RuntimeException("Cannot find service key from serviceHealthCache"));
+
+            ServiceHealth health = svHealth.getMap().get(serviceKey);
+            assertNotNull(health);
+            assertEquals(serviceId, health.getService().getId());
+
+            client.agentClient().fail(serviceId);
+            Thread.sleep(100);
+            health = svHealth.getMap().get(serviceKey);
+            assertNull(health);
+        }
+    }
+
+    @Test
+    public void testServicesAreUniqueByID() throws Exception {
+        HealthClient healthClient = client.healthClient();
+        String serviceName = UUID.randomUUID().toString();
+        String serviceId = UUID.randomUUID().toString();
+        String serviceId2 = UUID.randomUUID().toString();
+
+        client.agentClient().register(8080, 20L, serviceName, serviceId);
+        client.agentClient().pass(serviceId);
+
+        client.agentClient().register(8080, 20L, serviceName, serviceId2);
+        client.agentClient().pass(serviceId2);
+
+        try (ServiceHealthCache svHealth = ServiceHealthCache.newCache(healthClient, serviceName)) {
+            svHealth.start();
+            svHealth.awaitInitialized(3, TimeUnit.SECONDS);
+
+            ServiceHealthKey serviceKey1 = getServiceHealthKeyFromCache(svHealth, serviceId, 8080)
+                    .orElseThrow(() -> new RuntimeException("Cannot find service key 1 from serviceHealthCache"));
+
+            ServiceHealthKey serviceKey2 = getServiceHealthKeyFromCache(svHealth, serviceId2, 8080)
+                    .orElseThrow(() -> new RuntimeException("Cannot find service key 2 from serviceHealthCache"));
+
+            ImmutableMap<ServiceHealthKey, ServiceHealth> healthMap = svHealth.getMap();
+            assertEquals(healthMap.size(), 2);
+            ServiceHealth health =healthMap.get(serviceKey1);
+            ServiceHealth health2 = healthMap.get(serviceKey2);
+
+            assertEquals(serviceId, health.getService().getId());
+            assertEquals(serviceId2, health2.getService().getId());
+        }
+    }
+
+    private static Optional<ServiceHealthKey> getServiceHealthKeyFromCache(ServiceHealthCache cache, String serviceId, int port) {
+        return cache.getMap().keySet()
+                .stream()
+                .filter(key -> serviceId.equals(key.getServiceId()) && (port == key.getPort()))
+                .findFirst();
+    }
 
     @Test
     public void shouldNotifyListener() throws Exception {
