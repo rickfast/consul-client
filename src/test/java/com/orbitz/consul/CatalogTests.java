@@ -1,17 +1,24 @@
 package com.orbitz.consul;
 
 import com.orbitz.consul.model.ConsulResponse;
-import com.orbitz.consul.model.catalog.*;
+import com.orbitz.consul.model.catalog.CatalogDeregistration;
+import com.orbitz.consul.model.catalog.CatalogNode;
+import com.orbitz.consul.model.catalog.CatalogRegistration;
+import com.orbitz.consul.model.catalog.CatalogService;
+import com.orbitz.consul.model.catalog.ImmutableCatalogDeregistration;
+import com.orbitz.consul.model.catalog.ImmutableCatalogRegistration;
 import com.orbitz.consul.model.health.ImmutableService;
 import com.orbitz.consul.model.health.Node;
 import com.orbitz.consul.model.health.ServiceHealth;
 import com.orbitz.consul.option.ImmutableQueryOptions;
 import com.orbitz.consul.option.QueryOptions;
+import com.orbitz.consul.util.Synchroniser;
 import org.junit.Ignore;
 import org.junit.Test;
 
 import java.math.BigInteger;
 import java.net.UnknownHostException;
+import java.time.Duration;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -164,7 +171,7 @@ public class CatalogTests extends BaseIntegrationTest {
 
         catalogClient.deregister(deregistration);
 
-        Thread.sleep(1000L);
+        Synchroniser.pause(Duration.ofSeconds(1));
         boolean found = false;
 
         for (ServiceHealth health : client.healthClient().getAllServiceInstances(service).getResponse()) {
@@ -175,6 +182,4 @@ public class CatalogTests extends BaseIntegrationTest {
 
         assertFalse(found);
     }
-
-
 }

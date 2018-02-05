@@ -4,8 +4,10 @@ import com.google.common.collect.ImmutableMap;
 import com.orbitz.consul.BaseIntegrationTest;
 import com.orbitz.consul.HealthClient;
 import com.orbitz.consul.model.health.ServiceHealth;
+import com.orbitz.consul.util.Synchroniser;
 import org.junit.Test;
 
+import java.time.Duration;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -22,7 +24,7 @@ public class ServiceHealthCacheTest extends BaseIntegrationTest {
 
         client.agentClient().register(8080, 20L, serviceName, serviceId);
         client.agentClient().pass(serviceId);
-        Thread.sleep(100);
+        Synchroniser.pause(Duration.ofMillis(100));
 
         try (ServiceHealthCache svHealth = ServiceHealthCache.newCache(healthClient, serviceName)) {
             svHealth.start();
@@ -36,7 +38,7 @@ public class ServiceHealthCacheTest extends BaseIntegrationTest {
             assertEquals(serviceId, health.getService().getId());
 
             client.agentClient().fail(serviceId);
-            Thread.sleep(100);
+            Synchroniser.pause(Duration.ofMillis(100));
             health = svHealth.getMap().get(serviceKey);
             assertNull(health);
         }
@@ -93,19 +95,14 @@ public class ServiceHealthCacheTest extends BaseIntegrationTest {
         ServiceHealthCache svHealth = ServiceHealthCache.newCache(client.healthClient(), serviceName);
 
         final List<Map<ServiceHealthKey, ServiceHealth>> events = new ArrayList<>();
-        svHealth.addListener(new ConsulCache.Listener<ServiceHealthKey, ServiceHealth>() {
-            @Override
-            public void notify(Map<ServiceHealthKey, ServiceHealth> newValues) {
-                events.add(newValues);
-            }
-        });
+        svHealth.addListener(events::add);
 
         svHealth.start();
         svHealth.awaitInitialized(1000, TimeUnit.MILLISECONDS);
 
-        Thread.sleep(200);
+        Synchroniser.pause(Duration.ofMillis(200));
         client.agentClient().deregister(serviceId);
-        Thread.sleep(200);
+        Synchroniser.pause(Duration.ofMillis(200));
 
         assertEquals(2, events.size());
         Map<ServiceHealthKey, ServiceHealth> event0 = events.get(0);
@@ -127,12 +124,7 @@ public class ServiceHealthCacheTest extends BaseIntegrationTest {
         ServiceHealthCache svHealth = ServiceHealthCache.newCache(client.healthClient(), serviceName);
 
         final List<Map<ServiceHealthKey, ServiceHealth>> events = new ArrayList<>();
-        svHealth.addListener(new ConsulCache.Listener<ServiceHealthKey, ServiceHealth>() {
-            @Override
-            public void notify(Map<ServiceHealthKey, ServiceHealth> newValues) {
-                events.add(newValues);
-            }
-        });
+        svHealth.addListener(events::add);
 
         svHealth.start();
         svHealth.awaitInitialized(1000, TimeUnit.MILLISECONDS);
@@ -150,36 +142,17 @@ public class ServiceHealthCacheTest extends BaseIntegrationTest {
         final ServiceHealthCache svHealth = ServiceHealthCache.newCache(client.healthClient(), serviceName);
 
         final AtomicInteger eventCount = new AtomicInteger(0);
-        svHealth.addListener(new ConsulCache.Listener<ServiceHealthKey, ServiceHealth>() {
-            @Override
-            public void notify(Map<ServiceHealthKey, ServiceHealth> newValues) {
-                eventCount.incrementAndGet();
-
-                Thread t = new Thread(new Runnable() {
-                    @Override
-                    public void run() {
-                        svHealth.addListener(new ConsulCache.Listener<ServiceHealthKey, ServiceHealth>() {
-                            @Override
-                            public void notify(Map<ServiceHealthKey, ServiceHealth> newValues) {
-                                eventCount.incrementAndGet();
-                            }
-                        });
-                    }
-                });
-                t.start();
-
-                try {
-                    Thread.sleep(500);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-            }
+        svHealth.addListener(newValues -> {
+            eventCount.incrementAndGet();
+            Thread t = new Thread(() -> svHealth.addListener(newValues1 -> eventCount.incrementAndGet()));
+            t.start();
+            Synchroniser.pause(Duration.ofMillis(500));
         });
 
         svHealth.start();
         svHealth.awaitInitialized(1000, TimeUnit.MILLISECONDS);
 
-        Thread.sleep(1000);
+        Synchroniser.pause(Duration.ofSeconds(1));
         assertEquals(2, eventCount.get());
         svHealth.stop();
     }

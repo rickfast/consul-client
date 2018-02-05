@@ -4,8 +4,10 @@ import com.orbitz.consul.BaseIntegrationTest;
 import com.orbitz.consul.HealthClient;
 import com.orbitz.consul.model.State;
 import com.orbitz.consul.model.health.HealthCheck;
+import com.orbitz.consul.util.Synchroniser;
 import org.junit.Test;
 
+import java.time.Duration;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
@@ -23,7 +25,7 @@ public class HealthCheckCacheTest extends BaseIntegrationTest {
         client.agentClient().registerCheck(checkId, checkName, 20L);
         try {
             client.agentClient().passCheck(checkId);
-            Thread.sleep(100);
+            Synchroniser.pause(Duration.ofMillis(100));
 
             try (HealthCheckCache hCheck = HealthCheckCache.newCache(healthClient, State.PASS)) {
                 hCheck.start();
@@ -33,7 +35,7 @@ public class HealthCheckCacheTest extends BaseIntegrationTest {
                 assertEquals(checkId, check.getCheckId());
 
                 client.agentClient().failCheck(checkId);
-                Thread.sleep(100);
+                Synchroniser.pause(Duration.ofMillis(100));
 
                 check = hCheck.getMap().get(checkId);
                 assertNull(check);

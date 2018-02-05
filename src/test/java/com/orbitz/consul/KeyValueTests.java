@@ -2,6 +2,8 @@ package com.orbitz.consul;
 
 import java.nio.charset.Charset;
 import java.util.Optional;
+
+import com.google.common.collect.ImmutableSet;
 import com.orbitz.consul.async.ConsulResponseCallback;
 import com.orbitz.consul.model.ConsulResponse;
 import com.orbitz.consul.model.kv.ImmutableOperation;
@@ -66,7 +68,6 @@ public class KeyValueTests extends BaseIntegrationTest {
         Value received = keyValueClient.getValue(key).get();
         assertEquals(value, received.getValueAsString().get());
         assertEquals(0L, received.getFlags());
-
     }
 
     @Test
@@ -79,7 +80,6 @@ public class KeyValueTests extends BaseIntegrationTest {
         Value received = keyValueClient.getValue(key).get();
         assertEquals(value, received.getValueAsString(TEST_CHARSET).get());
         assertEquals(0L, received.getFlags());
-
     }
 
     @Test
@@ -93,7 +93,6 @@ public class KeyValueTests extends BaseIntegrationTest {
         Value received = keyValueClient.getValue(key).get();
         assertEquals(value, received.getValueAsString().get());
         assertEquals(flags, received.getFlags());
-
     }
 
     @Test
@@ -107,12 +106,10 @@ public class KeyValueTests extends BaseIntegrationTest {
         Value received = keyValueClient.getValue(key).get();
         assertEquals(value, received.getValueAsString(TEST_CHARSET).get());
         assertEquals(flags, received.getFlags());
-
     }
 
     @Test
     public void putNullValue() {
-
         KeyValueClient keyValueClient = client.keyValueClient();
         String key = UUID.randomUUID().toString();
 
@@ -124,7 +121,6 @@ public class KeyValueTests extends BaseIntegrationTest {
 
     @Test
     public void putNullValueWithAnotherCharset() {
-
         KeyValueClient keyValueClient = client.keyValueClient();
         String key = UUID.randomUUID().toString();
 
@@ -144,12 +140,7 @@ public class KeyValueTests extends BaseIntegrationTest {
 
         assertTrue(keyValueClient.putValue(key, value));
         assertTrue(keyValueClient.putValue(key2, value2));
-        assertEquals(new HashSet<String>() {
-            {
-                add(value);
-                add(value2);
-            }
-        }, new HashSet<String>(keyValueClient.getValuesAsString(key)));
+        assertEquals(ImmutableSet.of(value, value2), new HashSet<>(keyValueClient.getValuesAsString(key)));
     }
 
     @Test
@@ -162,12 +153,7 @@ public class KeyValueTests extends BaseIntegrationTest {
 
         assertTrue(keyValueClient.putValue(key, value, TEST_CHARSET));
         assertTrue(keyValueClient.putValue(key2, value2, TEST_CHARSET));
-        assertEquals(new HashSet<String>() {
-            {
-                add(value);
-                add(value2);
-            }
-        }, new HashSet<String>(keyValueClient.getValuesAsString(key, TEST_CHARSET)));
+        assertEquals(ImmutableSet.of(value, value2), new HashSet<>(keyValueClient.getValuesAsString(key, TEST_CHARSET)));
     }
 
     @Test
@@ -177,18 +163,15 @@ public class KeyValueTests extends BaseIntegrationTest {
         final String value = UUID.randomUUID().toString();
 
         keyValueClient.putValue(key, value);
-
         assertTrue(keyValueClient.getValueAsString(key).isPresent());
 
         keyValueClient.deleteKey(key);
-
         assertFalse(keyValueClient.getValueAsString(key).isPresent());
     }
 
 
     @Test
     public void shouldDeleteRecursively() throws Exception {
-
         KeyValueClient keyValueClient = client.keyValueClient();
         String key = UUID.randomUUID().toString();
         String childKEY = key + "/" + UUID.randomUUID().toString();
@@ -204,7 +187,6 @@ public class KeyValueTests extends BaseIntegrationTest {
 
         assertFalse(keyValueClient.getValueAsString(key).isPresent());
         assertFalse(keyValueClient.getValueAsString(childKEY).isPresent());
-
     }
 
     @Test
@@ -229,8 +211,7 @@ public class KeyValueTests extends BaseIntegrationTest {
         assertTrue(valueAfter2ndPut.get().getValueAsString().isPresent());
 
         /**
-         * Trying to delete the key once with the older lock, which should not
-         * work
+         * Trying to delete the key once with the older lock, which should not work
          */
         final Builder deleteOptionsBuilderWithOlderLock = ImmutableDeleteOptions.builder();
         deleteOptionsBuilderWithOlderLock.cas(valueAfter1stPut.get().getModifyIndex());
@@ -391,7 +372,6 @@ public class KeyValueTests extends BaseIntegrationTest {
         assertTrue(response.get().getResponse().getKey().equals(key));
         assertTrue(response.get().getResponse().getValue().isPresent());
         assertNotNull(response.get().getIndex());
-
     }
 
     @Test

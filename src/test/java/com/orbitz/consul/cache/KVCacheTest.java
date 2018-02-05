@@ -6,6 +6,7 @@ import com.orbitz.consul.BaseIntegrationTest;
 import com.orbitz.consul.KeyValueClient;
 import com.orbitz.consul.model.kv.ImmutableValue;
 import com.orbitz.consul.model.kv.Value;
+import com.orbitz.consul.util.Synchroniser;
 import junitparams.JUnitParamsRunner;
 import junitparams.Parameters;
 import junitparams.naming.TestCaseName;
@@ -60,7 +61,7 @@ public class KVCacheTest extends BaseIntegrationTest {
             }
         }
 
-        Thread.sleep(100);
+        Synchroniser.pause(Duration.ofMillis(100));
 
         map = nc.getMap();
         for (int i = 0; i < 5; i++) {
@@ -89,7 +90,7 @@ public class KVCacheTest extends BaseIntegrationTest {
 
             for (int keyIdx = 0; keyIdx < 5; keyIdx++) {
                 kvClient.putValue(String.format("%s/%s", root, keyIdx), String.valueOf(keyIdx));
-                Thread.sleep(100);
+                Synchroniser.pause(Duration.ofMillis(100));
             }
         }
 
@@ -127,11 +128,11 @@ public class KVCacheTest extends BaseIntegrationTest {
             fail("cache initialization failed");
         }
 
-        final List<Map<String, Value>> events = new ArrayList<Map<String, Value>>();
+        final List<Map<String, Value>> events = new ArrayList<>();
 
         for (int i = 0; i < 5; i++) {
             kvClient.putValue(root + "/" + i, String.valueOf(i));
-            Thread.sleep(100);
+            Synchroniser.pause(Duration.ofMillis(100));
         }
 
         nc.addListener(events::add);
@@ -152,11 +153,8 @@ public class KVCacheTest extends BaseIntegrationTest {
         KeyValueClient kvClient = client.keyValueClient();
         String root = UUID.randomUUID().toString();
 
-        KVCache nc = KVCache.newCache(
-                kvClient, root, 10
-        );
-
-        final List<Map<String, Value>> events = new ArrayList<Map<String, Value>>();
+        KVCache nc = KVCache.newCache(kvClient, root, 10);
+        final List<Map<String, Value>> events = new ArrayList<>();
         nc.addListener(events::add);
         nc.start();
 
@@ -164,7 +162,7 @@ public class KVCacheTest extends BaseIntegrationTest {
             fail("cache initialization failed");
         }
 
-        Thread.sleep(100);
+        Synchroniser.pause(Duration.ofMillis(100));
 
         assertEquals(1, events.size());
         Map<String, Value> map = events.get(0);
@@ -176,10 +174,7 @@ public class KVCacheTest extends BaseIntegrationTest {
         KeyValueClient kvClient = client.keyValueClient();
         String root = UUID.randomUUID().toString();
 
-        KVCache nc = KVCache.newCache(
-                kvClient, root, 10
-        );
-
+        KVCache nc = KVCache.newCache(kvClient, root, 10);
         assertEquals(ConsulCache.State.latent, nc.getState());
         nc.start();
         assertThat(nc.getState(), anyOf(is(ConsulCache.State.starting), is(ConsulCache.State.started)));
@@ -213,7 +208,7 @@ public class KVCacheTest extends BaseIntegrationTest {
 
         for (int i = 0; i < 5; i++) {
             kvClient.putValue(root + "/" + i, String.valueOf(i));
-            Thread.sleep(100);
+            Synchroniser.pause(Duration.ofMillis(100));
         }
         assertEquals(6, events.size());
 
@@ -223,7 +218,7 @@ public class KVCacheTest extends BaseIntegrationTest {
         // now assert that we get no more update to the listener
         for (int i = 0; i < 5; i++) {
             kvClient.putValue(root + "/" + i + "-again", String.valueOf(i));
-            Thread.sleep(100);
+            Synchroniser.pause(Duration.ofMillis(100));
         }
 
         assertEquals(6, events.size());
@@ -336,7 +331,6 @@ public class KVCacheTest extends BaseIntegrationTest {
                 new Object[]{"a/b/", "a/b/", ""},
                 new Object[]{"a/b/", "a/b/c", "c"},
                 new Object[]{"/a/b", "a/b", ""}
-
         };
     }
 
@@ -347,7 +341,7 @@ public class KVCacheTest extends BaseIntegrationTest {
                 .lockIndex(1234567890)
                 .flags(1234567890)
                 .key(key)
-                .value(Optional.<String>empty())
+                .value(Optional.empty())
                 .build();
     }
 }

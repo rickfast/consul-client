@@ -2,7 +2,6 @@ package com.orbitz.consul;
 
 import okhttp3.internal.Util;
 import org.junit.Test;
-import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
 import java.util.ArrayList;
@@ -23,11 +22,8 @@ public class LifecycleTests extends BaseIntegrationTest {
 
     @Test
     public void shouldDestroyTheExecutorServiceWhenDestroyMethodIsInvoked() throws InterruptedException {
-        ExecutorService executorService = mock(ExecutorService.class, new Answer() {
-            @Override
-            public Object answer(InvocationOnMock invocationOnMock) throws Throwable {
-                throw new UnsupportedOperationException("Mock Method should not be called");
-            }
+        ExecutorService executorService = mock(ExecutorService.class, (Answer) invocationOnMock -> {
+            throw new UnsupportedOperationException("Mock Method should not be called");
         });
 
         doReturn(new ArrayList<>()).when(executorService).shutdownNow();
@@ -41,14 +37,11 @@ public class LifecycleTests extends BaseIntegrationTest {
     @Test
     public void shouldBeDestroyableWithCustomExecutorService() throws InterruptedException {
         ExecutorService executorService = new ThreadPoolExecutor(0, Integer.MAX_VALUE, 60, TimeUnit.SECONDS,
-                new SynchronousQueue<Runnable>(), Util.threadFactory("OkHttp Dispatcher", false));
+                new SynchronousQueue<>(), Util.threadFactory("OkHttp Dispatcher", false));
 
-        executorService.execute(new Runnable() {
-            @Override
-            public void run() {
-                Thread currentThread = Thread.currentThread();
-                System.out.println("This is a Task printing a message in Thread " + currentThread);
-            }
+        executorService.execute(() -> {
+            Thread currentThread = Thread.currentThread();
+            System.out.println("This is a Task printing a message in Thread " + currentThread);
         });
         Consul client = Consul.builder().withHostAndPort(defaultClientHostAndPort).withExecutorService(executorService).build();
         client.destroy();
@@ -56,15 +49,12 @@ public class LifecycleTests extends BaseIntegrationTest {
 
     public static void main(String[] args) {
         ExecutorService executorService = new ThreadPoolExecutor(0, Integer.MAX_VALUE, 10, TimeUnit.SECONDS,
-                new SynchronousQueue<Runnable>(), Util.threadFactory("OkHttp Dispatcher", false));
+                new SynchronousQueue<>(), Util.threadFactory("OkHttp Dispatcher", false));
 
         // execute a task in order to force the creation of a Thread in the ThreadPool
-        executorService.execute(new Runnable() {
-            @Override
-            public void run() {
-                Thread currentThread = Thread.currentThread();
-                System.out.println("This is a Task printing a message in Thread " + currentThread);
-            }
+        executorService.execute(() -> {
+            Thread currentThread = Thread.currentThread();
+            System.out.println("This is a Task printing a message in Thread " + currentThread);
         });
 
         Consul client = Consul.builder().withHostAndPort(defaultClientHostAndPort).withExecutorService(executorService).build();

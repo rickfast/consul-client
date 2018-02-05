@@ -1,7 +1,6 @@
 package com.orbitz.consul.util;
 
 import com.orbitz.consul.BaseIntegrationTest;
-import com.orbitz.consul.Consul;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
@@ -21,6 +20,4 @@ public class LeaderElectionUtilTest extends BaseIntegrationTest {
         assertEquals(serviceInfo, leutil.electNewLeaderForService(serviceName, serviceInfo).get());
         assertTrue(leutil.releaseLockForService(serviceName));
     }
-
-
 }

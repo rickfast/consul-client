@@ -55,7 +55,6 @@ public class SessionClientTest extends BaseIntegrationTest {
         } finally {
             sessionClient.destroySession(session.getId());
         }
-
     }
 
     @Test
