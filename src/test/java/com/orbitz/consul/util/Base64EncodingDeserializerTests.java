@@ -22,9 +22,10 @@ public class Base64EncodingDeserializerTests {
                 .version(1)
                 .payload(BaseEncoding.base64().encode(value.getBytes()))
                 .build();
-        String json = Jackson.MAPPER.writeValueAsString(event);
-        Event klazz = Jackson.MAPPER.readValue(json, Event.class);
 
-        assertEquals(value, klazz.getPayload().get());
+        String serializedEvent = Jackson.MAPPER.writeValueAsString(event);
+        Event deserializedEvent = Jackson.MAPPER.readValue(serializedEvent, Event.class);
+
+        assertEquals(value, deserializedEvent.getPayload().get());
     }
 }

@@ -19,19 +19,14 @@ public class SecondsSerDeTests {
         @JsonDeserialize(using = SecondsDeserializer.class)
         private Long seconds;
 
-        public Item() {
-        }
+        public Item() {}
 
-        public Item(Long seconds) {
+        Item(Long seconds) {
             this.seconds = seconds;
         }
 
-        public Long getSeconds() {
+        Long getSeconds() {
             return seconds;
-        }
-
-        public void setSeconds(Long seconds) {
-            this.seconds = seconds;
         }
     }
 

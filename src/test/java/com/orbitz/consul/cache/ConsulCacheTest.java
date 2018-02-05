@@ -1,6 +1,5 @@
 package com.orbitz.consul.cache;
 
-import com.google.common.base.Function;
 import com.google.common.collect.ImmutableMap;
 import com.orbitz.consul.BaseIntegrationTest;
 import com.orbitz.consul.config.CacheConfig;
@@ -12,7 +11,9 @@ import com.orbitz.consul.option.QueryOptions;
 import org.junit.Test;
 
 import java.math.BigInteger;
-import java.util.*;
+import java.util.Arrays;
+import java.util.List;
+import java.util.function.Function;
 
 import static org.mockito.Mockito.mock;
 import static org.junit.Assert.*;
@@ -26,12 +27,7 @@ public class ConsulCacheTest extends BaseIntegrationTest {
      */
     @Test
     public void testDuplicateServicesDontCauseFailure() {
-        final Function<Value, String> keyExtractor = new Function<Value, String>() {
-            @Override
-            public String apply(final Value input) {
-                return "SAME_KEY";
-            }
-        };
+        final Function<Value, String> keyExtractor = input -> "SAME_KEY";
         final List<Value> response = Arrays.asList(mock(Value.class), mock(Value.class));
         CacheConfig cacheConfig = mock(CacheConfig.class);
         final ConsulCache<String, Value> consulCache = new ConsulCache<>(keyExtractor, null, cacheConfig);

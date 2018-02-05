@@ -43,7 +43,6 @@ public class HealthTests extends BaseIntegrationTest {
 
         client.agentClient().deregister(serviceId);
         client.agentClient().deregister(serviceId2);
-
     }
 
     @Test
@@ -72,7 +71,6 @@ public class HealthTests extends BaseIntegrationTest {
                 ImmutableQueryOptions.builder().datacenter("dc1").build());
         assertHealth(serviceId, response);
         client.agentClient().deregister(serviceId);
-
     }
 
     @Test
@@ -87,7 +85,6 @@ public class HealthTests extends BaseIntegrationTest {
                 QueryOptions.blockSeconds(2, new BigInteger("0")).datacenter("dc1").build());
         assertHealth(serviceId, response);
         client.agentClient().deregister(serviceId);
-
     }
 
     @Test

@@ -127,7 +127,7 @@ public class KVCacheTest extends BaseIntegrationTest {
             fail("cache initialization failed");
         }
 
-        final List<Map<String, Value>> events = new ArrayList<Map<String, Value>>();
+        final List<Map<String, Value>> events = new ArrayList<>();
 
         for (int i = 0; i < 5; i++) {
             kvClient.putValue(root + "/" + i, String.valueOf(i));
@@ -152,11 +152,8 @@ public class KVCacheTest extends BaseIntegrationTest {
         KeyValueClient kvClient = client.keyValueClient();
         String root = UUID.randomUUID().toString();
 
-        KVCache nc = KVCache.newCache(
-                kvClient, root, 10
-        );
-
-        final List<Map<String, Value>> events = new ArrayList<Map<String, Value>>();
+        KVCache nc = KVCache.newCache(kvClient, root, 10);
+        final List<Map<String, Value>> events = new ArrayList<>();
         nc.addListener(events::add);
         nc.start();
 
@@ -176,10 +173,7 @@ public class KVCacheTest extends BaseIntegrationTest {
         KeyValueClient kvClient = client.keyValueClient();
         String root = UUID.randomUUID().toString();
 
-        KVCache nc = KVCache.newCache(
-                kvClient, root, 10
-        );
-
+        KVCache nc = KVCache.newCache(kvClient, root, 10);
         assertEquals(ConsulCache.State.latent, nc.getState());
         nc.start();
         assertThat(nc.getState(), anyOf(is(ConsulCache.State.starting), is(ConsulCache.State.started)));
@@ -336,7 +330,6 @@ public class KVCacheTest extends BaseIntegrationTest {
                 new Object[]{"a/b/", "a/b/", ""},
                 new Object[]{"a/b/", "a/b/c", "c"},
                 new Object[]{"/a/b", "a/b", ""}
-
         };
     }
 
@@ -347,7 +340,7 @@ public class KVCacheTest extends BaseIntegrationTest {
                 .lockIndex(1234567890)
                 .flags(1234567890)
                 .key(key)
-                .value(Optional.<String>empty())
+                .value(Optional.empty())
                 .build();
     }
 }

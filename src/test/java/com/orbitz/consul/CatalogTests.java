@@ -1,7 +1,12 @@
 package com.orbitz.consul;
 
 import com.orbitz.consul.model.ConsulResponse;
-import com.orbitz.consul.model.catalog.*;
+import com.orbitz.consul.model.catalog.CatalogDeregistration;
+import com.orbitz.consul.model.catalog.CatalogNode;
+import com.orbitz.consul.model.catalog.CatalogRegistration;
+import com.orbitz.consul.model.catalog.CatalogService;
+import com.orbitz.consul.model.catalog.ImmutableCatalogDeregistration;
+import com.orbitz.consul.model.catalog.ImmutableCatalogRegistration;
 import com.orbitz.consul.model.health.ImmutableService;
 import com.orbitz.consul.model.health.Node;
 import com.orbitz.consul.model.health.ServiceHealth;
@@ -175,6 +180,4 @@ public class CatalogTests extends BaseIntegrationTest {
 
         assertFalse(found);
     }
-
-
 }

@@ -192,7 +192,6 @@ public class AgentTests extends BaseIntegrationTest {
             if (service.getValue().getId().equals(id)) {
                 found = true;
             }
-            ;
         }
 
         assertTrue(found);
@@ -238,7 +237,6 @@ public class AgentTests extends BaseIntegrationTest {
             client.agentClient().deregisterCheck(checkId);
         }
     }
-
 
     @Test
     public void shouldRegisterNodeHttpCheck() throws InterruptedException, MalformedURLException {

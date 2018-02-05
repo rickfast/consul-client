@@ -93,12 +93,7 @@ public class ServiceHealthCacheTest extends BaseIntegrationTest {
         ServiceHealthCache svHealth = ServiceHealthCache.newCache(client.healthClient(), serviceName);
 
         final List<Map<ServiceHealthKey, ServiceHealth>> events = new ArrayList<>();
-        svHealth.addListener(new ConsulCache.Listener<ServiceHealthKey, ServiceHealth>() {
-            @Override
-            public void notify(Map<ServiceHealthKey, ServiceHealth> newValues) {
-                events.add(newValues);
-            }
-        });
+        svHealth.addListener(events::add);
 
         svHealth.start();
         svHealth.awaitInitialized(1000, TimeUnit.MILLISECONDS);
@@ -127,12 +122,7 @@ public class ServiceHealthCacheTest extends BaseIntegrationTest {
         ServiceHealthCache svHealth = ServiceHealthCache.newCache(client.healthClient(), serviceName);
 
         final List<Map<ServiceHealthKey, ServiceHealth>> events = new ArrayList<>();
-        svHealth.addListener(new ConsulCache.Listener<ServiceHealthKey, ServiceHealth>() {
-            @Override
-            public void notify(Map<ServiceHealthKey, ServiceHealth> newValues) {
-                events.add(newValues);
-            }
-        });
+        svHealth.addListener(events::add);
 
         svHealth.start();
         svHealth.awaitInitialized(1000, TimeUnit.MILLISECONDS);
@@ -150,29 +140,15 @@ public class ServiceHealthCacheTest extends BaseIntegrationTest {
         final ServiceHealthCache svHealth = ServiceHealthCache.newCache(client.healthClient(), serviceName);
 
         final AtomicInteger eventCount = new AtomicInteger(0);
-        svHealth.addListener(new ConsulCache.Listener<ServiceHealthKey, ServiceHealth>() {
-            @Override
-            public void notify(Map<ServiceHealthKey, ServiceHealth> newValues) {
-                eventCount.incrementAndGet();
+        svHealth.addListener(newValues -> {
+            eventCount.incrementAndGet();
+            Thread t = new Thread(() -> svHealth.addListener(newValues1 -> eventCount.incrementAndGet()));
+            t.start();
 
-                Thread t = new Thread(new Runnable() {
-                    @Override
-                    public void run() {
-                        svHealth.addListener(new ConsulCache.Listener<ServiceHealthKey, ServiceHealth>() {
-                            @Override
-                            public void notify(Map<ServiceHealthKey, ServiceHealth> newValues) {
-                                eventCount.incrementAndGet();
-                            }
-                        });
-                    }
-                });
-                t.start();
-
-                try {
-                    Thread.sleep(500);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
+            try {
+                Thread.sleep(500);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
             }
         });
 

@@ -21,7 +21,7 @@ import static org.junit.Assert.assertTrue;
 
 public class StatusClientTests extends BaseIntegrationTest {
 
-    private static Set<InetAddress> ips = new HashSet<InetAddress>();
+    private static Set<InetAddress> ips = new HashSet<>();
 
     @BeforeClass
     public static void getIps() throws RuntimeException {
@@ -47,22 +47,22 @@ public class StatusClientTests extends BaseIntegrationTest {
         }
     }
 
-    public boolean isLocalIp(String ipAddress) throws UnknownHostException {
+    private boolean isLocalIp(String ipAddress) throws UnknownHostException {
         InetAddress ip = InetAddress.getByName(ipAddress);
         return ips.contains(ip);
     }
 
-    public static final String IP_PORT_DELIM = ":";
+    private static final String IP_PORT_DELIM = ":";
 
-    public String getIp(String ipAndPort) {
+    private String getIp(String ipAndPort) {
         return ipAndPort.substring(0, ipAndPort.indexOf(IP_PORT_DELIM));
     }
 
-    public int getPort(String ipAndPort) {
+    private int getPort(String ipAndPort) {
         return Integer.valueOf(ipAndPort.substring(ipAndPort.indexOf(IP_PORT_DELIM) + 1));
     }
 
-    public void assertLocalIpAndCorrectPort(String ipAndPort) throws UnknownHostException {
+    private void assertLocalIpAndCorrectPort(String ipAndPort) throws UnknownHostException {
         String ip = getIp(ipAndPort);
         int port = getPort(ipAndPort);
         assertTrue(isLocalIp(ip));
