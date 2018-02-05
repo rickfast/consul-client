@@ -1,6 +1,5 @@
 package com.orbitz.consul;
 
-import com.google.common.net.HostAndPort;
 import okhttp3.internal.Util;
 import org.junit.Test;
 import org.mockito.invocation.InvocationOnMock;
@@ -14,11 +13,11 @@ import java.util.concurrent.TimeUnit;
 
 import static org.mockito.Mockito.*;
 
-public class LifecycleTests {
+public class LifecycleTests extends BaseIntegrationTest {
 
     @Test
     public void shouldBeDestroyable() {
-        Consul client = Consul.builder().withHostAndPort(HostAndPort.fromParts("localhost", 8500)).build();
+        Consul client = Consul.builder().withHostAndPort(defaultClientHostAndPort).build();
         client.destroy();
     }
 
@@ -33,7 +32,7 @@ public class LifecycleTests {
 
         doReturn(new ArrayList<>()).when(executorService).shutdownNow();
 
-        Consul client = Consul.builder().withHostAndPort(HostAndPort.fromParts("localhost", 8500)).withExecutorService(executorService).build();
+        Consul client = Consul.builder().withHostAndPort(defaultClientHostAndPort).withExecutorService(executorService).build();
         client.destroy();
 
         verify(executorService, times(1)).shutdownNow();
@@ -51,7 +50,7 @@ public class LifecycleTests {
                 System.out.println("This is a Task printing a message in Thread " + currentThread);
             }
         });
-        Consul client = Consul.builder().withHostAndPort(HostAndPort.fromParts("localhost", 8500)).withExecutorService(executorService).build();
+        Consul client = Consul.builder().withHostAndPort(defaultClientHostAndPort).withExecutorService(executorService).build();
         client.destroy();
     }
 
@@ -68,7 +67,7 @@ public class LifecycleTests {
             }
         });
 
-        Consul client = Consul.builder().withHostAndPort(HostAndPort.fromParts("localhost", 8500)).withExecutorService(executorService).build();
+        Consul client = Consul.builder().withHostAndPort(defaultClientHostAndPort).withExecutorService(executorService).build();
 
         // do not destroy the Consul client
         // in order to verify that the Java VM does not terminate, and waits for some time (keepAliveTime parameter of the ThreadPoolExecutor)

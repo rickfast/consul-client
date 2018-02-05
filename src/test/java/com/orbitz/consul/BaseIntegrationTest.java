@@ -9,10 +9,12 @@ public abstract class BaseIntegrationTest {
 
     protected static Consul client;
 
+    protected static HostAndPort defaultClientHostAndPort = HostAndPort.fromParts("localhost", 8500);
+
     @BeforeClass
     public static void beforeClass() {
         client = Consul.builder()
-                .withHostAndPort(HostAndPort.fromParts("localhost", 8500))
+                .withHostAndPort(defaultClientHostAndPort)
                 .withReadTimeoutMillis(Duration.ofSeconds(2).toMillis())
                 .build();
     }
