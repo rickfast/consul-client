@@ -6,6 +6,7 @@ import com.orbitz.consul.BaseIntegrationTest;
 import com.orbitz.consul.KeyValueClient;
 import com.orbitz.consul.model.kv.ImmutableValue;
 import com.orbitz.consul.model.kv.Value;
+import com.orbitz.consul.util.Synchroniser;
 import junitparams.JUnitParamsRunner;
 import junitparams.Parameters;
 import junitparams.naming.TestCaseName;
@@ -60,7 +61,7 @@ public class KVCacheTest extends BaseIntegrationTest {
             }
         }
 
-        Thread.sleep(100);
+        Synchroniser.pause(Duration.ofMillis(100));
 
         map = nc.getMap();
         for (int i = 0; i < 5; i++) {
@@ -89,7 +90,7 @@ public class KVCacheTest extends BaseIntegrationTest {
 
             for (int keyIdx = 0; keyIdx < 5; keyIdx++) {
                 kvClient.putValue(String.format("%s/%s", root, keyIdx), String.valueOf(keyIdx));
-                Thread.sleep(100);
+                Synchroniser.pause(Duration.ofMillis(100));
             }
         }
 
@@ -131,7 +132,7 @@ public class KVCacheTest extends BaseIntegrationTest {
 
         for (int i = 0; i < 5; i++) {
             kvClient.putValue(root + "/" + i, String.valueOf(i));
-            Thread.sleep(100);
+            Synchroniser.pause(Duration.ofMillis(100));
         }
 
         nc.addListener(events::add);
@@ -161,7 +162,7 @@ public class KVCacheTest extends BaseIntegrationTest {
             fail("cache initialization failed");
         }
 
-        Thread.sleep(100);
+        Synchroniser.pause(Duration.ofMillis(100));
 
         assertEquals(1, events.size());
         Map<String, Value> map = events.get(0);
@@ -207,7 +208,7 @@ public class KVCacheTest extends BaseIntegrationTest {
 
         for (int i = 0; i < 5; i++) {
             kvClient.putValue(root + "/" + i, String.valueOf(i));
-            Thread.sleep(100);
+            Synchroniser.pause(Duration.ofMillis(100));
         }
         assertEquals(6, events.size());
 
@@ -217,7 +218,7 @@ public class KVCacheTest extends BaseIntegrationTest {
         // now assert that we get no more update to the listener
         for (int i = 0; i < 5; i++) {
             kvClient.putValue(root + "/" + i + "-again", String.valueOf(i));
-            Thread.sleep(100);
+            Synchroniser.pause(Duration.ofMillis(100));
         }
 
         assertEquals(6, events.size());

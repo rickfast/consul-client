@@ -1,8 +1,11 @@
 package com.orbitz.consul;
 
 import com.orbitz.consul.model.event.Event;
+import com.orbitz.consul.util.Synchroniser;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.Test;
+
+import java.time.Duration;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -16,7 +19,7 @@ public class EventTests extends BaseIntegrationTest {
         String name = RandomStringUtils.random(10);
         Event fired = eventClient.fireEvent(name);
 
-        Thread.sleep(100);
+        Synchroniser.pause(Duration.ofMillis(100));
 
         boolean found = false;
 
@@ -37,7 +40,7 @@ public class EventTests extends BaseIntegrationTest {
         String name = RandomStringUtils.randomAlphabetic(10);
         Event fired = eventClient.fireEvent(name, payload);
 
-        Thread.sleep(100);
+        Synchroniser.pause(Duration.ofMillis(100));
 
         boolean found = false;
 

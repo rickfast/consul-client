@@ -7,12 +7,14 @@ import com.orbitz.consul.model.agent.Registration;
 import com.orbitz.consul.model.health.HealthCheck;
 import com.orbitz.consul.model.health.Service;
 import com.orbitz.consul.model.health.ServiceHealth;
+import com.orbitz.consul.util.Synchroniser;
 import org.junit.Ignore;
 import org.junit.Test;
 
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.UnknownHostException;
+import java.time.Duration;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -46,7 +48,7 @@ public class AgentTests extends BaseIntegrationTest {
 
         client.agentClient().register(8080, 10000L, serviceName, serviceId);
 
-        Thread.sleep(100);
+        Synchroniser.pause(Duration.ofMillis(100));
 
         boolean found = false;
 
@@ -68,7 +70,7 @@ public class AgentTests extends BaseIntegrationTest {
 
         client.agentClient().register(8080, new URL("http://localhost:1337/health"), 1000L, serviceName, serviceId);
 
-        Thread.sleep(100);
+        Synchroniser.pause(Duration.ofMillis(100));
 
         boolean found = false;
 
@@ -94,7 +96,7 @@ public class AgentTests extends BaseIntegrationTest {
 
         client.agentClient().register(8080, regChecks, serviceName, serviceId);
 
-        Thread.sleep(100);
+        Synchroniser.pause(Duration.ofMillis(100));
 
         boolean found = false;
 
@@ -132,7 +134,7 @@ public class AgentTests extends BaseIntegrationTest {
                 .build();
         client.agentClient().register(reg);
 
-        Thread.sleep(100);
+        Synchroniser.pause(Duration.ofMillis(100));
 
         boolean found = false;
 
@@ -153,7 +155,7 @@ public class AgentTests extends BaseIntegrationTest {
 
         client.agentClient().register(8080, 10000L, serviceName, serviceId);
         client.agentClient().deregister(serviceId);
-        Thread.sleep(1000L);
+        Synchroniser.pause(Duration.ofSeconds(1));
         boolean found = false;
 
         for (ServiceHealth health : client.healthClient().getAllServiceInstances(serviceName).getResponse()) {
