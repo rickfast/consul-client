@@ -3,6 +3,7 @@ package com.orbitz.consul.monitoring;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import okhttp3.Request;
 
+import java.time.Duration;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 
@@ -31,6 +32,22 @@ public class ClientEventHandler {
     public void httpRequestFailure(Request request, Throwable throwable) {
         EVENT_EXECUTOR.submit(() ->
                 callback.onHttpRequestFailure(clientName, request.method(), request.url().query(), throwable));
+    }
+
+    public void cacheStart() {
+        EVENT_EXECUTOR.submit(() -> callback.onCacheStart(clientName));
+    }
+
+    public void cacheStop() {
+        EVENT_EXECUTOR.submit(() -> callback.onCacheStop(clientName));
+    }
+
+    public void cachePollingError(Throwable throwable) {
+        EVENT_EXECUTOR.submit(() -> callback.onCachePollingError(clientName, throwable));
+    }
+
+    public void cachePollingSuccess(boolean withNotification, Duration duration) {
+        EVENT_EXECUTOR.submit(() -> callback.onCachePollingSuccess(clientName, withNotification, duration));
     }
 
 }
