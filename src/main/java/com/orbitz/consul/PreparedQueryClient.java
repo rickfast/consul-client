@@ -7,6 +7,7 @@ import com.orbitz.consul.model.query.PreparedQuery;
 import com.orbitz.consul.model.query.QueryId;
 import com.orbitz.consul.model.query.QueryResults;
 import com.orbitz.consul.model.query.StoredQuery;
+import com.orbitz.consul.monitoring.ClientEventCallback;
 import com.orbitz.consul.option.QueryOptions;
 import retrofit2.Call;
 import retrofit2.Retrofit;
@@ -22,6 +23,8 @@ import static com.orbitz.consul.util.Http.extractBasicResponse;
 
 public class PreparedQueryClient extends BaseClient {
 
+    private static String CLIENT_NAME = "preparedquery";
+
     private final Api api;
 
     /**
@@ -29,8 +32,8 @@ public class PreparedQueryClient extends BaseClient {
      *
      * @param retrofit The {@link Retrofit} to build a client from.
      */
-    PreparedQueryClient(Retrofit retrofit, ClientConfig config) {
-        super(config);
+    PreparedQueryClient(Retrofit retrofit, ClientConfig config, ClientEventCallback eventCallback) {
+        super(CLIENT_NAME, config, eventCallback);
         this.api = retrofit.create(Api.class);
     }
 

@@ -5,6 +5,7 @@ import com.orbitz.consul.config.ClientConfig;
 import com.orbitz.consul.model.session.Session;
 import com.orbitz.consul.model.session.SessionCreatedResponse;
 import com.orbitz.consul.model.session.SessionInfo;
+import com.orbitz.consul.monitoring.ClientEventCallback;
 import retrofit2.Call;
 import retrofit2.Retrofit;
 import retrofit2.http.*;
@@ -24,6 +25,8 @@ import static com.orbitz.consul.util.Http.handle;
  */
 public class SessionClient extends BaseClient {
 
+    private static String CLIENT_NAME = "session";
+
     private final Api api;
 
     /**
@@ -31,8 +34,8 @@ public class SessionClient extends BaseClient {
      *
      * @param retrofit The {@link Retrofit} to build a client from.
      */
-    SessionClient(Retrofit retrofit, ClientConfig config) {
-        super(config);
+    SessionClient(Retrofit retrofit, ClientConfig config, ClientEventCallback eventCallback) {
+        super(CLIENT_NAME, config, eventCallback);
         this.api = retrofit.create(Api.class);
     }
 

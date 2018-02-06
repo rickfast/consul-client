@@ -13,6 +13,7 @@ import com.orbitz.consul.model.kv.Operation;
 import com.orbitz.consul.model.kv.TxResponse;
 import com.orbitz.consul.model.kv.Value;
 import com.orbitz.consul.model.session.SessionInfo;
+import com.orbitz.consul.monitoring.ClientEventCallback;
 import com.orbitz.consul.option.ConsistencyMode;
 import com.orbitz.consul.option.DeleteOptions;
 import com.orbitz.consul.option.ImmutablePutOptions;
@@ -50,7 +51,9 @@ import static com.orbitz.consul.util.Strings.trimLeadingSlash;
  */
 public class KeyValueClient extends BaseClient {
 
+    private static String CLIENT_NAME = "keyvalue";
     public static final int NOT_FOUND_404 = 404;
+
     private final Api api;
 
     /**
@@ -58,8 +61,8 @@ public class KeyValueClient extends BaseClient {
      *
      * @param retrofit The {@link Retrofit} to build a client from.
      */
-    KeyValueClient(Retrofit retrofit, ClientConfig config) {
-        super(config);
+    KeyValueClient(Retrofit retrofit, ClientConfig config, ClientEventCallback eventCallback) {
+        super(CLIENT_NAME, config, eventCallback);
         this.api = retrofit.create(Api.class);
     }
 

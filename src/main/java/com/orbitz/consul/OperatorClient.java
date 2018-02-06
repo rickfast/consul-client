@@ -3,6 +3,7 @@ package com.orbitz.consul;
 import com.google.common.collect.ImmutableMap;
 import com.orbitz.consul.config.ClientConfig;
 import com.orbitz.consul.model.operator.RaftConfiguration;
+import com.orbitz.consul.monitoring.ClientEventCallback;
 import retrofit2.Call;
 import retrofit2.Retrofit;
 import retrofit2.http.DELETE;
@@ -17,10 +18,12 @@ import static com.orbitz.consul.util.Http.handle;
 
 public class OperatorClient extends BaseClient {
 
+    private static String CLIENT_NAME = "operator";
+
     private final Api api;
 
-    OperatorClient(Retrofit retrofit, ClientConfig config) {
-        super(config);
+    OperatorClient(Retrofit retrofit, ClientConfig config, ClientEventCallback eventCallback) {
+        super(CLIENT_NAME, config, eventCallback);
         this.api = retrofit.create(Api.class);
     }
 

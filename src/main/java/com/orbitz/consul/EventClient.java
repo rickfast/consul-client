@@ -6,6 +6,7 @@ import com.orbitz.consul.config.ClientConfig;
 import com.orbitz.consul.model.EventResponse;
 import com.orbitz.consul.model.ImmutableEventResponse;
 import com.orbitz.consul.model.event.Event;
+import com.orbitz.consul.monitoring.ClientEventCallback;
 import com.orbitz.consul.option.EventOptions;
 import com.orbitz.consul.option.QueryOptions;
 import okhttp3.MediaType;
@@ -32,6 +33,8 @@ import static com.orbitz.consul.util.Http.extract;
  */
 public class EventClient extends BaseClient {
 
+    private static String CLIENT_NAME = "event";
+
     private final Api api;
 
     /**
@@ -39,8 +42,8 @@ public class EventClient extends BaseClient {
      *
      * @param retrofit The {@link Retrofit} to build a client from.
      */
-    EventClient(Retrofit retrofit, ClientConfig config) {
-        super(config);
+    EventClient(Retrofit retrofit, ClientConfig config, ClientEventCallback eventCallback) {
+        super(CLIENT_NAME, config, eventCallback);
         this.api = retrofit.create(Api.class);
     }
 

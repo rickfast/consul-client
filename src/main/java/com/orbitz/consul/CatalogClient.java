@@ -8,6 +8,7 @@ import com.orbitz.consul.model.catalog.CatalogNode;
 import com.orbitz.consul.model.catalog.CatalogRegistration;
 import com.orbitz.consul.model.catalog.CatalogService;
 import com.orbitz.consul.model.health.Node;
+import com.orbitz.consul.monitoring.ClientEventCallback;
 import com.orbitz.consul.option.QueryOptions;
 import com.orbitz.consul.util.Http;
 import retrofit2.Call;
@@ -25,6 +26,8 @@ import static com.orbitz.consul.util.Http.handle;
  */
 public class CatalogClient extends BaseClient {
 
+    private static String CLIENT_NAME = "catalog";
+
     private final Api api;
 
     /**
@@ -32,8 +35,8 @@ public class CatalogClient extends BaseClient {
      *
      * @param retrofit The {@link Retrofit} to build a client from.
      */
-    CatalogClient(Retrofit retrofit, ClientConfig config) {
-        super(config);
+    CatalogClient(Retrofit retrofit, ClientConfig config, ClientEventCallback eventCallback) {
+        super(CLIENT_NAME, config, eventCallback);
         this.api = retrofit.create(Api.class);
     }
 

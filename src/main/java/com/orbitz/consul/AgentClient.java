@@ -7,6 +7,7 @@ import com.orbitz.consul.model.State;
 import com.orbitz.consul.model.agent.*;
 import com.orbitz.consul.model.health.HealthCheck;
 import com.orbitz.consul.model.health.Service;
+import com.orbitz.consul.monitoring.ClientEventCallback;
 import com.orbitz.consul.option.QueryOptions;
 import retrofit2.Call;
 import retrofit2.Retrofit;
@@ -28,6 +29,8 @@ import static com.orbitz.consul.util.Http.handle;
  */
 public class AgentClient extends BaseClient {
 
+    private static String CLIENT_NAME = "agent";
+
     private final Api api;
 
     /**
@@ -35,8 +38,8 @@ public class AgentClient extends BaseClient {
      *
      * @param retrofit The {@link Retrofit} to build a client from.
      */
-    AgentClient(Retrofit retrofit, ClientConfig config) {
-        super(config);
+    AgentClient(Retrofit retrofit, ClientConfig config, ClientEventCallback eventCallback) {
+        super(CLIENT_NAME, config, eventCallback);
         this.api = retrofit.create(Api.class);
     }
 

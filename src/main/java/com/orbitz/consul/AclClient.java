@@ -4,6 +4,7 @@ import com.orbitz.consul.config.ClientConfig;
 import com.orbitz.consul.model.acl.AclResponse;
 import com.orbitz.consul.model.acl.AclToken;
 import com.orbitz.consul.model.acl.AclTokenId;
+import com.orbitz.consul.monitoring.ClientEventCallback;
 import retrofit2.Call;
 import retrofit2.Retrofit;
 import retrofit2.http.Body;
@@ -17,10 +18,12 @@ import static com.orbitz.consul.util.Http.*;
 
 public class AclClient extends BaseClient {
 
+    private static String CLIENT_NAME = "acl";
+
     private final Api api;
 
-    AclClient(Retrofit retrofit, ClientConfig config) {
-        super(config);
+    AclClient(Retrofit retrofit, ClientConfig config, ClientEventCallback eventCallback) {
+        super(CLIENT_NAME, config, eventCallback);
         this.api = retrofit.create(Api.class);
     }
 
