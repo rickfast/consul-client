@@ -14,8 +14,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-import static com.orbitz.consul.util.Http.extract;
-
 /**
  * HTTP Client for /v1/coordinate/ endpoints.
  *
@@ -38,11 +36,11 @@ public class CoordinateClient extends BaseClient {
     }
 
     public List<Datacenter> getDatacenters() {
-        return extract(api.getDatacenters());
+        return http.extract(api.getDatacenters());
     }
 
     public List<Coordinate> getNodes(String dc) {
-        return extract(api.getNodes(dcQuery(dc)));
+        return http.extract(api.getNodes(dcQuery(dc)));
     }
 
     public List<Coordinate> getNodes() {

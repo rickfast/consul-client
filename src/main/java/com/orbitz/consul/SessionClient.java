@@ -15,9 +15,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-import static com.orbitz.consul.util.Http.extract;
-import static com.orbitz.consul.util.Http.handle;
-
 /**
  * HTTP Client for /v1/session/ endpoints.
  *
@@ -61,7 +58,7 @@ public class SessionClient extends BaseClient {
      * @return Response containing the session ID.
      */
     public SessionCreatedResponse createSession(final Session value, final String dc) {
-        return extract(api.createSession(value, dcQuery(dc)));
+        return http.extract(api.createSession(value, dcQuery(dc)));
     }
 
     private Map<String, String> dcQuery(String dc) {
@@ -80,7 +77,7 @@ public class SessionClient extends BaseClient {
      * @return The {@link SessionInfo} object for the renewed session.
      */
     public Optional<SessionInfo> renewSession(final String dc, final String sessionId) {
-        List<SessionInfo> sessionInfo = extract(api.renewSession(sessionId,
+        List<SessionInfo> sessionInfo = http.extract(api.renewSession(sessionId,
                 ImmutableMap.of(), dcQuery(dc)));
 
         return sessionInfo == null || sessionInfo.isEmpty() ? Optional.empty() :
@@ -107,7 +104,7 @@ public class SessionClient extends BaseClient {
      * @param dc        The data center.
      */
     public void destroySession(final String sessionId, final String dc) {
-        handle(api.destroySession(sessionId, dcQuery(dc)));
+        http.handle(api.destroySession(sessionId, dcQuery(dc)));
     }
 
     /**
@@ -132,7 +129,7 @@ public class SessionClient extends BaseClient {
      * @return {@link SessionInfo}.
      */
     public Optional<SessionInfo> getSessionInfo(final String sessionId, final String dc) {
-        List<SessionInfo> sessionInfo = extract(api.getSessionInfo(sessionId, dcQuery(dc)));
+        List<SessionInfo> sessionInfo = http.extract(api.getSessionInfo(sessionId, dcQuery(dc)));
 
         return sessionInfo == null || sessionInfo.isEmpty() ? Optional.empty() :
                 Optional.of(sessionInfo.get(0));
@@ -147,7 +144,7 @@ public class SessionClient extends BaseClient {
      * @return A list of available sessions.
      */
     public List<SessionInfo> listSessions(final String dc) {
-        return extract(api.listSessions(dcQuery(dc)));
+        return http.extract(api.listSessions(dcQuery(dc)));
     }
 
     /**

@@ -13,9 +13,6 @@ import retrofit2.http.QueryMap;
 
 import java.util.Map;
 
-import static com.orbitz.consul.util.Http.extract;
-import static com.orbitz.consul.util.Http.handle;
-
 public class OperatorClient extends BaseClient {
 
     private static String CLIENT_NAME = "operator";
@@ -28,31 +25,31 @@ public class OperatorClient extends BaseClient {
     }
 
     public RaftConfiguration getRaftConfiguration() {
-        return extract(api.getConfiguration(ImmutableMap.of()));
+        return http.extract(api.getConfiguration(ImmutableMap.of()));
     }
 
     public RaftConfiguration getRaftConfiguration(String datacenter) {
-        return extract(api.getConfiguration(ImmutableMap.of("dc", datacenter)));
+        return http.extract(api.getConfiguration(ImmutableMap.of("dc", datacenter)));
     }
 
     public RaftConfiguration getStaleRaftConfiguration(String datacenter) {
-        return extract(api.getConfiguration(ImmutableMap.of(
+        return http.extract(api.getConfiguration(ImmutableMap.of(
             "dc", datacenter, "stale", "true"
         )));
     }
 
     public RaftConfiguration getStaleRaftConfiguration() {
-        return extract(api.getConfiguration(ImmutableMap.of(
+        return http.extract(api.getConfiguration(ImmutableMap.of(
                 "stale", "true"
         )));
     }
 
     public void deletePeer(String address) {
-        handle(api.deletePeer(address, ImmutableMap.of()));
+        http.handle(api.deletePeer(address, ImmutableMap.of()));
     }
 
     public void deletePeer(String address, String datacenter) {
-        handle(api.deletePeer(address, ImmutableMap.of("dc", datacenter)));
+        http.handle(api.deletePeer(address, ImmutableMap.of("dc", datacenter)));
     }
 
     interface Api {

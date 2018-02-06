@@ -10,16 +10,12 @@ import com.orbitz.consul.model.catalog.CatalogService;
 import com.orbitz.consul.model.health.Node;
 import com.orbitz.consul.monitoring.ClientEventCallback;
 import com.orbitz.consul.option.QueryOptions;
-import com.orbitz.consul.util.Http;
 import retrofit2.Call;
 import retrofit2.Retrofit;
 import retrofit2.http.*;
 
 import java.util.List;
 import java.util.Map;
-
-import static com.orbitz.consul.util.Http.extractConsulResponse;
-import static com.orbitz.consul.util.Http.handle;
 
 /**
  * HTTP Client for /v1/catalog/ endpoints.
@@ -48,7 +44,7 @@ public class CatalogClient extends BaseClient {
      * @return A list of datacenter names.
      */
     public List<String> getDatacenters() {
-        return Http.extract(api.getDatacenters());
+        return http.extract(api.getDatacenters());
     }
 
     /**
@@ -73,7 +69,7 @@ public class CatalogClient extends BaseClient {
      * {@link com.orbitz.consul.model.health.Node} objects.
      */
     public ConsulResponse<List<Node>> getNodes(QueryOptions queryOptions) {
-        return extractConsulResponse(api.getNodes(queryOptions.toQuery(),
+        return http.extractConsulResponse(api.getNodes(queryOptions.toQuery(),
                 queryOptions.getTag(), queryOptions.getNodeMeta()));
     }
 
@@ -87,7 +83,7 @@ public class CatalogClient extends BaseClient {
      *                     {@link com.orbitz.consul.model.health.Node} objects.
      */
     public void getNodes(QueryOptions queryOptions, ConsulResponseCallback<List<Node>> callback) {
-        extractConsulResponse(api.getNodes(queryOptions.toQuery(), queryOptions.getTag(),
+        http.extractConsulResponse(api.getNodes(queryOptions.toQuery(), queryOptions.getTag(),
                 queryOptions.getNodeMeta()), callback);
     }
 
@@ -111,7 +107,7 @@ public class CatalogClient extends BaseClient {
      * @return A {@link com.orbitz.consul.model.ConsulResponse} containing a map of service name to list of tags.
      */
     public ConsulResponse<Map<String, List<String>>> getServices(QueryOptions queryOptions) {
-        return extractConsulResponse(api.getServices(queryOptions.toQuery(),
+        return http.extractConsulResponse(api.getServices(queryOptions.toQuery(),
                 queryOptions.getTag(), queryOptions.getNodeMeta()));
     }
 
@@ -137,7 +133,7 @@ public class CatalogClient extends BaseClient {
      * {@link com.orbitz.consul.model.catalog.CatalogService} objects.
      */
     public ConsulResponse<List<CatalogService>> getService(String service, QueryOptions queryOptions) {
-        return extractConsulResponse(api.getService(service, queryOptions.toQuery(),
+        return http.extractConsulResponse(api.getService(service, queryOptions.toQuery(),
                 queryOptions.getTag(), queryOptions.getNodeMeta()));
     }
 
@@ -161,7 +157,7 @@ public class CatalogClient extends BaseClient {
      * @return A list of matching {@link com.orbitz.consul.model.catalog.CatalogService} objects.
      */
     public ConsulResponse<CatalogNode> getNode(String node, QueryOptions queryOptions) {
-        return extractConsulResponse(api.getNode(node, queryOptions.toQuery(),
+        return http.extractConsulResponse(api.getNode(node, queryOptions.toQuery(),
                 queryOptions.getTag(), queryOptions.getNodeMeta()));
     }
 
@@ -184,7 +180,7 @@ public class CatalogClient extends BaseClient {
      * @param registration A {@link CatalogRegistration}
      */
     public void register(CatalogRegistration registration, QueryOptions options) {
-        handle(api.register(registration, options.toQuery()));
+        http.handle(api.register(registration, options.toQuery()));
     }
 
     /**
@@ -206,7 +202,7 @@ public class CatalogClient extends BaseClient {
      * @param deregistration A {@link CatalogDeregistration}
      */
     public void deregister(CatalogDeregistration deregistration, QueryOptions options) {
-        handle(api.deregister(deregistration, options.toQuery()));
+        http.handle(api.deregister(deregistration, options.toQuery()));
     }
 
     /**
