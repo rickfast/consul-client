@@ -6,6 +6,7 @@ import com.google.common.primitives.Ints;
 import com.orbitz.consul.KeyValueClient;
 import com.orbitz.consul.config.CacheConfig;
 import com.orbitz.consul.model.kv.Value;
+import com.orbitz.consul.monitoring.ClientEventHandler;
 import com.orbitz.consul.option.QueryOptions;
 
 import java.util.function.Function;
@@ -14,8 +15,9 @@ public class KVCache extends ConsulCache<String, Value> {
 
     private KVCache(Function<Value, String> keyConversion,
                     ConsulCache.CallbackConsumer<Value> callbackConsumer,
-                    CacheConfig cacheConfig) {
-        super(keyConversion, callbackConsumer, cacheConfig);
+                    CacheConfig cacheConfig,
+                    ClientEventHandler eventHandler) {
+        super(keyConversion, callbackConsumer, cacheConfig, eventHandler);
     }
 
     @VisibleForTesting
@@ -50,7 +52,10 @@ public class KVCache extends ConsulCache<String, Value> {
             kvClient.getValues(keyPath, params, callback);
         };
 
-        return new KVCache(keyExtractor, callbackConsumer, kvClient.getConfig().getCacheConfig());
+        return new KVCache(keyExtractor,
+                callbackConsumer,
+                kvClient.getConfig().getCacheConfig(),
+                kvClient.getEventHandler());
     }
 
     @VisibleForTesting

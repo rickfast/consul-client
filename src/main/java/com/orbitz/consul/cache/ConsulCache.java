@@ -8,6 +8,7 @@ import com.orbitz.consul.ConsulException;
 import com.orbitz.consul.async.ConsulResponseCallback;
 import com.orbitz.consul.config.CacheConfig;
 import com.orbitz.consul.model.ConsulResponse;
+import com.orbitz.consul.monitoring.ClientEventHandler;
 import com.orbitz.consul.option.ImmutableQueryOptions;
 import com.orbitz.consul.option.QueryOptions;
 import org.slf4j.Logger;
@@ -60,14 +61,17 @@ public class ConsulCache<K, V> implements AutoCloseable {
     private final Function<V, K> keyConversion;
     private final CallbackConsumer<V> callBackConsumer;
     private final ConsulResponseCallback<List<V>> responseCallback;
+    private final ClientEventHandler eventHandler;
 
     ConsulCache(
             Function<V, K> keyConversion,
             CallbackConsumer<V> callbackConsumer,
-            CacheConfig cacheConfig) {
+            CacheConfig cacheConfig,
+            ClientEventHandler eventHandler) {
 
         this.keyConversion = keyConversion;
         this.callBackConsumer = callbackConsumer;
+        this.eventHandler = eventHandler;
 
         this.responseCallback = new ConsulResponseCallback<List<V>>() {
             @Override
