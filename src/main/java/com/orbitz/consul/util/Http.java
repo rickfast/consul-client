@@ -1,5 +1,6 @@
 package com.orbitz.consul.util;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Sets;
 import com.orbitz.consul.ConsulException;
 import com.orbitz.consul.async.Callback;
@@ -26,51 +27,32 @@ public class Http {
     }
 
     public <T> T extract(Call<T> call, Integer... okCodes) {
-        Response<T> response;
-        try {
-            response = call.execute();
-        } catch (IOException e) {
-            eventHandler.httpRequestFailure(call.request(), e);
-            throw new ConsulException(e);
-        }
-
-        if(isSuccessful(response, okCodes)) {
-            eventHandler.httpRequestSuccess(call.request());
-            return response.body();
-        } else {
-            ConsulException exception = new ConsulException(response.code(), response);
-            eventHandler.httpRequestInvalid(call.request(), exception);
-            throw exception;
-        }
+        Response<T> response = executeCall(call);
+        ensureResponseSuccessful(call, response, okCodes);
+        return response.body();
     }
 
     public void handle(Call<Void> call, Integer... okCodes) {
-        Response<Void> response;
-        try {
-            response = call.execute();
-        } catch (IOException e) {
-            eventHandler.httpRequestFailure(call.request(), e);
-            throw new ConsulException(e);
-        }
-
-        if(isSuccessful(response, okCodes)) {
-            eventHandler.httpRequestSuccess(call.request());
-        } else {
-            ConsulException exception = new ConsulException(response.code(), response);
-            eventHandler.httpRequestInvalid(call.request(), exception);
-            throw exception;
-        }
+        Response<Void> response = executeCall(call);
+        ensureResponseSuccessful(call, response, okCodes);
     }
 
     public <T> ConsulResponse<T> extractConsulResponse(Call<T> call, Integer... okCodes) {
-        Response<T> response;
+        Response<T> response = executeCall(call);
+        ensureResponseSuccessful(call, response, okCodes);
+        return consulResponse(response);
+    }
+
+    private <T> Response<T> executeCall(Call<T> call) {
         try {
-            response = call.execute();
+            return call.execute();
         } catch (IOException e) {
             eventHandler.httpRequestFailure(call.request(), e);
             throw new ConsulException(e);
         }
+    }
 
+    private <T> void ensureResponseSuccessful(Call<T> call, Response<T> response, Integer... okCodes) {
         if(isSuccessful(response, okCodes)) {
             eventHandler.httpRequestSuccess(call.request());
         } else {
@@ -78,13 +60,17 @@ public class Http {
             eventHandler.httpRequestInvalid(call.request(), exception);
             throw exception;
         }
-
-        return consulResponse(response);
     }
 
     public <T> void extractConsulResponse(Call<T> call, final ConsulResponseCallback<T> callback,
                                                  final Integer... okCodes) {
-        call.enqueue(new retrofit2.Callback<T>() {
+        call.enqueue(createCallback(call, callback, okCodes));
+    }
+
+    @VisibleForTesting
+    <T> retrofit2.Callback<T> createCallback(Call<T> call, final ConsulResponseCallback<T> callback,
+                                             final Integer... okCodes) {
+        return new retrofit2.Callback<T>() {
             @Override
             public void onResponse(Call<T> call, Response<T> response) {
                 if (isSuccessful(response, okCodes)) {
@@ -107,26 +93,21 @@ public class Http {
 
     public <T> void extractBasicResponse(Call<T> call, final Callback<T> callback,
                                                 final Integer... okCodes) {
-        call.enqueue(new retrofit2.Callback<T>() {
+        extractConsulResponse(call, createConsulResponseCallbackWrapper(callback), okCodes);
+    }
 
+    private <T> ConsulResponseCallback<T> createConsulResponseCallbackWrapper(Callback<T> callback) {
+        return new ConsulResponseCallback<T>() {
             @Override
-            public void onResponse(Call<T> call, Response<T> response) {
-                if (isSuccessful(response, okCodes)) {
-                    eventHandler.httpRequestSuccess(call.request());
-                    callback.onResponse(response.body());
-                } else {
-                    ConsulException exception = new ConsulException(response.code(), response);
-                    eventHandler.httpRequestInvalid(call.request(), exception);
-                    callback.onFailure(exception);
-                }
+            public void onComplete(ConsulResponse<T> consulResponse) {
+                callback.onResponse(consulResponse.getResponse());
             }
 
             @Override
-            public void onFailure(Call<T> call, Throwable t) {
-                eventHandler.httpRequestFailure(call.request(), t);
-                callback.onFailure(t);
+            public void onFailure(Throwable throwable) {
+                callback.onFailure(throwable);
             }
-        });
+        };
     }
 
     private static <T> ConsulResponse<T> consulResponse(Response<T> response) {
