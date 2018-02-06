@@ -16,7 +16,7 @@ public class EventTests extends BaseIntegrationTest {
     public void shouldFire() throws InterruptedException {
         EventClient eventClient = client.eventClient();
 
-        String name = RandomStringUtils.random(10);
+        String name = RandomStringUtils.random(10, true, true);
         Event fired = eventClient.fireEvent(name);
 
         Synchroniser.pause(Duration.ofMillis(100));
