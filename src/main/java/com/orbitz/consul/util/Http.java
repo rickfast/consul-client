@@ -88,7 +88,7 @@ public class Http {
                 eventHandler.httpRequestFailure(call.request(), t);
                 callback.onFailure(t);
             }
-        });
+        };
     }
 
     public <T> void extractBasicResponse(Call<T> call, final Callback<T> callback,
@@ -110,7 +110,8 @@ public class Http {
         };
     }
 
-    private static <T> ConsulResponse<T> consulResponse(Response<T> response) {
+    @VisibleForTesting
+    static <T> ConsulResponse<T> consulResponse(Response<T> response) {
         Headers headers = response.headers();
         String indexHeaderValue = headers.get("X-Consul-Index");
         String lastContactHeaderValue = headers.get("X-Consul-Lastcontact");
