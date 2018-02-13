@@ -56,6 +56,7 @@ public class Consul {
     private final CoordinateClient coordinateClient;
     private final OperatorClient operatorClient;
     private final ExecutorService executorService;
+    private final OkHttpClient okHttpClient;
 
     /**
      * Private constructor.
@@ -66,7 +67,8 @@ public class Consul {
                    StatusClient statusClient, SessionClient sessionClient,
                    EventClient eventClient, PreparedQueryClient preparedQueryClient,
                    CoordinateClient coordinateClient, OperatorClient operatorClient,
-                   ExecutorService executorService, AclClient aclClient) {
+                   ExecutorService executorService, AclClient aclClient,
+                   OkHttpClient okHttpClient) {
         this.agentClient = agentClient;
         this.healthClient = healthClient;
         this.keyValueClient = keyValueClient;
@@ -79,12 +81,14 @@ public class Consul {
         this.operatorClient = operatorClient;
         this.executorService = executorService;
         this.aclClient = aclClient;
+        this.okHttpClient = okHttpClient;
     }
 
     /**
      * Destroys the Object internal state.
      */
     public void destroy() {
+        this.okHttpClient.dispatcher().cancelAll();
         this.executorService.shutdownNow();
     }
 
@@ -528,15 +532,18 @@ public class Consul {
 
             ClientConfig config = (clientConfig != null) ? clientConfig : new ClientConfig();
 
+            OkHttpClient okHttpClient = createOkHttpClient(
+                    this.sslContext,
+                    this.hostnameVerifier,
+                    this.proxy,
+                    executorService,
+                    config);
+
             try {
                 retrofit = createRetrofit(
                         buildUrl(this.url),
-                        this.sslContext,
-                        this.hostnameVerifier,
-                        this.proxy,
                         Jackson.MAPPER,
-                        executorService,
-                        config);
+                        okHttpClient);
             } catch (MalformedURLException e) {
                 throw new RuntimeException(e);
             }
@@ -558,17 +565,16 @@ public class Consul {
             }
             return new Consul(agentClient, healthClient, keyValueClient,
                     catalogClient, statusClient, sessionClient, eventClient,
-                    preparedQueryClient, coordinateClient, operatorClient, executorService, aclClient);
+                    preparedQueryClient, coordinateClient, operatorClient, executorService, aclClient, okHttpClient);
         }
 
         private String buildUrl(URL url) {
             return url.toExternalForm().replaceAll("/$", "") + "/v1/";
         }
 
+        private OkHttpClient createOkHttpClient(SSLContext sslContext, HostnameVerifier hostnameVerifier,
+                                                Proxy proxy, ExecutorService executorService, ClientConfig clientConfig) {
 
-        private Retrofit createRetrofit(String url, SSLContext sslContext, HostnameVerifier hostnameVerifier,
-                                        Proxy proxy, ObjectMapper mapper, ExecutorService executorService,
-                                        ClientConfig clientConfig) throws MalformedURLException {
             final OkHttpClient.Builder builder = new OkHttpClient.Builder();
 
             if (basicAuthInterceptor != null) {
@@ -617,6 +623,10 @@ public class Consul {
             dispatcher.setMaxRequests(Integer.MAX_VALUE);
             dispatcher.setMaxRequestsPerHost(Integer.MAX_VALUE);
             builder.dispatcher(dispatcher);
+            return builder.build();
+        }
+
+        private Retrofit createRetrofit(String url, ObjectMapper mapper, OkHttpClient okHttpClient) throws MalformedURLException {
 
             final URL consulUrl = new URL(url);
 
@@ -624,7 +634,7 @@ public class Consul {
                     .baseUrl(new URL(consulUrl.getProtocol(), consulUrl.getHost(),
                             consulUrl.getPort(), consulUrl.getFile()).toExternalForm())
                     .addConverterFactory(JacksonConverterFactory.create(mapper))
-                    .client(builder.build())
+                    .client(okHttpClient)
                     .build();
         }
 
