@@ -56,7 +56,9 @@ public class HttpTest {
         Response<String> response = Response.success(expectedBody);
         Call<String> call = mock(Call.class);
         doReturn(response).when(call).execute();
+
         String body = http.extract(call);
+
         assertEquals(expectedBody, body);
     }
 
@@ -66,6 +68,7 @@ public class HttpTest {
         Response<String> response = Response.success(expectedBody);
         Call<Void> call = mock(Call.class);
         doReturn(response).when(call).execute();
+
         http.handle(call);
     }
 
@@ -75,7 +78,9 @@ public class HttpTest {
         Response<String> response = Response.success(expectedBody);
         Call<String> call = mock(Call.class);
         doReturn(response).when(call).execute();
+
         ConsulResponse<String> consulResponse = http.extractConsulResponse(call);
+
         assertEquals(expectedBody, consulResponse.getResponse());
     }
 
@@ -97,6 +102,7 @@ public class HttpTest {
     private <U, V> void checkForFailedRequest(Function<Call<U>, V> httpCall) throws IOException {
         Call<U> call = mock(Call.class);
         doThrow(new IOException("failure")).when(call).execute();
+
         httpCall.apply(call);
     }
 
@@ -119,6 +125,7 @@ public class HttpTest {
         Response<String> response = Response.error(400, ResponseBody.create(MediaType.parse(""), "failure"));
         Call<U> call = mock(Call.class);
         doReturn(response).when(call).execute();
+
         httpCall.apply(call);
     }
 
@@ -142,7 +149,9 @@ public class HttpTest {
         Response<String> response = Response.success(expectedBody);
         Call<U> call = mock(Call.class);
         doReturn(response).when(call).execute();
+
         httpCall.apply(call);
+
         verify(clientEventHandler, only()).httpRequestSuccess(any(Request.class));
     }
 
@@ -164,11 +173,13 @@ public class HttpTest {
     private <U, V> void checkFailureEventIsSentWhenRequestFailed(Function<Call<U>, V> httpCall) throws IOException {
         Call<U> call = mock(Call.class);
         doThrow(new IOException("failure")).when(call).execute();
+
         try {
             httpCall.apply(call);
         } catch (ConsulException e) {
             //ignore
         }
+
         verify(clientEventHandler, only()).httpRequestFailure(any(Request.class), any(Throwable.class));
     }
 
@@ -191,11 +202,13 @@ public class HttpTest {
         Response<String> response = Response.error(400, ResponseBody.create(MediaType.parse(""), "failure"));
         Call<U> call = mock(Call.class);
         doReturn(response).when(call).execute();
+
         try {
             httpCall.apply(call);
         } catch (ConsulException e) {
             //ignore
         }
+
         verify(clientEventHandler, only()).httpRequestInvalid(any(Request.class), any(Throwable.class));
     }
 
@@ -213,17 +226,16 @@ public class HttpTest {
             @Override
             public void onFailure(Throwable throwable) { }
         };
-
         Call<String> call = mock(Call.class);
         Request request = new Request.Builder().url("http://localhost:8500/this/endpoint").build();
         when(call.request()).thenReturn(request);
         Callback<String> callCallback = http.createCallback(call, callback);
-
         String expectedBody = "success";
+
         Response<String> response = Response.success(expectedBody);
         callCallback.onResponse(call, response);
-
         latch.await(1, TimeUnit.SECONDS);
+
         assertEquals(expectedBody, result.get().getResponse());
         verify(clientEventHandler, only()).httpRequestSuccess(any(Request.class));
     }
@@ -240,7 +252,6 @@ public class HttpTest {
                 latch.countDown();
             }
         };
-
         Call<String> call = mock(Call.class);
         Request request = new Request.Builder().url("http://localhost:8500/this/endpoint").build();
         when(call.request()).thenReturn(request);
@@ -248,8 +259,8 @@ public class HttpTest {
 
         Response<String> response = Response.error(400, ResponseBody.create(MediaType.parse(""), "failure"));
         callCallback.onResponse(call, response);
-
         latch.await(1, TimeUnit.SECONDS);
+
         verify(clientEventHandler, only()).httpRequestInvalid(any(Request.class), any(Throwable.class));
     }
 
@@ -265,7 +276,6 @@ public class HttpTest {
                 latch.countDown();
             }
         };
-
         Call<String> call = mock(Call.class);
         Callback<String> callCallback = http.createCallback(call, callback);
 
@@ -277,9 +287,12 @@ public class HttpTest {
 
     @Test
     public void consulResponseShouldHaveResponseAndDefaultValuesIfNoHeader() {
-        Response<String> response = Response.success("success");
+        String responseMessage = "success";
+        ConsulResponse<String> expectedConsulResponse = new ConsulResponse<>(responseMessage, 0, false, BigInteger.ZERO);
+
+        Response<String> response = Response.success(responseMessage);
         ConsulResponse<String> consulResponse = Http.consulResponse(response);
-        ConsulResponse<String> expectedConsulResponse = new ConsulResponse<>("success", 0, false, BigInteger.ZERO);
+
         assertEquals(expectedConsulResponse, consulResponse);
     }
 
@@ -287,6 +300,7 @@ public class HttpTest {
     public void consulResponseShouldHaveIndexIfPresentInHeader() {
         Response<String> response = Response.success("", Headers.of("X-Consul-Index", "10"));
         ConsulResponse<String> consulResponse = Http.consulResponse(response);
+
         assertEquals(BigInteger.TEN, consulResponse.getIndex());
     }
 
@@ -294,6 +308,7 @@ public class HttpTest {
     public void consulResponseShouldHaveLastContactIfPresentInHeader() {
         Response<String> response = Response.success("", Headers.of("X-Consul-Lastcontact", "2"));
         ConsulResponse<String> consulResponse = Http.consulResponse(response);
+
         assertEquals(2L, consulResponse.getLastContact());
     }
 
@@ -301,6 +316,7 @@ public class HttpTest {
     public void consulResponseShouldHaveKnownLeaderIfPresentInHeader() {
         Response<String> response = Response.success("", Headers.of("X-Consul-Knownleader", "true"));
         ConsulResponse<String> consulResponse = Http.consulResponse(response);
+
         assertEquals(true, consulResponse.isKnownLeader());
     }
 }
