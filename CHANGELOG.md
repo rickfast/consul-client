@@ -6,11 +6,16 @@
 
 **Closed issues:**
 
+- Unable to shut down immediately during a blocking query [\#307](https://github.com/rickfast/consul-client/issues/307)
+- Upgrade Consul version in test [\#303](https://github.com/rickfast/consul-client/issues/303)
 - CHANGELOG and Releases have diverged [\#305](https://github.com/rickfast/consul-client/issues/305)
 - Most Unit/Integration test are not run by travis [\#296](https://github.com/rickfast/consul-client/issues/296)
 
 **Merged pull requests:**
 
+- Add event monitoring [\#306](https://github.com/rickfast/consul-client/pull/306) ([yfouquet](https://github.com/yfouquet))
+- Cancel all okhttp requests in Consul.destroy() [\#308](https://github.com/rickfast/consul-client/pull/308) ([ZstringX](https://github.com/ZstringX))
+- Upgrade Consul version in test to 1.0.3 [\#304](https://github.com/rickfast/consul-client/pull/304) ([yfouquet](https://github.com/yfouquet))
 - Tests cleaning [\#302](https://github.com/rickfast/consul-client/pull/302) ([yfouquet](https://github.com/yfouquet))
 - Inject the same Consul host/port everywhere for integration tests [\#301](https://github.com/rickfast/consul-client/pull/301) ([yfouquet](https://github.com/yfouquet))
 - Move all cache related tests in "right" place [\#300](https://github.com/rickfast/consul-client/pull/300) ([yfouquet](https://github.com/yfouquet))
