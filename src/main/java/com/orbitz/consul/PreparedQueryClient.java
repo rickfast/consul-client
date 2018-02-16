@@ -7,6 +7,7 @@ import com.orbitz.consul.model.query.PreparedQuery;
 import com.orbitz.consul.model.query.QueryId;
 import com.orbitz.consul.model.query.QueryResults;
 import com.orbitz.consul.model.query.StoredQuery;
+import com.orbitz.consul.monitoring.ClientEventCallback;
 import com.orbitz.consul.option.QueryOptions;
 import retrofit2.Call;
 import retrofit2.Retrofit;
@@ -17,10 +18,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-import static com.orbitz.consul.util.Http.extract;
-import static com.orbitz.consul.util.Http.extractBasicResponse;
-
 public class PreparedQueryClient extends BaseClient {
+
+    private static String CLIENT_NAME = "preparedquery";
 
     private final Api api;
 
@@ -29,8 +29,8 @@ public class PreparedQueryClient extends BaseClient {
      *
      * @param retrofit The {@link Retrofit} to build a client from.
      */
-    PreparedQueryClient(Retrofit retrofit, ClientConfig config) {
-        super(config);
+    PreparedQueryClient(Retrofit retrofit, ClientConfig config, ClientEventCallback eventCallback) {
+        super(CLIENT_NAME, config, eventCallback);
         this.api = retrofit.create(Api.class);
     }
 
@@ -56,7 +56,7 @@ public class PreparedQueryClient extends BaseClient {
      * @return The ID of the created query.
      */
     public String createPreparedQuery(PreparedQuery preparedQuery, final String dc) {
-        return extract(api.createPreparedQuery(preparedQuery, dcQuery(dc))).getId();
+        return http.extract(api.createPreparedQuery(preparedQuery, dcQuery(dc))).getId();
     }
 
     private Map<String, String> dcQuery(String dc) {
@@ -83,7 +83,7 @@ public class PreparedQueryClient extends BaseClient {
      * @return The list of prepared queries.
      */
     public List<StoredQuery> getPreparedQueries(final String dc) {
-        return extract(api.getPreparedQueries(dcQuery(dc)));
+        return http.extract(api.getPreparedQueries(dcQuery(dc)));
     }
 
     /**
@@ -108,7 +108,7 @@ public class PreparedQueryClient extends BaseClient {
      * @return The store prepared query.
      */
     public Optional<StoredQuery> getPreparedQuery(String id, final String dc) {
-        List<StoredQuery> result = extract(api.getPreparedQuery(id, dcQuery(dc)));
+        List<StoredQuery> result = http.extract(api.getPreparedQuery(id, dcQuery(dc)));
 
         return result.isEmpty() ? Optional.empty() : Optional.of(result.get(0));
     }
@@ -120,7 +120,7 @@ public class PreparedQueryClient extends BaseClient {
      * @return A {@link QueryResults} object containing service instances.
      */
     public QueryResults execute(String nameOrId) {
-        return extract(api.execute(nameOrId, Collections.emptyMap()));
+        return http.extract(api.execute(nameOrId, Collections.emptyMap()));
     }
 
     /**
@@ -131,7 +131,7 @@ public class PreparedQueryClient extends BaseClient {
      * @param callback Basic callback for the response.
      */
     public void execute(String nameOrId, QueryOptions options, final Callback<QueryResults> callback) {
-        extractBasicResponse(api.execute(nameOrId, options.toQuery()), callback);
+        http.extractBasicResponse(api.execute(nameOrId, options.toQuery()), callback);
     }
 
     /**

@@ -5,6 +5,7 @@ import com.google.common.primitives.Ints;
 import com.orbitz.consul.HealthClient;
 import com.orbitz.consul.config.CacheConfig;
 import com.orbitz.consul.model.health.ServiceHealth;
+import com.orbitz.consul.monitoring.ClientEventHandler;
 import com.orbitz.consul.option.QueryOptions;
 
 import java.util.function.Function;
@@ -13,8 +14,9 @@ public class ServiceHealthCache extends ConsulCache<ServiceHealthKey, ServiceHea
 
     private ServiceHealthCache(Function<ServiceHealth, ServiceHealthKey> keyConversion,
                                CallbackConsumer<ServiceHealth> callbackConsumer,
-                               CacheConfig cacheConfig) {
-        super(keyConversion, callbackConsumer, cacheConfig);
+                               CacheConfig cacheConfig,
+                               ClientEventHandler eventHandler) {
+        super(keyConversion, callbackConsumer, cacheConfig, eventHandler);
     }
 
     /**
@@ -44,7 +46,10 @@ public class ServiceHealthCache extends ConsulCache<ServiceHealthKey, ServiceHea
             }
         };
 
-        return new ServiceHealthCache(keyExtractor, callbackConsumer, healthClient.getConfig().getCacheConfig());
+        return new ServiceHealthCache(keyExtractor,
+                callbackConsumer,
+                healthClient.getConfig().getCacheConfig(),
+                healthClient.getEventHandler());
     }
 
     public static ServiceHealthCache newCache(

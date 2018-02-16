@@ -7,6 +7,7 @@ import com.orbitz.consul.model.State;
 import com.orbitz.consul.model.agent.*;
 import com.orbitz.consul.model.health.HealthCheck;
 import com.orbitz.consul.model.health.Service;
+import com.orbitz.consul.monitoring.ClientEventCallback;
 import com.orbitz.consul.option.QueryOptions;
 import retrofit2.Call;
 import retrofit2.Retrofit;
@@ -18,15 +19,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-import static com.orbitz.consul.util.Http.extract;
-import static com.orbitz.consul.util.Http.handle;
-
 /**
  * HTTP Client for /v1/agent/ endpoints.
  *
  * @see <a href="http://www.consul.io/docs/agent/http.html#agent">The Consul API Docs</a>
  */
 public class AgentClient extends BaseClient {
+
+    private static String CLIENT_NAME = "agent";
 
     private final Api api;
 
@@ -35,8 +35,8 @@ public class AgentClient extends BaseClient {
      *
      * @param retrofit The {@link Retrofit} to build a client from.
      */
-    AgentClient(Retrofit retrofit, ClientConfig config) {
-        super(config);
+    AgentClient(Retrofit retrofit, ClientConfig config, ClientEventCallback eventCallback) {
+        super(CLIENT_NAME, config, eventCallback);
         this.api = retrofit.create(Api.class);
     }
 
@@ -179,7 +179,7 @@ public class AgentClient extends BaseClient {
      * @param options An optional QueryOptions instance.
      */
     public void register(Registration registration, QueryOptions options) {
-        handle(api.register(registration, options.toQuery()));
+        http.handle(api.register(registration, options.toQuery()));
     }
 
     public void register(Registration registration) {
@@ -191,7 +191,7 @@ public class AgentClient extends BaseClient {
      * De-register a particular service from the Consul Agent.
      */
     public void deregister(String serviceId, QueryOptions options) {
-        handle(api.deregister(serviceId, options.toQuery()));
+        http.handle(api.deregister(serviceId, options.toQuery()));
     }
 
     /**
@@ -339,7 +339,7 @@ public class AgentClient extends BaseClient {
      * @param check The Check to register.
      */
     public void registerCheck(Check check) {
-        handle(api.registerCheck(check));
+        http.handle(api.registerCheck(check));
     }
 
     /**
@@ -348,7 +348,7 @@ public class AgentClient extends BaseClient {
      * @param checkId the id of the Check to deregister
      */
     public void deregisterCheck(String checkId) {
-        handle(api.deregisterCheck(checkId));
+        http.handle(api.deregisterCheck(checkId));
     }
 
     /**
@@ -359,7 +359,7 @@ public class AgentClient extends BaseClient {
      * @return The Agent information.
      */
     public Agent getAgent() {
-        return extract(api.getAgent());
+        return http.extract(api.getAgent());
     }
 
     /**
@@ -370,7 +370,7 @@ public class AgentClient extends BaseClient {
      * @return Map of Check ID to Checks.
      */
     public Map<String, HealthCheck> getChecks() {
-        return extract(api.getChecks());
+        return http.extract(api.getChecks());
     }
 
     /**
@@ -381,7 +381,7 @@ public class AgentClient extends BaseClient {
      * @return Map of Service ID to Services.
      */
     public Map<String, Service> getServices() {
-        return extract(api.getServices());
+        return http.extract(api.getServices());
     }
 
     /**
@@ -392,7 +392,7 @@ public class AgentClient extends BaseClient {
      * @return List of Members.
      */
     public List<Member> getMembers() {
-        return extract(api.getMembers());
+        return http.extract(api.getMembers());
     }
 
     /**
@@ -403,7 +403,7 @@ public class AgentClient extends BaseClient {
      * @param node
      */
     public void forceLeave(String node) {
-        handle(api.forceLeave());
+        http.handle(api.forceLeave());
     }
 
     /**
@@ -417,7 +417,7 @@ public class AgentClient extends BaseClient {
         try {
             Map<String, String> query = note == null ? Collections.emptyMap() : ImmutableMap.of("note", note);
 
-            handle(api.check(state.getPath(), checkId, query));
+            http.handle(api.check(state.getPath(), checkId, query));
         } catch (Exception ex) {
             throw new NotRegisteredException("Error checking state", ex);
         }
@@ -428,11 +428,6 @@ public class AgentClient extends BaseClient {
      * then delegates to check(String checkId, State state, String note)
      * This method only works with TTL checks that have not been given a custom
      * name.
-     *
-     * @param serviceId
-     * @param state
-     * @param note
-     * @throws NotRegisteredException
      */
     public void checkTtl(String serviceId, State state, String note) throws NotRegisteredException {
         check("service:" + serviceId, state, note);
@@ -548,7 +543,7 @@ public class AgentClient extends BaseClient {
         boolean result = true;
 
         try {
-            handle(api.join(address, query));
+            http.handle(api.join(address, query));
         } catch(Exception ex) {
             result = false;
         }
@@ -564,7 +559,7 @@ public class AgentClient extends BaseClient {
      *               maintenance mode, otherwise <code>false</code>.
      */
     public void toggleMaintenanceMode(String serviceId, boolean enable) {
-        handle(api.toggleMaintenanceMode(serviceId,
+        http.handle(api.toggleMaintenanceMode(serviceId,
                 ImmutableMap.of("enable", Boolean.toString(enable))));
     }
 
@@ -579,7 +574,7 @@ public class AgentClient extends BaseClient {
     public void toggleMaintenanceMode(String serviceId,
                                       boolean enable,
                                       String reason) {
-        handle(api.toggleMaintenanceMode(serviceId,
+        http.handle(api.toggleMaintenanceMode(serviceId,
                 ImmutableMap.of("enable", Boolean.toString(enable),
                                 "reason", reason)));
     }

@@ -13,6 +13,7 @@ import com.orbitz.consul.model.kv.Operation;
 import com.orbitz.consul.model.kv.TxResponse;
 import com.orbitz.consul.model.kv.Value;
 import com.orbitz.consul.model.session.SessionInfo;
+import com.orbitz.consul.monitoring.ClientEventCallback;
 import com.orbitz.consul.option.ConsistencyMode;
 import com.orbitz.consul.option.DeleteOptions;
 import com.orbitz.consul.option.ImmutablePutOptions;
@@ -40,9 +41,6 @@ import java.util.List;
 import java.util.Map;
 
 import static com.google.common.base.Preconditions.checkArgument;
-import static com.orbitz.consul.util.Http.extract;
-import static com.orbitz.consul.util.Http.extractConsulResponse;
-import static com.orbitz.consul.util.Http.handle;
 import static com.orbitz.consul.util.Strings.trimLeadingSlash;
 
 /**
@@ -50,7 +48,9 @@ import static com.orbitz.consul.util.Strings.trimLeadingSlash;
  */
 public class KeyValueClient extends BaseClient {
 
+    private static String CLIENT_NAME = "keyvalue";
     public static final int NOT_FOUND_404 = 404;
+
     private final Api api;
 
     /**
@@ -58,8 +58,8 @@ public class KeyValueClient extends BaseClient {
      *
      * @param retrofit The {@link Retrofit} to build a client from.
      */
-    KeyValueClient(Retrofit retrofit, ClientConfig config) {
-        super(config);
+    KeyValueClient(Retrofit retrofit, ClientConfig config, ClientEventCallback eventCallback) {
+        super(CLIENT_NAME, config, eventCallback);
         this.api = retrofit.create(Api.class);
     }
 
@@ -70,7 +70,7 @@ public class KeyValueClient extends BaseClient {
      * GET /v1/kv/{key}
      *
      * @param key The key to retrieve.
-     * @return An {@link Optional} containing the value or {@link Optional.empty()()}
+     * @return An {@link Optional} containing the value or {@link Optional#empty()()}
      */
     public Optional<Value> getValue(String key) {
         return getValue(key, QueryOptions.BLANK);
@@ -81,7 +81,7 @@ public class KeyValueClient extends BaseClient {
      * {@link com.orbitz.consul.model.kv.Value} for a spefici key from the
      * key/value store
      * @param key The key to retrieve
-     * @return An {@link Optional} containing the {@link ConsulResponse} or {@link Optional.empty()()}
+     * @return An {@link Optional} containing the {@link ConsulResponse} or {@link Optional#empty()()}
      */
     public Optional<ConsulResponse<Value>> getConsulResponseWithValue(String key) {
         return getConsulResponseWithValue(key, QueryOptions.BLANK);
@@ -95,11 +95,11 @@ public class KeyValueClient extends BaseClient {
      *
      * @param key The key to retrieve.
      * @param queryOptions The query options.
-     * @return An {@link Optional} containing the value or {@link Optional.empty()()}
+     * @return An {@link Optional} containing the value or {@link Optional#empty()()}
      */
     public Optional<Value> getValue(String key, QueryOptions queryOptions) {
         try {
-            return getSingleValue(extract(api.getValue(trimLeadingSlash(key), queryOptions.toQuery()), NOT_FOUND_404));
+            return getSingleValue(http.extract(api.getValue(trimLeadingSlash(key), queryOptions.toQuery()), NOT_FOUND_404));
         } catch (ConsulException ignored) {
             if(ignored.getCode() != NOT_FOUND_404) {
                 throw ignored;
@@ -122,7 +122,7 @@ public class KeyValueClient extends BaseClient {
     public Optional<ConsulResponse<Value>> getConsulResponseWithValue(String key, QueryOptions queryOptions) {
         try {
             ConsulResponse<List<Value>> consulResponse =
-                    extractConsulResponse(api.getValue(trimLeadingSlash(key), queryOptions.toQuery()), NOT_FOUND_404);
+                    http.extractConsulResponse(api.getValue(trimLeadingSlash(key), queryOptions.toQuery()), NOT_FOUND_404);
             Optional<Value> consulValue = getSingleValue(consulResponse.getResponse());
             if (consulValue.isPresent()) {
                 ConsulResponse<Value> result =
@@ -165,7 +165,7 @@ public class KeyValueClient extends BaseClient {
             }
         };
 
-        extractConsulResponse(api.getValue(trimLeadingSlash(key), queryOptions.toQuery()), wrapper, NOT_FOUND_404);
+        http.extractConsulResponse(api.getValue(trimLeadingSlash(key), queryOptions.toQuery()), wrapper, NOT_FOUND_404);
     }
 
     private Optional<Value> getSingleValue(List<Value> values) {
@@ -214,7 +214,7 @@ public class KeyValueClient extends BaseClient {
 
         query.put("recurse", "true");
 
-        List<Value> result = extract(api.getValue(trimLeadingSlash(key), query), NOT_FOUND_404);
+        List<Value> result = http.extract(api.getValue(trimLeadingSlash(key), query), NOT_FOUND_404);
 
         return result == null ? Collections.emptyList() : result;
     }
@@ -235,7 +235,7 @@ public class KeyValueClient extends BaseClient {
 
         query.put("recurse", "true");
 
-        return extractConsulResponse(api.getValue(trimLeadingSlash(key), query), NOT_FOUND_404);
+        return http.extractConsulResponse(api.getValue(trimLeadingSlash(key), query), NOT_FOUND_404);
     }
 
     /**
@@ -253,7 +253,7 @@ public class KeyValueClient extends BaseClient {
 
         query.put("recurse", "true");
 
-        extractConsulResponse(api.getValue(trimLeadingSlash(key), query), callback, NOT_FOUND_404);
+        http.extractConsulResponse(api.getValue(trimLeadingSlash(key), query), callback, NOT_FOUND_404);
     }
 
     /**
@@ -402,10 +402,10 @@ public class KeyValueClient extends BaseClient {
         }
 
         if (value == null) {
-            return extract(api.putValue(trimLeadingSlash(key),
+            return http.extract(api.putValue(trimLeadingSlash(key),
                     query));
         } else {
-            return extract(api.putValue(trimLeadingSlash(key),
+            return http.extract(api.putValue(trimLeadingSlash(key),
                     RequestBody.create(MediaType.parse("text/plain; charset=" + charset.name()), value), query));
         }
     }
@@ -419,7 +419,7 @@ public class KeyValueClient extends BaseClient {
      * @return A list of zero to many keys.
      */
     public List<String> getKeys(String key) {
-        return extract(api.getKeys(trimLeadingSlash(key), ImmutableMap.of("keys", "true")));
+        return http.extract(api.getKeys(trimLeadingSlash(key), ImmutableMap.of("keys", "true")));
     }
 
     /**
@@ -456,7 +456,7 @@ public class KeyValueClient extends BaseClient {
         checkArgument(StringUtils.isNotEmpty(key), "Key must be defined");
         Map<String, Object> query = deleteOptions.toQuery();
 
-        handle(api.deleteValues(trimLeadingSlash(key), query));
+        http.handle(api.deleteValues(trimLeadingSlash(key), query));
     }
 
     /**
@@ -546,7 +546,7 @@ public class KeyValueClient extends BaseClient {
                 : ImmutableMap.of(consistency.toParam().get(), "true");
 
         try {
-            return extractConsulResponse(api.performTransaction(RequestBody.create(MediaType.parse("application/json"),
+            return http.extractConsulResponse(api.performTransaction(RequestBody.create(MediaType.parse("application/json"),
                     Jackson.MAPPER.writeValueAsString(kv(operations))), query));
         } catch (JsonProcessingException e) {
             throw new ConsulException(e);
@@ -566,7 +566,7 @@ public class KeyValueClient extends BaseClient {
         Map<String, Object> query = transactionOptions.toQuery();
 
         try {
-            return extractConsulResponse(api.performTransaction(RequestBody.create(MediaType.parse("application/json"),
+            return http.extractConsulResponse(api.performTransaction(RequestBody.create(MediaType.parse("application/json"),
                 Jackson.MAPPER.writeValueAsString(kv(operations))), query));
         } catch (JsonProcessingException e) {
             throw new ConsulException(e);

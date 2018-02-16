@@ -8,6 +8,7 @@ import com.orbitz.consul.ConsulException;
 import com.orbitz.consul.async.ConsulResponseCallback;
 import com.orbitz.consul.config.CacheConfig;
 import com.orbitz.consul.model.ConsulResponse;
+import com.orbitz.consul.monitoring.ClientEventHandler;
 import com.orbitz.consul.option.ImmutableQueryOptions;
 import com.orbitz.consul.option.QueryOptions;
 import org.slf4j.Logger;
@@ -60,14 +61,17 @@ public class ConsulCache<K, V> implements AutoCloseable {
     private final Function<V, K> keyConversion;
     private final CallbackConsumer<V> callBackConsumer;
     private final ConsulResponseCallback<List<V>> responseCallback;
+    private final ClientEventHandler eventHandler;
 
     ConsulCache(
             Function<V, K> keyConversion,
             CallbackConsumer<V> callbackConsumer,
-            CacheConfig cacheConfig) {
+            CacheConfig cacheConfig,
+            ClientEventHandler eventHandler) {
 
         this.keyConversion = keyConversion;
         this.callBackConsumer = callbackConsumer;
+        this.eventHandler = eventHandler;
 
         this.responseCallback = new ConsulResponseCallback<List<V>>() {
             @Override
@@ -85,6 +89,8 @@ public class ConsulCache<K, V> implements AutoCloseable {
                     ImmutableMap<K, V> full = convertToMap(consulResponse);
 
                     boolean changed = !full.equals(lastResponse.get());
+                    eventHandler.cachePollingSuccess(changed, elapsedTime);
+
                     if (changed) {
                         // changes
                         lastResponse.set(full);
@@ -130,10 +136,11 @@ public class ConsulCache<K, V> implements AutoCloseable {
 
             @Override
             public void onFailure(Throwable throwable) {
-
                 if (!isRunning()) {
                     return;
                 }
+                eventHandler.cachePollingError(throwable);
+
                 LOGGER.error(String.format("Error getting response from consul. will retry in %d %s",
                         cacheConfig.getBackOffDelay().toMillis(), TimeUnit.MILLISECONDS), throwable);
 
@@ -145,10 +152,12 @@ public class ConsulCache<K, V> implements AutoCloseable {
 
     public void start() {
         checkState(state.compareAndSet(State.latent, State.starting),"Cannot transition from state %s to %s", state.get(), State.starting);
+        eventHandler.cacheStart();
         runCallback();
     }
 
     public void stop() {
+        eventHandler.cacheStop();
         State previous = state.getAndSet(State.stopped);
         if (stopWatch.isRunning()) {
             stopWatch.stop();

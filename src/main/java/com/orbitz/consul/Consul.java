@@ -7,6 +7,7 @@ import com.google.common.io.BaseEncoding;
 import com.google.common.net.HostAndPort;
 import com.orbitz.consul.config.CacheConfig;
 import com.orbitz.consul.config.ClientConfig;
+import com.orbitz.consul.monitoring.ClientEventCallback;
 import com.orbitz.consul.util.Jackson;
 import com.orbitz.consul.cache.TimeoutInterceptor;
 import com.orbitz.consul.util.bookend.ConsulBookend;
@@ -249,6 +250,7 @@ public class Consul {
         private Long writeTimeoutMillis;
         private ExecutorService executorService;
         private ClientConfig clientConfig;
+        private ClientEventCallback clientEventCallback;
 
         {
             try {
@@ -512,6 +514,19 @@ public class Consul {
         }
 
         /**
+         * Sets the event callback for the clients.
+         * The callback will be called by the consul client after each event.
+         *
+         * @param callback the callback to call.
+         * @return The Builder
+         */
+        public Builder withClientEventCallback(ClientEventCallback callback) {
+            this.clientEventCallback = callback;
+
+            return this;
+        }
+
+        /**
          * Constructs a new {@link Consul} client.
          *
          * @return A new Consul client.
@@ -548,17 +563,21 @@ public class Consul {
                 throw new RuntimeException(e);
             }
 
-            AgentClient agentClient = new AgentClient(retrofit, config);
-            HealthClient healthClient = new HealthClient(retrofit, config);
-            KeyValueClient keyValueClient = new KeyValueClient(retrofit, config);
-            CatalogClient catalogClient = new CatalogClient(retrofit, config);
-            StatusClient statusClient = new StatusClient(retrofit, config);
-            SessionClient sessionClient = new SessionClient(retrofit, config);
-            EventClient eventClient = new EventClient(retrofit, config);
-            PreparedQueryClient preparedQueryClient = new PreparedQueryClient(retrofit, config);
-            CoordinateClient coordinateClient = new CoordinateClient(retrofit, config);
-            OperatorClient operatorClient = new OperatorClient(retrofit, config);
-            AclClient aclClient = new AclClient(retrofit, config);
+            ClientEventCallback eventCallback = clientEventCallback != null ?
+                    clientEventCallback :
+                    new ClientEventCallback(){};
+
+            AgentClient agentClient = new AgentClient(retrofit, config, eventCallback);
+            HealthClient healthClient = new HealthClient(retrofit, config, eventCallback);
+            KeyValueClient keyValueClient = new KeyValueClient(retrofit, config, eventCallback);
+            CatalogClient catalogClient = new CatalogClient(retrofit, config, eventCallback);
+            StatusClient statusClient = new StatusClient(retrofit, config, eventCallback);
+            SessionClient sessionClient = new SessionClient(retrofit, config, eventCallback);
+            EventClient eventClient = new EventClient(retrofit, config, eventCallback);
+            PreparedQueryClient preparedQueryClient = new PreparedQueryClient(retrofit, config, eventCallback);
+            CoordinateClient coordinateClient = new CoordinateClient(retrofit, config, eventCallback);
+            OperatorClient operatorClient = new OperatorClient(retrofit, config, eventCallback);
+            AclClient aclClient = new AclClient(retrofit, config, eventCallback);
 
             if (ping) {
                 agentClient.ping();

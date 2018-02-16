@@ -5,6 +5,7 @@ import com.orbitz.consul.BaseIntegrationTest;
 import com.orbitz.consul.config.CacheConfig;
 import com.orbitz.consul.model.ConsulResponse;
 import com.orbitz.consul.model.kv.Value;
+import com.orbitz.consul.monitoring.ClientEventHandler;
 import com.orbitz.consul.option.ConsistencyMode;
 import com.orbitz.consul.option.ImmutableQueryOptions;
 import com.orbitz.consul.option.QueryOptions;
@@ -30,7 +31,8 @@ public class ConsulCacheTest extends BaseIntegrationTest {
         final Function<Value, String> keyExtractor = input -> "SAME_KEY";
         final List<Value> response = Arrays.asList(mock(Value.class), mock(Value.class));
         CacheConfig cacheConfig = mock(CacheConfig.class);
-        final ConsulCache<String, Value> consulCache = new ConsulCache<>(keyExtractor, null, cacheConfig);
+        ClientEventHandler eventHandler = mock(ClientEventHandler.class);
+        final ConsulCache<String, Value> consulCache = new ConsulCache<>(keyExtractor, null, cacheConfig, eventHandler);
         final ConsulResponse<List<Value>> consulResponse = new ConsulResponse<>(response, 0, false, BigInteger.ONE);
         final ImmutableMap<String, Value> map = consulCache.convertToMap(consulResponse);
         assertNotNull(map);

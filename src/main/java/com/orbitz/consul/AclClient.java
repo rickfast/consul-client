@@ -4,6 +4,7 @@ import com.orbitz.consul.config.ClientConfig;
 import com.orbitz.consul.model.acl.AclResponse;
 import com.orbitz.consul.model.acl.AclToken;
 import com.orbitz.consul.model.acl.AclTokenId;
+import com.orbitz.consul.monitoring.ClientEventCallback;
 import retrofit2.Call;
 import retrofit2.Retrofit;
 import retrofit2.http.Body;
@@ -13,39 +14,39 @@ import retrofit2.http.Path;
 
 import java.util.List;
 
-import static com.orbitz.consul.util.Http.*;
-
 public class AclClient extends BaseClient {
+
+    private static String CLIENT_NAME = "acl";
 
     private final Api api;
 
-    AclClient(Retrofit retrofit, ClientConfig config) {
-        super(config);
+    AclClient(Retrofit retrofit, ClientConfig config, ClientEventCallback eventCallback) {
+        super(CLIENT_NAME, config, eventCallback);
         this.api = retrofit.create(Api.class);
     }
 
     public String createAcl(AclToken aclToken) {
-        return extract(api.createAcl(aclToken)).id();
+        return http.extract(api.createAcl(aclToken)).id();
     }
 
     public void updateAcl(AclToken aclToken) {
-        handle(api.updateAcl(aclToken));
+        http.handle(api.updateAcl(aclToken));
     }
 
     public void destroyAcl(String id) {
-        handle(api.destroyAcl(id));
+        http.handle(api.destroyAcl(id));
     }
 
     public List<AclResponse> getAclInfo(String id) {
-        return extract(api.getAclInfo(id));
+        return http.extract(api.getAclInfo(id));
     }
 
     public String cloneAcl(String id) {
-        return extract(api.cloneAcl(id)).id();
+        return http.extract(api.cloneAcl(id)).id();
     }
 
     public List<AclResponse> listAcls() {
-        return extract(api.listAcls());
+        return http.extract(api.listAcls());
     }
 
     interface Api {
