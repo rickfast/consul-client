@@ -4,6 +4,7 @@ import java.nio.charset.Charset;
 import java.util.Optional;
 
 import com.google.common.collect.ImmutableSet;
+import com.google.common.io.BaseEncoding;
 import com.orbitz.consul.async.ConsulResponseCallback;
 import com.orbitz.consul.model.ConsulResponse;
 import com.orbitz.consul.model.kv.ImmutableOperation;
@@ -26,10 +27,12 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -128,6 +131,26 @@ public class KeyValueTests extends BaseIntegrationTest {
 
         Value received = keyValueClient.getValue(key).get();
         assertFalse(received.getValue().isPresent());
+    }
+
+    @Test
+    public void shouldPutAndReceiveBytes() {
+        KeyValueClient keyValueClient = client.keyValueClient();
+        byte[] value = new byte[256];
+        ThreadLocalRandom.current().nextBytes(value);
+
+        String key = UUID.randomUUID().toString();
+
+        assertTrue(keyValueClient.putValue(key, value, 0, PutOptions.BLANK));
+
+        Value received = keyValueClient.getValue(key).get();
+        assertTrue(received.getValue().isPresent());
+
+        byte[] receivedBytes = received.getValue()
+                .map(BaseEncoding.base64()::decode)
+                .get();
+
+        assertArrayEquals(value, receivedBytes);
     }
 
     @Test

@@ -323,7 +323,7 @@ public class KeyValueClient extends BaseClient {
      * @return <code>true</code> if the value was successfully indexed.
      */
     public boolean putValue(String key) {
-        return putValue(key, null, 0L, PutOptions.BLANK);
+        return putValue(key, null, 0L, PutOptions.BLANK, Charset.defaultCharset());
     }
 
     /**
@@ -407,6 +407,32 @@ public class KeyValueClient extends BaseClient {
         } else {
             return http.extract(api.putValue(trimLeadingSlash(key),
                     RequestBody.create(MediaType.parse("text/plain; charset=" + charset.name()), value), query));
+        }
+    }
+
+    /**
+     * Puts a value into the key/value store.
+     *
+     * @param key The key to use as index.
+     * @param value The value to index.
+     * @param putOptions PUT options (e.g. wait, acquire).
+     * @return <code>true</code> if the value was successfully indexed.
+     */
+    public boolean putValue(String key, byte[] value, long flags, PutOptions putOptions) {
+
+        checkArgument(StringUtils.isNotEmpty(key), "Key must be defined");
+        Map<String, Object> query = putOptions.toQuery();
+
+        if (flags != 0) {
+            query.put("flags", UnsignedLongs.toString(flags));
+        }
+
+        if (value == null) {
+            return http.extract(api.putValue(trimLeadingSlash(key),
+                    query));
+        } else {
+            return http.extract(api.putValue(trimLeadingSlash(key),
+                    RequestBody.create(MediaType.parse("application/octet-stream"), value), query));
         }
     }
 
