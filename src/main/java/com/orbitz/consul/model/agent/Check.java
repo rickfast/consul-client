@@ -45,6 +45,9 @@ public abstract class Check {
     @JsonProperty("TCP")
     public abstract Optional<String> getTcp();
 
+    @JsonProperty("GRPC")
+    public abstract Optional<String> getGrpc();
+
     @JsonProperty("ServiceID")
     public abstract Optional<String> getServiceId();
 
@@ -59,12 +62,12 @@ public abstract class Check {
     protected void validate() {
 
         checkState(getHttp().isPresent() || getTtl().isPresent()
-            || getScript().isPresent() || getTcp().isPresent(),
-                "Check must specify either http, tcp, ttl, or script");
+            || getScript().isPresent() || getTcp().isPresent() || getGrpc().isPresent(),
+                "Check must specify either http, tcp, ttl, grpc or script");
 
-        if (getHttp().isPresent() || getScript().isPresent() || getTcp().isPresent()) {
+        if (getHttp().isPresent() || getScript().isPresent() || getTcp().isPresent() || getGrpc().isPresent()) {
             checkState(getInterval().isPresent(),
-                    "Interval must be set if check type is http, tcp or script");
+                    "Interval must be set if check type is http, tcp, grpc or script");
         }
 
     }

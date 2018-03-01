@@ -65,6 +65,9 @@ public abstract class Registration {
         @JsonProperty("TCP")
         public abstract Optional<String> getTcp();
 
+        @JsonProperty("GRPC")
+        public abstract Optional<String> getGrpc();
+
         @JsonProperty("Timeout")
         public abstract Optional<String> getTimeout();
         
@@ -168,16 +171,24 @@ public abstract class Registration {
                     .build();
         }
 
+        public static RegCheck grpc(String grpc, long interval) {
+            return ImmutableRegCheck
+                    .builder()
+                    .grpc(grpc)
+                    .interval(String.format("%ss", interval))
+                    .build();
+        }
+
         @Value.Check
         protected void validate() {
 
             checkState(getHttp().isPresent() || getTtl().isPresent()
-                || getScript().isPresent() || getTcp().isPresent(),
-                    "Check must specify either http, tcp, ttl, or script");
+                || getScript().isPresent() || getTcp().isPresent() || getGrpc().isPresent(),
+                    "Check must specify either http, tcp, ttl, grpc or script");
 
-            if (getHttp().isPresent() || getScript().isPresent() || getTcp().isPresent()) {
+            if (getHttp().isPresent() || getScript().isPresent() || getTcp().isPresent() || getGrpc().isPresent()) {
                 checkState(getInterval().isPresent(),
-                        "Interval must be set if check type is http, tcp or script");
+                        "Interval must be set if check type is http, tcp, grpc or script");
             }
         }
 

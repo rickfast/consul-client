@@ -2,6 +2,7 @@ package com.orbitz.consul;
 
 import com.google.common.collect.ImmutableList;
 import com.orbitz.consul.model.agent.Agent;
+import com.orbitz.consul.model.agent.ImmutableRegCheck;
 import com.orbitz.consul.model.agent.ImmutableRegistration;
 import com.orbitz.consul.model.agent.Registration;
 import com.orbitz.consul.model.health.HealthCheck;
@@ -69,6 +70,36 @@ public class AgentTests extends BaseIntegrationTest {
         String serviceId = UUID.randomUUID().toString();
 
         client.agentClient().register(8080, new URL("http://localhost:1337/health"), 1000L, serviceName, serviceId);
+
+        Synchroniser.pause(Duration.ofMillis(100));
+
+        boolean found = false;
+
+        for (ServiceHealth health : client.healthClient().getAllServiceInstances(serviceName).getResponse()) {
+            if (health.getService().getId().equals(serviceId)) {
+                found = true;
+                assertThat(health.getChecks().size(), is(2));
+            }
+        }
+
+        assertTrue(found);
+    }
+
+    @Test
+    @Ignore
+    public void shouldRegisterGrpcCheck() throws UnknownHostException, InterruptedException, MalformedURLException {
+        String serviceName = UUID.randomUUID().toString();
+        String serviceId = UUID.randomUUID().toString();
+
+        Registration registration = ImmutableRegistration.builder()
+                .name(serviceName)
+                .id(serviceId)
+                .addChecks(ImmutableRegCheck.builder()
+                    .grpc("localhost:12345")
+                    .interval("10s")
+                    .build())
+                .build();
+        client.agentClient().register(registration);
 
         Synchroniser.pause(Duration.ofMillis(100));
 

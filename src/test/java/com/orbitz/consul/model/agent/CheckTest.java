@@ -27,6 +27,15 @@ public class CheckTest {
     }
 
     @Test(expected = IllegalStateException.class)
+    public void buildingCheckWithGrpcThrowsIfMissingInterval() {
+        ImmutableCheck.builder()
+                .id("id")
+                .grpc("localhost:12345")
+                .name("name")
+                .build();
+    }
+
+    @Test(expected = IllegalStateException.class)
     public void buildingCheckWithScriptThrowsIfMissingInterval() {
         ImmutableCheck.builder()
                 .id("id")
