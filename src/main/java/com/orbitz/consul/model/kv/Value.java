@@ -50,4 +50,10 @@ public abstract class Value {
     public Optional<String> getValueAsString(Charset charset) {
         return getValue().map(s -> new String(BaseEncoding.base64().decode(s), charset));
     }
+
+    @JsonIgnore
+    @org.immutables.value.Value.Lazy
+    public Optional<byte[]> getValueAsBytes() {
+        return getValue().map(s -> BaseEncoding.base64().decode(s));
+    }
 }

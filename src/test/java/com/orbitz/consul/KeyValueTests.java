@@ -146,8 +146,7 @@ public class KeyValueTests extends BaseIntegrationTest {
         Value received = keyValueClient.getValue(key).get();
         assertTrue(received.getValue().isPresent());
 
-        byte[] receivedBytes = received.getValue()
-                .map(BaseEncoding.base64()::decode)
+        byte[] receivedBytes = received.getValueAsBytes()
                 .get();
 
         assertArrayEquals(value, receivedBytes);
