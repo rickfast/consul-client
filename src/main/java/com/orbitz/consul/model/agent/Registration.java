@@ -68,6 +68,9 @@ public abstract class Registration {
         @JsonProperty("GRPC")
         public abstract Optional<String> getGrpc();
 
+        @JsonProperty("GRPCUseTLS")
+        public abstract Optional<Boolean> getGrpcUseTls();
+
         @JsonProperty("Timeout")
         public abstract Optional<String> getTimeout();
         
@@ -172,9 +175,14 @@ public abstract class Registration {
         }
 
         public static RegCheck grpc(String grpc, long interval) {
+            return RegCheck.grpc(grpc, interval, false);
+        }
+
+        public static RegCheck grpc(String grpc, long interval, boolean useTls) {
             return ImmutableRegCheck
                     .builder()
                     .grpc(grpc)
+                    .grpcUseTls(useTls)
                     .interval(String.format("%ss", interval))
                     .build();
         }

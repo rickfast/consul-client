@@ -48,6 +48,9 @@ public abstract class Check {
     @JsonProperty("GRPC")
     public abstract Optional<String> getGrpc();
 
+    @JsonProperty("GRPCUseTLS")
+    public abstract Optional<Boolean> getGrpcUseTls();
+
     @JsonProperty("ServiceID")
     public abstract Optional<String> getServiceId();
 
