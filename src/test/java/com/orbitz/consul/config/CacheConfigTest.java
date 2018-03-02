@@ -21,6 +21,7 @@ public class CacheConfigTest {
         assertEquals(CacheConfig.DEFAULT_MIN_DELAY_BETWEEN_REQUESTS, config.getMinimumDurationBetweenRequests());
         assertEquals(CacheConfig.DEFAULT_TIMEOUT_AUTO_ADJUSTMENT_ENABLED, config.isTimeoutAutoAdjustmentEnabled());
         assertEquals(CacheConfig.DEFAULT_TIMEOUT_AUTO_ADJUSTMENT_MARGIN, config.getTimeoutAutoAdjustmentMargin());
+        assertEquals(CacheConfig.DEFAULT_REFRESH_ERROR_LOGGED_AS_WARNING, config.isRefreshErrorLoggedAsWarning());
     }
 
     @Test
@@ -53,6 +54,16 @@ public class CacheConfigTest {
     public void testOverrideTimeoutAutoAdjustmentMargin(Duration margin) {
         CacheConfig config = CacheConfig.builder().withTimeoutAutoAdjustmentMargin(margin).build();
         assertEquals(margin, config.getTimeoutAutoAdjustmentMargin());
+    }
+
+    @Test
+    @Parameters({"true", "false"})
+    @TestCaseName("LogLevel as Warning: {0}")
+    public void testOverrideRefreshErrorLogLevel(boolean logLevelWarning) {
+        CacheConfig config = logLevelWarning
+                ? CacheConfig.builder().withRefreshErrorLoggedAsWarning().build()
+                : CacheConfig.builder().withRefreshErrorLoggedAsError().build();
+        assertEquals(logLevelWarning, config.isRefreshErrorLoggedAsWarning());
     }
 
     public Object getDurationSamples() {
