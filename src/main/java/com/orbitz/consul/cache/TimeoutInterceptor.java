@@ -27,7 +27,11 @@ public class TimeoutInterceptor implements Interceptor {
         Request request = chain.request();
         int readTimeout = chain.readTimeoutMillis();
 
-        if (config.isTimeoutAutoAdjustmentEnabled()) {
+        // Snapshot might be very large. Timeout should be adjusted for this endpoint.
+        if (request.url().encodedPath().contains("snapshot")) {
+            readTimeout = (int) Duration.ofHours(1).toMillis();
+        }
+        else if (config.isTimeoutAutoAdjustmentEnabled()) {
             String waitQuery = request.url().queryParameter("wait");
             Duration waitDuration = parseWaitQuery(waitQuery);
             if (waitDuration != null) {

@@ -56,6 +56,8 @@ public class Consul {
     private final PreparedQueryClient preparedQueryClient;
     private final CoordinateClient coordinateClient;
     private final OperatorClient operatorClient;
+    private final SnapshotClient snapshotClient;
+
     private final ExecutorService executorService;
     private final OkHttpClient okHttpClient;
 
@@ -69,7 +71,7 @@ public class Consul {
                    EventClient eventClient, PreparedQueryClient preparedQueryClient,
                    CoordinateClient coordinateClient, OperatorClient operatorClient,
                    ExecutorService executorService, AclClient aclClient,
-                   OkHttpClient okHttpClient) {
+                   SnapshotClient snapshotClient, OkHttpClient okHttpClient) {
         this.agentClient = agentClient;
         this.healthClient = healthClient;
         this.keyValueClient = keyValueClient;
@@ -82,6 +84,7 @@ public class Consul {
         this.operatorClient = operatorClient;
         this.executorService = executorService;
         this.aclClient = aclClient;
+        this.snapshotClient = snapshotClient;
         this.okHttpClient = okHttpClient;
     }
 
@@ -213,6 +216,18 @@ public class Consul {
     public OperatorClient operatorClient() {
         return operatorClient;
     }
+
+    /**
+     * Get the Snapshot HTTP client.
+     * <p>
+     * /v1/snapshot
+     *
+     * @return The Snapshot HTTP client.
+     */
+    public SnapshotClient snapshotClient() {
+        return snapshotClient;
+    }
+
     /**
      * Creates a new {@link Builder} object.
      *
@@ -578,13 +593,15 @@ public class Consul {
             CoordinateClient coordinateClient = new CoordinateClient(retrofit, config, eventCallback);
             OperatorClient operatorClient = new OperatorClient(retrofit, config, eventCallback);
             AclClient aclClient = new AclClient(retrofit, config, eventCallback);
+            SnapshotClient snapshotClient = new SnapshotClient(retrofit, config, eventCallback);
 
             if (ping) {
                 agentClient.ping();
             }
             return new Consul(agentClient, healthClient, keyValueClient,
                     catalogClient, statusClient, sessionClient, eventClient,
-                    preparedQueryClient, coordinateClient, operatorClient, executorService, aclClient, okHttpClient);
+                    preparedQueryClient, coordinateClient, operatorClient,
+                    executorService, aclClient, snapshotClient, okHttpClient);
         }
 
         private String buildUrl(URL url) {
