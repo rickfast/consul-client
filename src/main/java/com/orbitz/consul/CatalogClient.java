@@ -99,6 +99,18 @@ public class CatalogClient extends BaseClient {
     }
 
     /**
+     * Asynchronously retrieves the services for a given datacenter.
+     * <p/>
+     * GET /v1/catalog/services?dc={datacenter}
+     *
+     * @param callback     Callback implemented by callee to handle results.
+     * @return A {@link com.orbitz.consul.model.ConsulResponse} containing a map of service name to list of tags.
+     */
+    public void getServices(ConsulResponseCallback<Map<String, List<String>>> callback) {
+        getServices(QueryOptions.BLANK, callback);
+    }
+
+    /**
      * Retrieves all services for a given datacenter.
      * <p/>
      * GET /v1/catalog/services?dc={datacenter}
@@ -112,7 +124,21 @@ public class CatalogClient extends BaseClient {
     }
 
     /**
-     * Retrieves a single service.
+     * Asynchronously retrieves the services for a given datacenter.
+     * <p/>
+     * GET /v1/catalog/services?dc={datacenter}
+     *
+     * @param queryOptions The Query Options to use.
+     * @param callback     Callback implemented by callee to handle results.
+     * @return A {@link com.orbitz.consul.model.ConsulResponse} containing a map of service name to list of tags.
+     */
+    public void getServices(QueryOptions queryOptions, ConsulResponseCallback<Map<String, List<String>>> callback) {
+        http.extractConsulResponse(api.getServices(queryOptions.toQuery(),
+                queryOptions.getTag(), queryOptions.getNodeMeta()), callback);
+    }
+
+    /**
+     * Retrieves the single service.
      * <p/>
      * GET /v1/catalog/service/{service}
      *
@@ -138,6 +164,21 @@ public class CatalogClient extends BaseClient {
     }
 
     /**
+     * Asynchronously retrieves the single service for a given datacenter with {@link com.orbitz.consul.option.QueryOptions}.
+     * <p/>
+     * GET /v1/catalog/service/{service}?dc={datacenter}
+     *
+     * @param queryOptions The Query Options to use.
+     * @param callback     Callback implemented by callee to handle results.
+     * @return A {@link com.orbitz.consul.model.ConsulResponse} containing
+     * {@link com.orbitz.consul.model.catalog.CatalogService} objects.
+     */
+    public void getService(String service, QueryOptions queryOptions, ConsulResponseCallback<List<CatalogService>> callback) {
+        http.extractConsulResponse(api.getService(service, queryOptions.toQuery(),
+                queryOptions.getTag(), queryOptions.getNodeMeta()), callback);
+    }
+
+    /**
      * Retrieves a single node.
      * <p/>
      * GET /v1/catalog/node/{node}
@@ -159,6 +200,19 @@ public class CatalogClient extends BaseClient {
     public ConsulResponse<CatalogNode> getNode(String node, QueryOptions queryOptions) {
         return http.extractConsulResponse(api.getNode(node, queryOptions.toQuery(),
                 queryOptions.getTag(), queryOptions.getNodeMeta()));
+    }
+
+    /**
+     * Asynchronously retrieves the single node for a given datacenter with {@link com.orbitz.consul.option.QueryOptions}.
+     * <p/>
+     * GET /v1/catalog/node/{node}?dc={datacenter}
+     *
+     * @param queryOptions The Query Options to use.
+     * @param callback     Callback implemented by callee to handle results.
+     */
+    public void getNode(String node, QueryOptions queryOptions, ConsulResponseCallback<CatalogNode> callback) {
+        http.extractConsulResponse(api.getNode(node, queryOptions.toQuery(),
+                queryOptions.getTag(), queryOptions.getNodeMeta()), callback);
     }
 
     /**
