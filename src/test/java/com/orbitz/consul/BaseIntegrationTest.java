@@ -11,7 +11,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 
 public abstract class BaseIntegrationTest {
 
-    private static final List<String> deregisterServices = new CopyOnWriteArrayList<>();
+    private final List<String> deregisterServices = new CopyOnWriteArrayList<>();
 
     protected static Consul client;
 
@@ -28,9 +28,10 @@ public abstract class BaseIntegrationTest {
     @After
     public void after() {
         deregisterServices.forEach(client.agentClient()::deregister);
+        deregisterServices.clear();
     }
 
-    public static String createAutoDeregisterServiceId() {
+    protected String createAutoDeregisterServiceId() {
         String serviceId = UUID.randomUUID().toString();
         deregisterServices.add(serviceId);
 
