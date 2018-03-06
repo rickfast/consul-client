@@ -1,14 +1,11 @@
 package com.orbitz.consul;
 
+import com.orbitz.consul.async.ConsulResponseCallback;
 import com.orbitz.consul.model.ConsulResponse;
-import com.orbitz.consul.model.catalog.CatalogDeregistration;
-import com.orbitz.consul.model.catalog.CatalogNode;
-import com.orbitz.consul.model.catalog.CatalogRegistration;
-import com.orbitz.consul.model.catalog.CatalogService;
-import com.orbitz.consul.model.catalog.ImmutableCatalogDeregistration;
-import com.orbitz.consul.model.catalog.ImmutableCatalogRegistration;
+import com.orbitz.consul.model.catalog.*;
 import com.orbitz.consul.model.health.ImmutableService;
 import com.orbitz.consul.model.health.Node;
+import com.orbitz.consul.model.health.Service;
 import com.orbitz.consul.model.health.ServiceHealth;
 import com.orbitz.consul.option.ImmutableQueryOptions;
 import com.orbitz.consul.option.QueryOptions;
@@ -22,6 +19,10 @@ import java.time.Duration;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import static org.junit.Assert.*;
 
@@ -181,5 +182,87 @@ public class CatalogTests extends BaseIntegrationTest {
         }
 
         assertFalse(found);
+    }
+
+    @Test
+    public void shouldGetServicesInCallback() throws ExecutionException, InterruptedException, TimeoutException {
+        CatalogClient catalogClient = client.catalogClient();
+
+        String serviceName = UUID.randomUUID().toString();
+        String serviceId = createAutoDeregisterServiceId();
+        client.agentClient().register(20001, 20, serviceName, serviceId);
+
+        CompletableFuture<Map<String, List<String>>> cf = new CompletableFuture<>();
+        catalogClient.getServices(QueryOptions.BLANK, callbackFuture(cf));
+
+        Map<String, List<String>> result = cf.get(1, TimeUnit.SECONDS);
+
+        assertTrue(result.containsKey(serviceName));
+    }
+
+    @Test
+    public void shouldGetServiceInCallback() throws ExecutionException, InterruptedException, TimeoutException {
+        CatalogClient catalogClient = client.catalogClient();
+
+        String serviceName = UUID.randomUUID().toString();
+        String serviceId = createAutoDeregisterServiceId();
+        client.agentClient().register(20001, 20, serviceName, serviceId);
+
+        CompletableFuture<List<CatalogService>> cf = new CompletableFuture<>();
+        catalogClient.getService(serviceName, QueryOptions.BLANK, callbackFuture(cf));
+
+        List<CatalogService> result = cf.get(1, TimeUnit.SECONDS);
+
+        assertEquals(1, result.size());
+        CatalogService service = result.get(0);
+
+        assertEquals(serviceId, service.getServiceId());
+    }
+
+    @Test
+    public void shouldGetNodeInCallback() throws ExecutionException, InterruptedException, TimeoutException {
+        CatalogClient catalogClient = client.catalogClient();
+
+        String nodeName = "node";
+        String serviceName = UUID.randomUUID().toString();
+        String serviceId = createAutoDeregisterServiceId();
+
+        CatalogRegistration registration = ImmutableCatalogRegistration.builder()
+                .address("localhost")
+                .node(nodeName)
+                .service(ImmutableService.builder()
+                        .address("localhost")
+                        .id(serviceId)
+                        .service(serviceName)
+                        .port(20001)
+                        .build())
+                .build();
+
+        catalogClient.register(registration);
+
+        CompletableFuture<CatalogNode> cf = new CompletableFuture<>();
+        catalogClient.getNode(nodeName, QueryOptions.BLANK, callbackFuture(cf));
+
+        CatalogNode node = cf.get(1, TimeUnit.SECONDS);
+
+        assertEquals(nodeName, node.getNode().getNode());
+
+        Service service = node.getServices().get(serviceId);
+        assertNotNull(service);
+        assertEquals(serviceName, service.getService());
+    }
+
+    private static <T> ConsulResponseCallback<T> callbackFuture(CompletableFuture<T> cf) {
+        return new ConsulResponseCallback<T>() {
+            @Override
+            public void onComplete(ConsulResponse<T> consulResponse) {
+                cf.complete(consulResponse.getResponse());
+            }
+
+            @Override
+            public void onFailure(Throwable throwable) {
+                cf.completeExceptionally(throwable);
+            }
+        };
     }
 }
