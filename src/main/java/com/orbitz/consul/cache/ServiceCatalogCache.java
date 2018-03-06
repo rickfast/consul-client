@@ -41,5 +41,4 @@ public class ServiceCatalogCache extends ConsulCache<String, CatalogService> {
         int watchSeconds = Ints.checkedCast(cacheConfig.getWatchDuration().getSeconds());
         return newCache(catalogClient, serviceName, QueryOptions.BLANK, watchSeconds);
     }
-
 }

@@ -72,7 +72,7 @@ public class AgentClient extends BaseClient {
      * Registers the client as a service with Consul with a ttl check.
      *
      * @param port The public facing port of the service to register with Consul.
-     * @param ttl  Time to live for the Consul dead man's switch.
+     * @param ttl  Time to live in seconds for the Consul dead man's switch.
      * @param name Service name to register.
      * @param id   Service id to register.
      * @param tags Tags to register with.
