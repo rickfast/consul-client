@@ -5,20 +5,24 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.io.BaseEncoding;
 import com.google.common.net.HostAndPort;
-import com.orbitz.consul.config.CacheConfig;
+import com.orbitz.consul.cache.TimeoutInterceptor;
 import com.orbitz.consul.config.ClientConfig;
 import com.orbitz.consul.monitoring.ClientEventCallback;
 import com.orbitz.consul.util.Jackson;
-import com.orbitz.consul.cache.TimeoutInterceptor;
 import com.orbitz.consul.util.bookend.ConsulBookend;
 import com.orbitz.consul.util.bookend.ConsulBookendInterceptor;
-import okhttp3.*;
+import okhttp3.Dispatcher;
+import okhttp3.HttpUrl;
+import okhttp3.Interceptor;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
 import okhttp3.internal.Util;
 import retrofit2.Retrofit;
 import retrofit2.converter.jackson.JacksonConverterFactory;
 
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLContext;
+import javax.net.ssl.X509TrustManager;
 import java.net.MalformedURLException;
 import java.net.Proxy;
 import java.net.URL;
@@ -253,6 +257,7 @@ public class Consul {
     public static class Builder {
         private URL url;
         private SSLContext sslContext;
+        private X509TrustManager trustManager;
         private HostnameVerifier hostnameVerifier;
         private Proxy proxy;
         private boolean ping = true;
@@ -437,6 +442,18 @@ public class Consul {
         }
 
         /**
+         * Sets the {@link X509TrustManager} for the client.
+         *
+         * @param trustManager The SSL trust manager for HTTPS agents.
+         * @return The builder.
+         */
+        public Builder withTrustManager(X509TrustManager trustManager) {
+            this.trustManager = trustManager;
+
+            return this;
+        }
+
+        /**
          * Sets the {@link HostnameVerifier} for the client.
          *
          * @param hostnameVerifier The hostname verifier to use.
@@ -564,6 +581,7 @@ public class Consul {
 
             OkHttpClient okHttpClient = createOkHttpClient(
                     this.sslContext,
+                    this.trustManager,
                     this.hostnameVerifier,
                     this.proxy,
                     executorService,
@@ -608,7 +626,7 @@ public class Consul {
             return url.toExternalForm().replaceAll("/$", "") + "/v1/";
         }
 
-        private OkHttpClient createOkHttpClient(SSLContext sslContext, HostnameVerifier hostnameVerifier,
+        private OkHttpClient createOkHttpClient(SSLContext sslContext, X509TrustManager trustManager, HostnameVerifier hostnameVerifier,
                                                 Proxy proxy, ExecutorService executorService, ClientConfig clientConfig) {
 
             final OkHttpClient.Builder builder = new OkHttpClient.Builder();
@@ -629,7 +647,9 @@ public class Consul {
                 builder.addInterceptor(consulBookendInterceptor);
             }
 
-            if (sslContext != null) {
+            if (sslContext != null && trustManager != null) {
+                builder.sslSocketFactory(sslContext.getSocketFactory(), trustManager);
+            } else if (sslContext != null) {
                 builder.sslSocketFactory(sslContext.getSocketFactory());
             }
 
