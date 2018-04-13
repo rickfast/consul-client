@@ -2,10 +2,12 @@ package com.orbitz.consul;
 
 import com.orbitz.consul.async.Callback;
 import com.orbitz.consul.option.QueryOptions;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
 import java.io.File;
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.time.Duration;
@@ -24,12 +26,17 @@ public class SnapshotClientTest extends BaseIntegrationTest {
     private AtomicBoolean success = new AtomicBoolean(false);
 
     @Before
-    public void setUp() {
+    public void setUp() throws IOException {
         snapshotClient = client.snapshotClient();
-        snapshotFile = new File("./snapshot.gz");
+        snapshotFile = File.createTempFile("snapshot", ".gz");
 
         latch = new CountDownLatch(1);
         success = new AtomicBoolean(false);
+    }
+
+    @After
+    public void tearDown() {
+        snapshotFile.delete();
     }
 
     @Test
