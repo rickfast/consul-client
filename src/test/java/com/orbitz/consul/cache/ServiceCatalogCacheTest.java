@@ -23,7 +23,7 @@ public class ServiceCatalogCacheTest extends BaseIntegrationTest {
     private static final Logger log = LoggerFactory.getLogger(ServiceCatalogCacheTest.class);
 
     @Test
-    public void testWatchService() {
+    public void testWatchService() throws InterruptedException {
         String name = UUID.randomUUID().toString();
         String serviceId1 = createAutoDeregisterServiceId();
         String serviceId2 = createAutoDeregisterServiceId();
@@ -38,6 +38,7 @@ public class ServiceCatalogCacheTest extends BaseIntegrationTest {
         });
 
         cache.start();
+        cache.awaitInitialized(3, TimeUnit.SECONDS);
 
         client.agentClient().register(20001, 20, name, serviceId1);
         Synchroniser.pause(Duration.ofMillis(100));
