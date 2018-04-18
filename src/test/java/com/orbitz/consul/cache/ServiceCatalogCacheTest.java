@@ -4,12 +4,10 @@ import com.google.common.util.concurrent.Uninterruptibles;
 import com.orbitz.consul.BaseIntegrationTest;
 import com.orbitz.consul.model.catalog.CatalogService;
 import com.orbitz.consul.util.Synchroniser;
-import org.junit.Assert;
 import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.time.Duration;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -20,7 +18,9 @@ import java.util.concurrent.TimeUnit;
 import static org.junit.Assert.*;
 
 public class ServiceCatalogCacheTest extends BaseIntegrationTest {
-    private static final Logger log = LoggerFactory.getLogger(ServiceCatalogCacheTest.class);
+
+    private static final List<String> NO_TAGS = Collections.emptyList();
+    private static final Map<String, String> NO_META = Collections.emptyMap();
 
     @Test
     public void testWatchService() throws InterruptedException {
@@ -40,9 +40,9 @@ public class ServiceCatalogCacheTest extends BaseIntegrationTest {
         cache.start();
         cache.awaitInitialized(3, TimeUnit.SECONDS);
 
-        client.agentClient().register(20001, 20, name, serviceId1);
+        client.agentClient().register(20001, 20, name, serviceId1, NO_TAGS, NO_META);
         Synchroniser.pause(Duration.ofMillis(100));
-        client.agentClient().register(20002, 20, name, serviceId2);
+        client.agentClient().register(20002, 20, name, serviceId2, NO_TAGS, NO_META);
 
         Uninterruptibles.awaitUninterruptibly(finish, 1, TimeUnit.SECONDS);
 

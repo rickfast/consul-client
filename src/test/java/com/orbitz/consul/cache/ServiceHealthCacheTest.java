@@ -16,13 +16,16 @@ import static org.junit.Assert.*;
 
 public class ServiceHealthCacheTest extends BaseIntegrationTest {
 
+    private static final List<String> NO_TAGS = Collections.emptyList();
+    private static final Map<String, String> NO_META = Collections.emptyMap();
+
     @Test
     public void nodeCacheServicePassingTest() throws Exception {
         HealthClient healthClient = client.healthClient();
         String serviceName = UUID.randomUUID().toString();
         String serviceId = UUID.randomUUID().toString();
 
-        client.agentClient().register(8080, 20L, serviceName, serviceId);
+        client.agentClient().register(8080, 20L, serviceName, serviceId, NO_TAGS, NO_META);
         client.agentClient().pass(serviceId);
         Synchroniser.pause(Duration.ofMillis(100));
 
@@ -51,10 +54,10 @@ public class ServiceHealthCacheTest extends BaseIntegrationTest {
         String serviceId = UUID.randomUUID().toString();
         String serviceId2 = UUID.randomUUID().toString();
 
-        client.agentClient().register(8080, 20L, serviceName, serviceId);
+        client.agentClient().register(8080, 20L, serviceName, serviceId, NO_TAGS, NO_META);
         client.agentClient().pass(serviceId);
 
-        client.agentClient().register(8080, 20L, serviceName, serviceId2);
+        client.agentClient().register(8080, 20L, serviceName, serviceId2, NO_TAGS, NO_META);
         client.agentClient().pass(serviceId2);
 
         try (ServiceHealthCache svHealth = ServiceHealthCache.newCache(healthClient, serviceName)) {
@@ -89,7 +92,7 @@ public class ServiceHealthCacheTest extends BaseIntegrationTest {
         String serviceName = UUID.randomUUID().toString();
         String serviceId = UUID.randomUUID().toString();
 
-        client.agentClient().register(8080, 20L, serviceName, serviceId);
+        client.agentClient().register(8080, 20L, serviceName, serviceId, NO_TAGS, NO_META);
         client.agentClient().pass(serviceId);
 
         ServiceHealthCache svHealth = ServiceHealthCache.newCache(client.healthClient(), serviceName);

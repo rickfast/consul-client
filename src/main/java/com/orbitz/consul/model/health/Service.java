@@ -8,6 +8,7 @@ import com.google.common.collect.ImmutableList;
 import org.immutables.value.Value;
 
 import java.util.List;
+import java.util.Map;
 
 @Value.Immutable
 @JsonSerialize(as = ImmutableService.class)
@@ -27,6 +28,9 @@ public abstract class Service {
     
     @JsonProperty("Address")
     public abstract  String getAddress();
+
+    @JsonProperty("Meta")
+    public abstract Map<String,String> getMeta();
 
     @JsonProperty("Port")
     public abstract  int getPort();

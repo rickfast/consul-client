@@ -40,6 +40,9 @@ public abstract class CatalogService {
     @JsonProperty("ServiceTags")
     public abstract List<String> getServiceTags();
 
+    @JsonProperty("ServiceMeta")
+    public abstract Optional<Map<String,String>> getServiceMeta();
+
     @JsonProperty("NodeMeta")
     public abstract Optional<Map<String,String>> getNodeMeta();
 }
