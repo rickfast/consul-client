@@ -2,6 +2,7 @@ package com.orbitz.consul;
 
 import com.orbitz.consul.async.Callback;
 import com.orbitz.consul.option.QueryOptions;
+import com.orbitz.consul.util.Synchroniser;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -22,16 +23,11 @@ public class SnapshotClientTest extends BaseIntegrationTest {
 
     private File snapshotFile;
     private SnapshotClient snapshotClient;
-    private CountDownLatch latch = new CountDownLatch(1);
-    private AtomicBoolean success = new AtomicBoolean(false);
 
     @Before
     public void setUp() throws IOException {
         snapshotClient = client.snapshotClient();
         snapshotFile = File.createTempFile("snapshot", ".gz");
-
-        latch = new CountDownLatch(1);
-        success = new AtomicBoolean(false);
     }
 
     @After
@@ -48,12 +44,15 @@ public class SnapshotClientTest extends BaseIntegrationTest {
     public void shouldBeAbleToSaveAndRestoreSnapshot() throws MalformedURLException, InterruptedException {
         String serviceName = UUID.randomUUID().toString();
         String serviceId = UUID.randomUUID().toString();
+
         client.agentClient().register(8080, new URL("http://localhost:123/health"), 1000L, serviceName, serviceId);
+        Synchroniser.pause(Duration.ofMillis(100));
         assertTrue(checkIfServiceExist(serviceName));
 
         ensureSaveSnapshot();
 
         client.agentClient().deregister(serviceId);
+        Synchroniser.pause(Duration.ofMillis(100));
         assertFalse(checkIfServiceExist(serviceName));
 
         ensureRestoreSnapshot();
@@ -62,13 +61,17 @@ public class SnapshotClientTest extends BaseIntegrationTest {
     }
 
     private void ensureSaveSnapshot() throws InterruptedException {
-        snapshotClient.save(snapshotFile, QueryOptions.BLANK, createCallback());
+        CountDownLatch latch = new CountDownLatch(1);
+        AtomicBoolean success = new AtomicBoolean(false);
+        snapshotClient.save(snapshotFile, QueryOptions.BLANK, createCallback(latch, success));
         assertTrue(latch.await(1, TimeUnit.MINUTES));
         assertTrue(success.get());
     }
 
     private void ensureRestoreSnapshot() throws InterruptedException {
-        snapshotClient.restore(snapshotFile, QueryOptions.BLANK, createCallback());
+        CountDownLatch latch = new CountDownLatch(1);
+        AtomicBoolean success = new AtomicBoolean(false);
+        snapshotClient.restore(snapshotFile, QueryOptions.BLANK, createCallback(latch, success));
         assertTrue(latch.await(1, TimeUnit.MINUTES));
         assertTrue(success.get());
     }
@@ -77,7 +80,7 @@ public class SnapshotClientTest extends BaseIntegrationTest {
         return !client.healthClient().getAllServiceInstances(serviceName).getResponse().isEmpty();
     }
 
-    private <T> Callback<T> createCallback() {
+    private <T> Callback<T> createCallback(final CountDownLatch latch, final AtomicBoolean success) {
         return new Callback<T>() {
             @Override
             public void onResponse(T index) {
