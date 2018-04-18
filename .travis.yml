@@ -1,7 +1,7 @@
 language: java
 services: docker
 before_install:
-  - docker run -d -p 127.0.0.1:8500:8500 consul:1.0.3 agent -dev -client 0.0.0.0 --enable-script-checks=true
+  - docker run -d -p 127.0.0.1:8500:8500 consul:1.0.7 agent -dev -client 0.0.0.0 --enable-script-checks=true
 
 jdk:
   - oraclejdk8
