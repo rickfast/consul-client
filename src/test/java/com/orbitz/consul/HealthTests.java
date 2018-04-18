@@ -14,7 +14,9 @@ import org.junit.Test;
 
 import java.math.BigInteger;
 import java.net.UnknownHostException;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import static com.orbitz.consul.Consul.builder;
@@ -23,19 +25,22 @@ import static org.junit.Assert.assertTrue;
 
 public class HealthTests extends BaseIntegrationTest {
 
+    private static final List<String> NO_TAGS = Collections.emptyList();
+    private static final Map<String, String> NO_META = Collections.emptyMap();
+
     @Test
     @Ignore
     public void shouldFetchPassingNode() throws UnknownHostException, NotRegisteredException {
         String serviceName = UUID.randomUUID().toString();
         String serviceId = UUID.randomUUID().toString();
 
-        client.agentClient().register(8080, 20L, serviceName, serviceId);
+        client.agentClient().register(8080, 20L, serviceName, serviceId, NO_TAGS, NO_META);
         client.agentClient().pass(serviceId);
 
         Consul client2 = builder().withHostAndPort(HostAndPort.fromParts("localhost", 8500)).build();
         String serviceId2 = UUID.randomUUID().toString();
 
-        client2.agentClient().register(8080, 20L, serviceName, serviceId2);
+        client2.agentClient().register(8080, 20L, serviceName, serviceId2, NO_TAGS, NO_META);
         client2.agentClient().fail(serviceId2);
 
         ConsulResponse<List<ServiceHealth>> response = client2.healthClient().getHealthyServiceInstances(serviceName);
@@ -50,7 +55,7 @@ public class HealthTests extends BaseIntegrationTest {
         String serviceName = UUID.randomUUID().toString();
         String serviceId = UUID.randomUUID().toString();
 
-        client.agentClient().register(8080, 20L, serviceName, serviceId);
+        client.agentClient().register(8080, 20L, serviceName, serviceId, NO_TAGS, NO_META);
         client.agentClient().pass(serviceId);
 
         ConsulResponse<List<ServiceHealth>> response = client.healthClient().getAllServiceInstances(serviceName);
@@ -64,7 +69,7 @@ public class HealthTests extends BaseIntegrationTest {
         String serviceName = UUID.randomUUID().toString();
         String serviceId = UUID.randomUUID().toString();
 
-        client.agentClient().register(8080, 20L, serviceName, serviceId);
+        client.agentClient().register(8080, 20L, serviceName, serviceId, NO_TAGS, NO_META);
         client.agentClient().pass(serviceId);
 
         ConsulResponse<List<ServiceHealth>> response = client.healthClient().getAllServiceInstances(serviceName,
@@ -78,7 +83,7 @@ public class HealthTests extends BaseIntegrationTest {
         String serviceName = UUID.randomUUID().toString();
         String serviceId = UUID.randomUUID().toString();
 
-        client.agentClient().register(8080, 20L, serviceName, serviceId);
+        client.agentClient().register(8080, 20L, serviceName, serviceId, NO_TAGS, NO_META);
         client.agentClient().pass(serviceId);
 
         ConsulResponse<List<ServiceHealth>> response = client.healthClient().getAllServiceInstances(serviceName,
@@ -124,7 +129,7 @@ public class HealthTests extends BaseIntegrationTest {
         String serviceName = UUID.randomUUID().toString();
         String serviceId = UUID.randomUUID().toString();
 
-        client.agentClient().register(8080, 20L, serviceName, serviceId);
+        client.agentClient().register(8080, 20L, serviceName, serviceId, NO_TAGS, NO_META);
         client.agentClient().warn(serviceId);
 
         boolean found = false;

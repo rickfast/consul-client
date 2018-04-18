@@ -1,6 +1,7 @@
 package com.orbitz.consul;
 
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Lists;
 import com.google.common.net.HostAndPort;
 import com.orbitz.consul.config.ClientConfig;
 import com.orbitz.consul.model.State;
@@ -69,6 +70,14 @@ public class AgentClient extends BaseClient {
     }
 
     /**
+     * @deprecated use {@link #register(int, long, String, String, List, Map)} instead
+     */
+    @Deprecated
+    public void register(int port, long ttl, String name, String id, String... tags) {
+        register(port, ttl, name, id, Lists.newArrayList(tags), Collections.emptyMap());
+    }
+
+    /**
      * Registers the client as a service with Consul with a ttl check.
      *
      * @param port The public facing port of the service to register with Consul.
@@ -76,10 +85,19 @@ public class AgentClient extends BaseClient {
      * @param name Service name to register.
      * @param id   Service id to register.
      * @param tags Tags to register with.
+     * @param meta Meta to register with.
      */
-    public void register(int port, long ttl, String name, String id, String... tags) {
+    public void register(int port, long ttl, String name, String id, List<String> tags, Map<String, String> meta) {
         Registration.RegCheck check = Registration.RegCheck.ttl(ttl);
-        register(port, check, name, id, tags);
+        register(port, check, name, id, tags, meta);
+    }
+
+    /**
+     * @deprecated use {@link #register(int, String, long, String, String, List, Map)} instead
+     */
+    @Deprecated
+    public void register(int port, String script, long interval, String name, String id, String... tags) {
+        register(port, script, interval, name, id, Lists.newArrayList(tags), Collections.emptyMap());
     }
 
     /**
@@ -91,10 +109,20 @@ public class AgentClient extends BaseClient {
      * @param name     Service name to register.
      * @param id       Service id to register.
      * @param tags     Tags to register with.
+     * @param meta     Meta to register with.
      */
-    public void register(int port, String script, long interval, String name, String id, String... tags) {
+    public void register(int port, String script, long interval, String name, String id,
+                         List<String> tags, Map<String, String> meta) {
         Registration.RegCheck check = Registration.RegCheck.script(script, interval);
-        register(port, check, name, id, tags);
+        register(port, check, name, id, tags, meta);
+    }
+
+    /**
+     * @deprecated use {@link #register(int, URL, long, String, String, List, Map)} instead
+     */
+    @Deprecated
+    public void register(int port, URL http, long interval, String name, String id, String... tags) {
+        register(port, http, interval, name, id, Lists.newArrayList(tags), Collections.emptyMap());
     }
 
     /**
@@ -106,10 +134,20 @@ public class AgentClient extends BaseClient {
      * @param name     Service name to register.
      * @param id       Service id to register.
      * @param tags     Tags to register with.
+     * @param meta     Meta to register with.
      */
-    public void register(int port, URL http, long interval, String name, String id, String... tags) {
+    public void register(int port, URL http, long interval, String name, String id,
+                         List<String> tags, Map<String, String> meta) {
         Registration.RegCheck check = Registration.RegCheck.http(http.toExternalForm(), interval);
-        register(port, check, name, id, tags);
+        register(port, check, name, id, tags, meta);
+    }
+
+    /**
+     * @deprecated use {@link #register(int, HostAndPort, long, String, String, List, Map)} instead
+     */
+    @Deprecated
+    public void register(int port, HostAndPort tcp, long interval, String name, String id, String... tags) {
+        register(port, tcp, interval, name, id, Lists.newArrayList(tags), Collections.emptyMap());
     }
 
     /**
@@ -121,10 +159,19 @@ public class AgentClient extends BaseClient {
      * @param name     Service name to register.
      * @param id       Service id to register.
      * @param tags     Tags to register with.
+     * @param meta     Meta to register with.
      */
-    public void register(int port, HostAndPort tcp, long interval, String name, String id, String... tags) {
+    public void register(int port, HostAndPort tcp, long interval, String name, String id,
+                         List<String> tags, Map<String, String> meta) {
         Registration.RegCheck check = Registration.RegCheck.tcp(tcp.toString(), interval);
-        register(port, check, name, id, tags);
+        register(port, check, name, id, tags, meta);
+    }
+
+    /**
+     * @deprecated use {@link #register(int, Registration.RegCheck, String, String, List, Map)} instead
+     */
+    public void register(int port, Registration.RegCheck check, String name, String id, String... tags) {
+        register(port, check, name, id, Lists.newArrayList(tags), Collections.emptyMap());
     }
 
     /**
@@ -135,18 +182,29 @@ public class AgentClient extends BaseClient {
      * @param name  Service name to register.
      * @param id    Service id to register.
      * @param tags  Tags to register with.
+     * @param meta  Meta to register with.
      */
-    public void register(int port, Registration.RegCheck check, String name, String id, String... tags) {
+    public void register(int port, Registration.RegCheck check, String name, String id,
+                         List<String> tags, Map<String, String> meta) {
         Registration registration = ImmutableRegistration
                 .builder()
                 .port(port)
                 .check(Optional.ofNullable(check))
                 .name(name)
                 .id(id)
-                .addTags(tags)
+                .tags(tags)
+                .meta(meta)
                 .build();
 
         register(registration);
+    }
+
+    /**
+     * @deprecated use {@link #register(int, List, String, String, List, Map)} instead
+     */
+    @Deprecated
+    public void register(int port, List<Registration.RegCheck> checks, String name, String id, String... tags) {
+        register(port, checks, name, id, Lists.newArrayList(tags), Collections.emptyMap());
     }
 
     /**
@@ -157,15 +215,18 @@ public class AgentClient extends BaseClient {
      * @param name  Service name to register.
      * @param id    Service id to register.
      * @param tags  Tags to register with.
+     * @param meta  Meta to register with.
      */
-    public void register(int port, List<Registration.RegCheck> checks, String name, String id, String... tags) {
+    public void register(int port, List<Registration.RegCheck> checks, String name, String id,
+                         List<String> tags, Map<String, String> meta) {
         Registration registration = ImmutableRegistration
                 .builder()
                 .port(port)
                 .checks(checks)
                 .name(name)
                 .id(id)
-                .addTags(tags)
+                .tags(tags)
+                .meta(meta)
                 .build();
 
         register(registration);

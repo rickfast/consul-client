@@ -6,6 +6,7 @@ import com.orbitz.consul.model.agent.ImmutableRegCheck;
 import com.orbitz.consul.model.agent.ImmutableRegistration;
 import com.orbitz.consul.model.agent.Registration;
 import com.orbitz.consul.model.health.HealthCheck;
+import com.orbitz.consul.model.health.ImmutableService;
 import com.orbitz.consul.model.health.Service;
 import com.orbitz.consul.model.health.ServiceHealth;
 import com.orbitz.consul.util.Synchroniser;
@@ -16,6 +17,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.UnknownHostException;
 import java.time.Duration;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -25,6 +27,9 @@ import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.*;
 
 public class AgentTests extends BaseIntegrationTest {
+
+    private static final List<String> NO_TAGS = Collections.emptyList();
+    private static final Map<String, String> NO_META = Collections.emptyMap();
 
     @Test
     public void shouldRetrieveAgentInformation() throws UnknownHostException {
@@ -47,7 +52,7 @@ public class AgentTests extends BaseIntegrationTest {
         String serviceName = UUID.randomUUID().toString();
         String serviceId = UUID.randomUUID().toString();
 
-        client.agentClient().register(8080, 10000L, serviceName, serviceId);
+        client.agentClient().register(8080, 10000L, serviceName, serviceId, NO_TAGS, NO_META);
 
         Synchroniser.pause(Duration.ofMillis(100));
 
@@ -69,7 +74,7 @@ public class AgentTests extends BaseIntegrationTest {
         String serviceName = UUID.randomUUID().toString();
         String serviceId = UUID.randomUUID().toString();
 
-        client.agentClient().register(8080, new URL("http://localhost:1337/health"), 1000L, serviceName, serviceId);
+        client.agentClient().register(8080, new URL("http://localhost:1337/health"), 1000L, serviceName, serviceId, NO_TAGS, NO_META);
 
         Synchroniser.pause(Duration.ofMillis(100));
 
@@ -125,7 +130,7 @@ public class AgentTests extends BaseIntegrationTest {
                 Registration.RegCheck.script("/usr/bin/echo \"sup\"", 10, 1, "Custom description."),
                 Registration.RegCheck.http("http://localhost:8080/health", 10, 1, "Custom description."));
 
-        client.agentClient().register(8080, regChecks, serviceName, serviceId);
+        client.agentClient().register(8080, regChecks, serviceName, serviceId, NO_TAGS, NO_META);
 
         Synchroniser.pause(Duration.ofMillis(100));
 
@@ -184,7 +189,7 @@ public class AgentTests extends BaseIntegrationTest {
         String serviceName = UUID.randomUUID().toString();
         String serviceId = UUID.randomUUID().toString();
 
-        client.agentClient().register(8080, 10000L, serviceName, serviceId);
+        client.agentClient().register(8080, 10000L, serviceName, serviceId, NO_TAGS, NO_META);
         client.agentClient().deregister(serviceId);
         Synchroniser.pause(Duration.ofSeconds(1));
         boolean found = false;
@@ -201,7 +206,7 @@ public class AgentTests extends BaseIntegrationTest {
     @Test
     public void shouldGetChecks() {
         String id = UUID.randomUUID().toString();
-        client.agentClient().register(8080, 20L, UUID.randomUUID().toString(), id);
+        client.agentClient().register(8080, 20L, UUID.randomUUID().toString(), id, NO_TAGS, NO_META);
 
         boolean found = false;
 
@@ -217,17 +222,22 @@ public class AgentTests extends BaseIntegrationTest {
     @Test
     public void shouldGetServices() {
         String id = UUID.randomUUID().toString();
-        client.agentClient().register(8080, 20L, UUID.randomUUID().toString(), id);
+        String name = UUID.randomUUID().toString();
+        List<String> tags = Collections.singletonList(UUID.randomUUID().toString());
+        Map<String, String> meta = Collections.singletonMap(UUID.randomUUID().toString(), UUID.randomUUID().toString());
+        client.agentClient().register(8080, 20L, name, id, tags, meta);
+        Synchroniser.pause(Duration.ofMillis(100));
 
-        boolean found = false;
-
+        Service expectedService = ImmutableService.builder().id(id).service(name).address("").port(8080).tags(tags).meta(meta).build();
+        Service registeredService = null;
         for (Map.Entry<String, Service> service : client.agentClient().getServices().entrySet()) {
             if (service.getValue().getId().equals(id)) {
-                found = true;
+                registeredService = service.getValue();
             }
         }
 
-        assertTrue(found);
+        assertNotNull(String.format("Service \"%s\" not found", name), registeredService);
+        assertEquals(expectedService, registeredService);
     }
 
     @Test
@@ -311,7 +321,7 @@ public class AgentTests extends BaseIntegrationTest {
         String serviceId = UUID.randomUUID().toString();
         String reason = UUID.randomUUID().toString();
 
-        client.agentClient().register(8080, 20L, serviceName, serviceId);
+        client.agentClient().register(8080, 20L, serviceName, serviceId, NO_TAGS, NO_META);
         client.agentClient().toggleMaintenanceMode(serviceId, true, reason);
     }
 

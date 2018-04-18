@@ -16,6 +16,7 @@ import org.junit.Test;
 import java.math.BigInteger;
 import java.net.UnknownHostException;
 import java.time.Duration;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -122,6 +123,18 @@ public class CatalogTests extends BaseIntegrationTest {
         String service = UUID.randomUUID().toString();
         String serviceId = UUID.randomUUID().toString();
 
+        CatalogService expectedService = ImmutableCatalogService.builder()
+                .address("localhost")
+                .datacenter("dc1")
+                .node("node")
+                .serviceAddress("localhost")
+                .addServiceTags("sometag")
+                .serviceId(serviceId)
+                .serviceName(service)
+                .servicePort(8080)
+                .serviceMeta(Collections.singletonMap("metakey", "metavalue"))
+                .build();
+
         CatalogRegistration registration = ImmutableCatalogRegistration.builder()
                 .address("localhost")
                 .datacenter("dc1")
@@ -132,14 +145,24 @@ public class CatalogTests extends BaseIntegrationTest {
                         .id(serviceId)
                         .service(service)
                         .port(8080)
+                        .putMeta("metakey", "metavalue")
                         .build())
                 .build();
-
         catalogClient.register(registration);
+        Synchroniser.pause(Duration.ofMillis(100));
 
         ConsulResponse<List<CatalogService>> response = catalogClient.getService(service);
 
         assertFalse(response.getResponse().isEmpty());
+
+        CatalogService registeredService = null;
+        for (CatalogService catalogService : response.getResponse()) {
+            if (catalogService.getServiceId().equals(serviceId)) {
+                registeredService = catalogService;
+            }
+        }
+        assertNotNull(String.format("Service \"%s\" not found", service), registeredService);
+        assertEquals(expectedService, registeredService);
     }
 
 
@@ -160,6 +183,7 @@ public class CatalogTests extends BaseIntegrationTest {
                         .id(serviceId)
                         .service(service)
                         .port(8080)
+                        .putMeta("metakey", "metavalue")
                         .build())
                 .build();
 

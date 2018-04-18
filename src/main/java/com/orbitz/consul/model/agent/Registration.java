@@ -5,6 +5,8 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+
+import java.util.Map;
 import java.util.Optional;
 import org.immutables.value.Value;
 
@@ -40,6 +42,9 @@ public abstract class Registration {
 
     @JsonProperty("Tags")
     public abstract List<String> getTags();
+
+    @JsonProperty("Meta")
+    public abstract Map<String,String> getMeta();
 
     @JsonProperty("EnableTagOverride")
     public abstract Optional<Boolean> getEnableTagOverride();
