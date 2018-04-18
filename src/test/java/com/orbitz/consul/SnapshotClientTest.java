@@ -84,8 +84,8 @@ public class SnapshotClientTest extends BaseIntegrationTest {
         return new Callback<T>() {
             @Override
             public void onResponse(T index) {
-                latch.countDown();
                 success.set(true);
+                latch.countDown();
             }
 
             @Override
