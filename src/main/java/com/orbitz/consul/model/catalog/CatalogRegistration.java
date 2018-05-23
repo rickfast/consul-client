@@ -35,4 +35,5 @@ public abstract class CatalogRegistration {
 
     @JsonProperty("WriteRequest")
     public abstract Optional<WriteRequest> writeRequest();
+
 }
