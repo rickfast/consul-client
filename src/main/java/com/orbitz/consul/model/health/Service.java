@@ -9,6 +9,7 @@ import org.immutables.value.Value;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 @Value.Immutable
 @JsonSerialize(as = ImmutableService.class)
@@ -17,21 +18,24 @@ import java.util.Map;
 public abstract class Service {
 
     @JsonProperty("ID")
-    public abstract  String getId();
+    public abstract String getId();
 
     @JsonProperty("Service")
-    public abstract  String getService();
+    public abstract String getService();
+
+    @JsonProperty("EnableTagOverride")
+    public abstract Optional<Boolean> getEnableTagOverride();
 
     @JsonProperty("Tags")
     @JsonDeserialize(as = ImmutableList.class, contentAs = String.class)
     public abstract List<String> getTags();
     
     @JsonProperty("Address")
-    public abstract  String getAddress();
+    public abstract String getAddress();
 
     @JsonProperty("Meta")
     public abstract Map<String,String> getMeta();
 
     @JsonProperty("Port")
-    public abstract  int getPort();
+    public abstract int getPort();
 }

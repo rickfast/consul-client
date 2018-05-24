@@ -34,6 +34,9 @@ public abstract class CatalogService {
     @JsonProperty("ServiceAddress")
     public abstract String getServiceAddress();
 
+    @JsonProperty("ServiceEnableTagOverride")
+    public abstract Optional<Boolean> getServiceEnableTagOverride();
+
     @JsonProperty("ServicePort")
     public abstract int getServicePort();
 

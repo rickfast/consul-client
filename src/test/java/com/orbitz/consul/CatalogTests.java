@@ -133,6 +133,7 @@ public class CatalogTests extends BaseIntegrationTest {
                 .serviceName(service)
                 .servicePort(8080)
                 .serviceMeta(Collections.singletonMap("metakey", "metavalue"))
+                .serviceEnableTagOverride(true)
                 .build();
 
         CatalogRegistration registration = ImmutableCatalogRegistration.builder()
@@ -146,6 +147,7 @@ public class CatalogTests extends BaseIntegrationTest {
                         .service(service)
                         .port(8080)
                         .putMeta("metakey", "metavalue")
+                        .enableTagOverride(true) //setting this request flag sets the ServiceEnableTagOverride in the response
                         .build())
                 .build();
         catalogClient.register(registration);
