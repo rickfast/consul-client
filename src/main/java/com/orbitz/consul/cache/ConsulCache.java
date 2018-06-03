@@ -141,16 +141,20 @@ public class ConsulCache<K, V> implements AutoCloseable {
                     return;
                 }
                 eventHandler.cachePollingError(throwable);
-
+                long delayMs = computeBackOffDelayMs(cacheConfig);
                 String message = String.format("Error getting response from consul for %s, will retry in %d %s",
-                        cacheDescriptor, cacheConfig.getBackOffDelay().toMillis(), TimeUnit.MILLISECONDS);
+                        cacheDescriptor, delayMs, TimeUnit.MILLISECONDS);
 
                 cacheConfig.getRefreshErrorLoggingConsumer().accept(LOGGER, message, throwable);
 
-                executorService.schedule(ConsulCache.this::runCallback,
-                        cacheConfig.getBackOffDelay().toMillis(), TimeUnit.MILLISECONDS);
+                executorService.schedule(ConsulCache.this::runCallback, delayMs, TimeUnit.MILLISECONDS);
             }
         };
+    }
+
+    static long computeBackOffDelayMs(CacheConfig cacheConfig) {
+        return cacheConfig.getMinimumBackOffDelay().toMillis() +
+                Math.round(Math.random() * (cacheConfig.getMaximumBackOffDelay().minus(cacheConfig.getMinimumBackOffDelay()).toMillis()));
     }
 
     public void start() {

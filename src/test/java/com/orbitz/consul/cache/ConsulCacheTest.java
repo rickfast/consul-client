@@ -9,16 +9,27 @@ import com.orbitz.consul.monitoring.ClientEventHandler;
 import com.orbitz.consul.option.ConsistencyMode;
 import com.orbitz.consul.option.ImmutableQueryOptions;
 import com.orbitz.consul.option.QueryOptions;
+import junitparams.JUnitParamsRunner;
+import junitparams.Parameters;
+import junitparams.naming.TestCaseName;
+import org.junit.Assert;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.internal.matchers.GreaterOrEqual;
+import org.mockito.internal.matchers.LessOrEqual;
 
 import java.math.BigInteger;
+import java.time.Duration;
 import java.util.Arrays;
 import java.util.List;
 import java.util.function.Function;
 
+import static org.hamcrest.CoreMatchers.allOf;
+import static org.hamcrest.CoreMatchers.is;
 import static org.mockito.Mockito.mock;
 import static org.junit.Assert.*;
 
+@RunWith(JUnitParamsRunner.class)
 public class ConsulCacheTest extends BaseIntegrationTest {
 
     /**
@@ -82,5 +93,30 @@ public class ConsulCacheTest extends BaseIntegrationTest {
                 .wait("10s")
                 .build();
         ConsulCache.watchParams(index, 10, additionalOptions);
+    }
+
+    @Test
+    @Parameters(method = "getRetryDurationSamples")
+    @TestCaseName("min Delay: {0}, max Delay: {1}")
+    public void testRetryDuration(Duration minDelay, Duration maxDelay) {
+        CacheConfig cacheConfig = CacheConfig.builder().withBackOffDelay(minDelay, maxDelay).build();
+        for (int i=0; i < 1000; i++) {
+            long retryDurationMs = ConsulCache.computeBackOffDelayMs(cacheConfig);
+            Assert.assertThat(
+                    String.format("Retry duration expected between %s and %s but got %d ms", minDelay, maxDelay, retryDurationMs),
+                    retryDurationMs,
+                    is(allOf(new GreaterOrEqual<>(minDelay.toMillis()), new LessOrEqual<>(maxDelay.toMillis()))));
+        }
+    }
+
+    public Object getRetryDurationSamples() {
+        return new Object[]{
+                // Same duration
+                new Object[]{Duration.ZERO, Duration.ZERO},
+                new Object[]{Duration.ofSeconds(10), Duration.ofSeconds(10)},
+                // Different durations
+                new Object[]{Duration.ofSeconds(10), Duration.ofSeconds(11)},
+                new Object[]{Duration.ofMillis(10), Duration.ofMinutes(1)},
+        };
     }
 }

@@ -21,16 +21,18 @@ public class CacheConfig {
     @VisibleForTesting
     static final RefreshErrorLogConsumer DEFAULT_REFRESH_ERROR_LOG_CONSUMER = Logger::error;
 
-    private final Duration backOffDelay;
+    private final Duration minBackOffDelay;
+    private final Duration maxBackOffDelay;
     private final Duration minDelayBetweenRequests;
     private final Duration timeoutAutoAdjustmentMargin;
     private final boolean timeoutAutoAdjustmentEnabled;
     private final RefreshErrorLogConsumer refreshErrorLogConsumer;
 
-    private CacheConfig(Duration backOffDelay, Duration minDelayBetweenRequests,
+    private CacheConfig(Duration minBackOffDelay, Duration maxBackOffDelay, Duration minDelayBetweenRequests,
                         boolean timeoutAutoAdjustmentEnabled, Duration timeoutAutoAdjustmentMargin,
                         RefreshErrorLogConsumer refreshErrorLogConsumer) {
-        this.backOffDelay = backOffDelay;
+        this.minBackOffDelay = minBackOffDelay;
+        this.maxBackOffDelay = maxBackOffDelay;
         this.minDelayBetweenRequests = minDelayBetweenRequests;
         this.timeoutAutoAdjustmentEnabled = timeoutAutoAdjustmentEnabled;
         this.timeoutAutoAdjustmentMargin = timeoutAutoAdjustmentMargin;
@@ -45,10 +47,17 @@ public class CacheConfig {
     }
 
     /**
-     * Gets the back-off delay used in caches.
+     * Gets the minimum back-off delay used in caches.
      */
-    public Duration getBackOffDelay() {
-        return backOffDelay;
+    public Duration getMinimumBackOffDelay() {
+        return minBackOffDelay;
+    }
+
+    /**
+     * Gets the maximum back-off delay used in caches.
+     */
+    public Duration getMaximumBackOffDelay() {
+        return maxBackOffDelay;
     }
 
     /**
@@ -90,7 +99,8 @@ public class CacheConfig {
     }
 
     public static class Builder {
-        private Duration backOffDelay = DEFAULT_BACKOFF_DELAY;
+        private Duration minBackOffDelay = DEFAULT_BACKOFF_DELAY;
+        private Duration maxBackOffDelay = DEFAULT_BACKOFF_DELAY;
         private Duration minDelayBetweenRequests = DEFAULT_MIN_DELAY_BETWEEN_REQUESTS;
         private Duration timeoutAutoAdjustmentMargin = DEFAULT_TIMEOUT_AUTO_ADJUSTMENT_MARGIN;
         private boolean timeoutAutoAdjustmentEnabled = DEFAULT_TIMEOUT_AUTO_ADJUSTMENT_ENABLED;
@@ -102,9 +112,24 @@ public class CacheConfig {
 
         /**
          * Sets the back-off delay used in caches.
+         * @throws IllegalArgumentException if {@code delay} is negative.
          */
         public Builder withBackOffDelay(Duration delay) {
-            this.backOffDelay = Preconditions.checkNotNull(delay, "Delay cannot be null");
+            this.minBackOffDelay = Preconditions.checkNotNull(delay, "Delay cannot be null");
+            this.maxBackOffDelay = delay;
+            Preconditions.checkArgument(!delay.isNegative(), "Delay must be positive");
+            return this;
+        }
+
+        /**
+         * Sets a random delay between the {@code minDelay} and {@code maxDelay} (inclusive) to occur between retries.
+         * @throws IllegalArgumentException if {@code minDelay} or {@code maxDelay} is negative, or if {@code minDelay} is superior to {@code maxDelay}.
+         */
+        public Builder withBackOffDelay(Duration minDelay, Duration maxDelay) {
+            this.minBackOffDelay = Preconditions.checkNotNull(minDelay, "Minimum delay cannot be null");
+            this.maxBackOffDelay = Preconditions.checkNotNull(maxDelay, "Maximum delay cannot be null");
+            Preconditions.checkArgument(!minDelay.isNegative(), "Minimum delay must be positive");
+            Preconditions.checkArgument(!maxDelay.minus(minDelay).isNegative(), "Minimum delay must be less than maximum delay");
             return this;
         }
 
@@ -158,7 +183,7 @@ public class CacheConfig {
         }
 
         public CacheConfig build() {
-            return new CacheConfig(backOffDelay, minDelayBetweenRequests,
+            return new CacheConfig(minBackOffDelay, maxBackOffDelay, minDelayBetweenRequests,
                     timeoutAutoAdjustmentEnabled, timeoutAutoAdjustmentMargin,
                     refreshErrorLogConsumer);
         }
