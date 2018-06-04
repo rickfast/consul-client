@@ -144,11 +144,7 @@ public class ConsulCache<K, V> implements AutoCloseable {
                 String message = String.format("Error getting response from consul. will retry in %d %s",
                         cacheConfig.getBackOffDelay().toMillis(), TimeUnit.MILLISECONDS);
 
-                if (cacheConfig.isRefreshErrorLoggedAsWarning()) {
-                    LOGGER.warn(message, throwable);
-                } else {
-                    LOGGER.error(message, throwable);
-                }
+                cacheConfig.getRefreshErrorLoggingConsumer().accept(LOGGER, message, throwable);
 
                 executorService.schedule(ConsulCache.this::runCallback,
                         cacheConfig.getBackOffDelay().toMillis(), TimeUnit.MILLISECONDS);
