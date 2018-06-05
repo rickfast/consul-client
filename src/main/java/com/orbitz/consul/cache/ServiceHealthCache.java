@@ -15,8 +15,9 @@ public class ServiceHealthCache extends ConsulCache<ServiceHealthKey, ServiceHea
     private ServiceHealthCache(Function<ServiceHealth, ServiceHealthKey> keyConversion,
                                CallbackConsumer<ServiceHealth> callbackConsumer,
                                CacheConfig cacheConfig,
-                               ClientEventHandler eventHandler) {
-        super(keyConversion, callbackConsumer, cacheConfig, eventHandler);
+                               ClientEventHandler eventHandler,
+                               String cacheDescriptor) {
+        super(keyConversion, callbackConsumer, cacheConfig, eventHandler, cacheDescriptor);
     }
 
     /**
@@ -49,7 +50,8 @@ public class ServiceHealthCache extends ConsulCache<ServiceHealthKey, ServiceHea
         return new ServiceHealthCache(keyExtractor,
                 callbackConsumer,
                 healthClient.getConfig().getCacheConfig(),
-                healthClient.getEventHandler());
+                healthClient.getEventHandler(),
+                String.format("health service \"%s\"", serviceName));
     }
 
     public static ServiceHealthCache newCache(

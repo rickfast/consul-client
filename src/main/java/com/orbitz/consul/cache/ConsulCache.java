@@ -67,7 +67,8 @@ public class ConsulCache<K, V> implements AutoCloseable {
             Function<V, K> keyConversion,
             CallbackConsumer<V> callbackConsumer,
             CacheConfig cacheConfig,
-            ClientEventHandler eventHandler) {
+            ClientEventHandler eventHandler,
+            String cacheDescriptor) {
 
         this.keyConversion = keyConversion;
         this.callBackConsumer = callbackConsumer;
@@ -83,8 +84,8 @@ public class ConsulCache<K, V> implements AutoCloseable {
                     }
                     Duration elapsedTime = stopWatch.elapsed();
                     updateIndex(consulResponse);
-                    LOGGER.debug("Consul cache updated (index={}), request duration: {} ms",
-                            latestIndex, elapsedTime.toMillis());
+                    LOGGER.debug("Consul cache updated for {} (index={}), request duration: {} ms",
+                            cacheDescriptor, latestIndex, elapsedTime.toMillis());
 
                     ImmutableMap<K, V> full = convertToMap(consulResponse);
 
@@ -141,8 +142,8 @@ public class ConsulCache<K, V> implements AutoCloseable {
                 }
                 eventHandler.cachePollingError(throwable);
 
-                String message = String.format("Error getting response from consul. will retry in %d %s",
-                        cacheConfig.getBackOffDelay().toMillis(), TimeUnit.MILLISECONDS);
+                String message = String.format("Error getting response from consul for %s, will retry in %d %s",
+                        cacheDescriptor, cacheConfig.getBackOffDelay().toMillis(), TimeUnit.MILLISECONDS);
 
                 cacheConfig.getRefreshErrorLoggingConsumer().accept(LOGGER, message, throwable);
 

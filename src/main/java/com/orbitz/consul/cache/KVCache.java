@@ -16,8 +16,9 @@ public class KVCache extends ConsulCache<String, Value> {
     private KVCache(Function<Value, String> keyConversion,
                     ConsulCache.CallbackConsumer<Value> callbackConsumer,
                     CacheConfig cacheConfig,
-                    ClientEventHandler eventHandler) {
-        super(keyConversion, callbackConsumer, cacheConfig, eventHandler);
+                    ClientEventHandler eventHandler,
+                    String cacheDescriptor) {
+        super(keyConversion, callbackConsumer, cacheConfig, eventHandler, cacheDescriptor);
     }
 
     @VisibleForTesting
@@ -55,7 +56,8 @@ public class KVCache extends ConsulCache<String, Value> {
         return new KVCache(keyExtractor,
                 callbackConsumer,
                 kvClient.getConfig().getCacheConfig(),
-                kvClient.getEventHandler());
+                kvClient.getEventHandler(),
+                String.format("key \"%s\"", rootPath));
     }
 
     @VisibleForTesting
