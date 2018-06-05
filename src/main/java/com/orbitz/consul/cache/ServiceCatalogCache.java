@@ -17,8 +17,9 @@ public class ServiceCatalogCache extends ConsulCache<String, CatalogService> {
     private ServiceCatalogCache(Function<CatalogService, String> keyConversion,
                                 CallbackConsumer<CatalogService> callbackConsumer,
                                 CacheConfig cacheConfig,
-                                ClientEventHandler eventHandler) {
-        super(keyConversion, callbackConsumer, cacheConfig, eventHandler);
+                                ClientEventHandler eventHandler,
+                                String cacheDescriptor) {
+        super(keyConversion, callbackConsumer, cacheConfig, eventHandler, cacheDescriptor);
     }
 
     public static ServiceCatalogCache newCache(
@@ -33,7 +34,8 @@ public class ServiceCatalogCache extends ConsulCache<String, CatalogService> {
         return new ServiceCatalogCache(CatalogService::getServiceId,
                 callbackConsumer,
                 catalogClient.getConfig().getCacheConfig(),
-                catalogClient.getEventHandler());
+                catalogClient.getEventHandler(),
+                String.format("catalog service \"%s\"", serviceName));
     }
 
     public static ServiceCatalogCache newCache(final CatalogClient catalogClient, final String serviceName) {

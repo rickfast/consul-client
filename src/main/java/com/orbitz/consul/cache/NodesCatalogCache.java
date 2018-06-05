@@ -15,7 +15,7 @@ public class NodesCatalogCache extends ConsulCache<String, Node> {
                               CallbackConsumer<Node> callbackConsumer,
                               CacheConfig cacheConfig,
                               ClientEventHandler eventHandler) {
-        super(keyConversion, callbackConsumer, cacheConfig, eventHandler);
+        super(keyConversion, callbackConsumer, cacheConfig, eventHandler, "nodes");
     }
 
     public static NodesCatalogCache newCache(
