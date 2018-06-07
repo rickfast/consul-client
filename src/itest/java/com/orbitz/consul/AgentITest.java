@@ -227,7 +227,7 @@ public class AgentITest extends BaseIntegrationTest {
         client.agentClient().register(8080, 20L, name, id, tags, meta);
         Synchroniser.pause(Duration.ofMillis(100));
 
-        Service expectedService = ImmutableService.builder().id(id).service(name).address("").port(8080).tags(tags).meta(meta).build();
+        Service expectedService = ImmutableService.builder().id(id).service(name).address("").port(8080).tags(tags).meta(meta).enableTagOverride(false).build();
         Service registeredService = null;
         for (Map.Entry<String, Service> service : client.agentClient().getServices().entrySet()) {
             if (service.getValue().getId().equals(id)) {
