@@ -9,7 +9,6 @@ import com.orbitz.consul.model.health.Service;
 import com.orbitz.consul.model.health.ServiceHealth;
 import com.orbitz.consul.option.ImmutableQueryOptions;
 import com.orbitz.consul.option.QueryOptions;
-import com.orbitz.consul.util.Synchroniser;
 import org.junit.Ignore;
 import org.junit.Test;
 
@@ -27,7 +26,7 @@ import java.util.concurrent.TimeoutException;
 
 import static org.junit.Assert.*;
 
-public class CatalogTests extends BaseIntegrationTest {
+public class CatalogITest extends BaseIntegrationTest {
 
     @Test
     public void shouldGetNodes() throws UnknownHostException {

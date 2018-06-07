@@ -15,7 +15,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
-public class SessionClientTest extends BaseIntegrationTest {
+public class SessionClientITest extends BaseIntegrationTest {
 
     private KeyValueClient keyValueClient;
     private SessionClient sessionClient;

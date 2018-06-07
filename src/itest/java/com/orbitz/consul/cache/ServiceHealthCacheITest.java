@@ -4,7 +4,7 @@ import com.google.common.collect.ImmutableMap;
 import com.orbitz.consul.BaseIntegrationTest;
 import com.orbitz.consul.HealthClient;
 import com.orbitz.consul.model.health.ServiceHealth;
-import com.orbitz.consul.util.Synchroniser;
+import com.orbitz.consul.Synchroniser;
 import org.junit.Test;
 
 import java.time.Duration;
@@ -14,7 +14,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.junit.Assert.*;
 
-public class ServiceHealthCacheTest extends BaseIntegrationTest {
+public class ServiceHealthCacheITest extends BaseIntegrationTest {
 
     private static final List<String> NO_TAGS = Collections.emptyList();
     private static final Map<String, String> NO_META = Collections.emptyMap();

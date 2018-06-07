@@ -23,7 +23,7 @@ import static com.orbitz.consul.Consul.builder;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-public class HealthTests extends BaseIntegrationTest {
+public class HealthITest extends BaseIntegrationTest {
 
     private static final List<String> NO_TAGS = Collections.emptyList();
     private static final Map<String, String> NO_META = Collections.emptyMap();

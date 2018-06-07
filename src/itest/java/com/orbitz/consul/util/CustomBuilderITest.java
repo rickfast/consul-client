@@ -10,7 +10,7 @@ import java.net.UnknownHostException;
 
 import static org.junit.Assert.assertNotNull;
 
-public class CustomBuilderTest extends BaseIntegrationTest{
+public class CustomBuilderITest extends BaseIntegrationTest{
 
     @Test
     public void shouldConnectWithCustomTimeouts() throws UnknownHostException {

@@ -9,7 +9,6 @@ import com.orbitz.consul.model.health.HealthCheck;
 import com.orbitz.consul.model.health.ImmutableService;
 import com.orbitz.consul.model.health.Service;
 import com.orbitz.consul.model.health.ServiceHealth;
-import com.orbitz.consul.util.Synchroniser;
 import org.junit.Ignore;
 import org.junit.Test;
 
@@ -26,7 +25,7 @@ import static org.hamcrest.core.AnyOf.anyOf;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.*;
 
-public class AgentTests extends BaseIntegrationTest {
+public class AgentITest extends BaseIntegrationTest {
 
     private static final List<String> NO_TAGS = Collections.emptyList();
     private static final Map<String, String> NO_META = Collections.emptyMap();
