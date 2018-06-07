@@ -3,6 +3,7 @@ package com.orbitz.consul.config;
 import junitparams.JUnitParamsRunner;
 import junitparams.Parameters;
 import junitparams.naming.TestCaseName;
+import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.slf4j.Logger;
@@ -23,7 +24,8 @@ public class CacheConfigTest {
     @Test
     public void testDefaults() {
         CacheConfig config = CacheConfig.builder().build();
-        assertEquals(CacheConfig.DEFAULT_BACKOFF_DELAY, config.getBackOffDelay());
+        assertEquals(CacheConfig.DEFAULT_BACKOFF_DELAY, config.getMinimumBackOffDelay());
+        assertEquals(CacheConfig.DEFAULT_BACKOFF_DELAY, config.getMaximumBackOffDelay());
         assertEquals(CacheConfig.DEFAULT_WATCH_DURATION, config.getWatchDuration());
         assertEquals(CacheConfig.DEFAULT_MIN_DELAY_BETWEEN_REQUESTS, config.getMinimumDurationBetweenRequests());
         assertEquals(CacheConfig.DEFAULT_TIMEOUT_AUTO_ADJUSTMENT_ENABLED, config.isTimeoutAutoAdjustmentEnabled());
@@ -44,7 +46,8 @@ public class CacheConfigTest {
     @TestCaseName("Delay: {0}")
     public void testOverrideBackOffDelay(Duration backOffDelay) {
         CacheConfig config = CacheConfig.builder().withBackOffDelay(backOffDelay).build();
-        assertEquals(backOffDelay, config.getBackOffDelay());
+        assertEquals(backOffDelay, config.getMinimumBackOffDelay());
+        assertEquals(backOffDelay, config.getMaximumBackOffDelay());
     }
 
     @Test
@@ -117,6 +120,40 @@ public class CacheConfigTest {
                 Duration.ZERO,
                 Duration.ofSeconds(2),
                 Duration.ofMinutes(10)
+        };
+    }
+
+    @Test
+    @Parameters(method = "getMinMaxDurationSamples")
+    @TestCaseName("min Delay: {0}, max Delay: {1}")
+    public void testOverrideRandomBackOffDelay(Duration minDelay, Duration maxDelay, boolean isValid) {
+        try {
+            CacheConfig config = CacheConfig.builder().withBackOffDelay(minDelay, maxDelay).build();
+            if (!isValid) {
+                Assert.fail(String.format("Should not be able to build cache with min retry delay %d ms and max retry delay %d ms",
+                        minDelay.toMillis(), maxDelay.toMillis()));
+            }
+            assertEquals(minDelay, config.getMinimumBackOffDelay());
+            assertEquals(maxDelay, config.getMaximumBackOffDelay());
+        } catch (NullPointerException | IllegalArgumentException e) {
+            if (isValid) {
+                throw new AssertionError(String.format("Should be able to build cache with min retry delay %d ms and max retry delay %d ms",
+                        minDelay.toMillis(), maxDelay.toMillis()), e);
+            }
+        }
+    }
+
+    public Object getMinMaxDurationSamples() {
+        return new Object[]{
+                new Object[] { Duration.ZERO, Duration.ZERO, true },
+                new Object[] { Duration.ofSeconds(2), Duration.ofSeconds(2), true },
+                new Object[] { Duration.ZERO, Duration.ofSeconds(2), true },
+                new Object[] { Duration.ofSeconds(2), Duration.ZERO, false },
+                new Object[] { Duration.ofSeconds(1), Duration.ofSeconds(2), true },
+                new Object[] { Duration.ofSeconds(2), Duration.ofSeconds(1), false },
+                new Object[] { Duration.ofSeconds(-1), Duration.ZERO, false },
+                new Object[] { Duration.ZERO, Duration.ofSeconds(-1), false },
+                new Object[] { Duration.ofSeconds(-1), Duration.ofSeconds(-1), false },
         };
     }
 }
