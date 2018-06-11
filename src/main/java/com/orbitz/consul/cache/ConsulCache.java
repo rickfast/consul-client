@@ -62,17 +62,19 @@ public class ConsulCache<K, V> implements AutoCloseable {
     private final CallbackConsumer<V> callBackConsumer;
     private final ConsulResponseCallback<List<V>> responseCallback;
     private final ClientEventHandler eventHandler;
+    private final CacheDescriptor cacheDescriptor;
 
     ConsulCache(
             Function<V, K> keyConversion,
             CallbackConsumer<V> callbackConsumer,
             CacheConfig cacheConfig,
             ClientEventHandler eventHandler,
-            String cacheDescriptor) {
+            CacheDescriptor cacheDescriptor) {
 
         this.keyConversion = keyConversion;
         this.callBackConsumer = callbackConsumer;
         this.eventHandler = eventHandler;
+        this.cacheDescriptor = cacheDescriptor;
 
         this.responseCallback = new ConsulResponseCallback<List<V>>() {
             @Override
@@ -90,7 +92,7 @@ public class ConsulCache<K, V> implements AutoCloseable {
                     ImmutableMap<K, V> full = convertToMap(consulResponse);
 
                     boolean changed = !full.equals(lastResponse.get());
-                    eventHandler.cachePollingSuccess(changed, elapsedTime);
+                    eventHandler.cachePollingSuccess(cacheDescriptor, changed, elapsedTime);
 
                     if (changed) {
                         // changes
@@ -140,7 +142,7 @@ public class ConsulCache<K, V> implements AutoCloseable {
                 if (!isRunning()) {
                     return;
                 }
-                eventHandler.cachePollingError(throwable);
+                eventHandler.cachePollingError(cacheDescriptor, throwable);
                 long delayMs = computeBackOffDelayMs(cacheConfig);
                 String message = String.format("Error getting response from consul for %s, will retry in %d %s",
                         cacheDescriptor, delayMs, TimeUnit.MILLISECONDS);
@@ -159,12 +161,12 @@ public class ConsulCache<K, V> implements AutoCloseable {
 
     public void start() {
         checkState(state.compareAndSet(State.latent, State.starting),"Cannot transition from state %s to %s", state.get(), State.starting);
-        eventHandler.cacheStart();
+        eventHandler.cacheStart(cacheDescriptor);
         runCallback();
     }
 
     public void stop() {
-        eventHandler.cacheStop();
+        eventHandler.cacheStop(cacheDescriptor);
         State previous = state.getAndSet(State.stopped);
         if (stopWatch.isRunning()) {
             stopWatch.stop();

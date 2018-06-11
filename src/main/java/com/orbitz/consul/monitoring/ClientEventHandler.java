@@ -1,6 +1,7 @@
 package com.orbitz.consul.monitoring;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import com.orbitz.consul.cache.CacheDescriptor;
 import okhttp3.Request;
 
 import java.time.Duration;
@@ -34,20 +35,20 @@ public class ClientEventHandler {
                 callback.onHttpRequestFailure(clientName, request.method(), request.url().query(), throwable));
     }
 
-    public void cacheStart() {
-        EVENT_EXECUTOR.submit(() -> callback.onCacheStart(clientName));
+    public void cacheStart(CacheDescriptor cacheDescriptor) {
+        EVENT_EXECUTOR.submit(() -> callback.onCacheStart(clientName, cacheDescriptor));
     }
 
-    public void cacheStop() {
-        EVENT_EXECUTOR.submit(() -> callback.onCacheStop(clientName));
+    public void cacheStop(CacheDescriptor cacheDescriptor) {
+        EVENT_EXECUTOR.submit(() -> callback.onCacheStop(clientName, cacheDescriptor));
     }
 
-    public void cachePollingError(Throwable throwable) {
-        EVENT_EXECUTOR.submit(() -> callback.onCachePollingError(clientName, throwable));
+    public void cachePollingError(CacheDescriptor cacheDescriptor, Throwable throwable) {
+        EVENT_EXECUTOR.submit(() -> callback.onCachePollingError(clientName, cacheDescriptor, throwable));
     }
 
-    public void cachePollingSuccess(boolean withNotification, Duration duration) {
-        EVENT_EXECUTOR.submit(() -> callback.onCachePollingSuccess(clientName, withNotification, duration));
+    public void cachePollingSuccess(CacheDescriptor cacheDescriptor, boolean withNotification, Duration duration) {
+        EVENT_EXECUTOR.submit(() -> callback.onCachePollingSuccess(clientName, cacheDescriptor, withNotification, duration));
     }
 
 }

@@ -18,7 +18,7 @@ public class ServiceCatalogCache extends ConsulCache<String, CatalogService> {
                                 CallbackConsumer<CatalogService> callbackConsumer,
                                 CacheConfig cacheConfig,
                                 ClientEventHandler eventHandler,
-                                String cacheDescriptor) {
+                                CacheDescriptor cacheDescriptor) {
         super(keyConversion, callbackConsumer, cacheConfig, eventHandler, cacheDescriptor);
     }
 
@@ -31,11 +31,12 @@ public class ServiceCatalogCache extends ConsulCache<String, CatalogService> {
         final CallbackConsumer<CatalogService> callbackConsumer = (index, callback) ->
                 catalogClient.getService(serviceName, watchParams(index, watchSeconds, queryOptions), callback);
 
+        CacheDescriptor cacheDescriptor = new CacheDescriptor("catalog.service", serviceName);
         return new ServiceCatalogCache(CatalogService::getServiceId,
                 callbackConsumer,
                 catalogClient.getConfig().getCacheConfig(),
                 catalogClient.getEventHandler(),
-                String.format("catalog service \"%s\"", serviceName));
+                cacheDescriptor);
     }
 
     public static ServiceCatalogCache newCache(final CatalogClient catalogClient, final String serviceName) {
