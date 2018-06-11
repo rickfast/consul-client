@@ -1,5 +1,10 @@
 package com.orbitz.consul.cache;
 
+/**
+ * A {@link CacheDescriptor} describes an instance of a cache.
+ * The cache is represented by an {@link CacheDescriptor#endpoint} and a {@link CacheDescriptor#key}.
+ * For instance, a cache targeting "/v1/catalog/service/myService" will be represented by endpoint "catalog.service" and key "myService".
+ */
 public class CacheDescriptor {
 
     private final String endpoint;
