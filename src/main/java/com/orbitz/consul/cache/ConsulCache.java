@@ -68,7 +68,7 @@ public class ConsulCache<K, V> implements AutoCloseable {
             CallbackConsumer<V> callbackConsumer,
             CacheConfig cacheConfig,
             ClientEventHandler eventHandler,
-            String cacheDescriptor) {
+            CacheDescriptor cacheDescriptor) {
 
         this.keyConversion = keyConversion;
         this.callBackConsumer = callbackConsumer;

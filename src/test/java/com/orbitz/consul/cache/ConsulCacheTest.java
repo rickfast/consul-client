@@ -43,7 +43,7 @@ public class ConsulCacheTest extends BaseIntegrationTest {
         final List<Value> response = Arrays.asList(mock(Value.class), mock(Value.class));
         CacheConfig cacheConfig = mock(CacheConfig.class);
         ClientEventHandler eventHandler = mock(ClientEventHandler.class);
-        final ConsulCache<String, Value> consulCache = new ConsulCache<>(keyExtractor, null, cacheConfig, eventHandler, "");
+        final ConsulCache<String, Value> consulCache = new ConsulCache<>(keyExtractor, null, cacheConfig, eventHandler, new CacheDescriptor(""));
         final ConsulResponse<List<Value>> consulResponse = new ConsulResponse<>(response, 0, false, BigInteger.ONE);
         final ImmutableMap<String, Value> map = consulCache.convertToMap(consulResponse);
         assertNotNull(map);
