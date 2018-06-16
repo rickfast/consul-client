@@ -4,7 +4,7 @@ import com.orbitz.consul.BaseIntegrationTest;
 import com.orbitz.consul.HealthClient;
 import com.orbitz.consul.model.State;
 import com.orbitz.consul.model.health.HealthCheck;
-import com.orbitz.consul.util.Synchroniser;
+import com.orbitz.consul.Synchroniser;
 import org.junit.Test;
 
 import java.time.Duration;
@@ -14,7 +14,7 @@ import java.util.concurrent.TimeUnit;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 
-public class HealthCheckCacheTest extends BaseIntegrationTest {
+public class HealthCheckCacheITest extends BaseIntegrationTest {
 
     @Test
     public void cacheShouldContainPassingTestsOnly() throws Exception {

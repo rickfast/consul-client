@@ -10,7 +10,7 @@ import java.io.IOException;
 
 import static org.junit.Assert.assertEquals;
 
-public class Base64EncodingDeserializerTests {
+public class Base64EncodingDeserializerTest {
 
     @Test
     public void shouldDeserialize() throws IOException {

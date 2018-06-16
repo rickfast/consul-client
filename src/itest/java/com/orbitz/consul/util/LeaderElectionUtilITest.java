@@ -7,7 +7,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
-public class LeaderElectionUtilTest extends BaseIntegrationTest {
+public class LeaderElectionUtilITest extends BaseIntegrationTest {
 
     @Test
     public void testGetLeaderInfoForService() throws Exception {

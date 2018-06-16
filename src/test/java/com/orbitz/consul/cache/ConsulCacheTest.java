@@ -1,7 +1,6 @@
 package com.orbitz.consul.cache;
 
 import com.google.common.collect.ImmutableMap;
-import com.orbitz.consul.BaseIntegrationTest;
 import com.orbitz.consul.config.CacheConfig;
 import com.orbitz.consul.model.ConsulResponse;
 import com.orbitz.consul.model.kv.Value;
@@ -26,11 +25,12 @@ import java.util.function.Function;
 
 import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.is;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.mockito.Mockito.mock;
-import static org.junit.Assert.*;
 
 @RunWith(JUnitParamsRunner.class)
-public class ConsulCacheTest extends BaseIntegrationTest {
+public class ConsulCacheTest {
 
     /**
      * Test that if Consul for some reason returns a duplicate service or keyvalue entry

@@ -3,7 +3,7 @@ package com.orbitz.consul.cache;
 import com.google.common.util.concurrent.Uninterruptibles;
 import com.orbitz.consul.BaseIntegrationTest;
 import com.orbitz.consul.model.catalog.CatalogService;
-import com.orbitz.consul.util.Synchroniser;
+import com.orbitz.consul.Synchroniser;
 import org.junit.Test;
 
 import java.time.Duration;
@@ -17,7 +17,7 @@ import java.util.concurrent.TimeUnit;
 
 import static org.junit.Assert.*;
 
-public class ServiceCatalogCacheTest extends BaseIntegrationTest {
+public class ServiceCatalogCacheITest extends BaseIntegrationTest {
 
     private static final List<String> NO_TAGS = Collections.emptyList();
     private static final Map<String, String> NO_META = Collections.emptyMap();

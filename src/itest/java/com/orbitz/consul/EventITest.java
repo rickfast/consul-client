@@ -1,7 +1,6 @@
 package com.orbitz.consul;
 
 import com.orbitz.consul.model.event.Event;
-import com.orbitz.consul.util.Synchroniser;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.Test;
 
@@ -10,7 +9,7 @@ import java.time.Duration;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-public class EventTests extends BaseIntegrationTest {
+public class EventITest extends BaseIntegrationTest {
 
     @Test
     public void shouldFire() throws InterruptedException {

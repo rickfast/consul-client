@@ -1,4 +1,4 @@
-package com.orbitz.consul.util;
+package com.orbitz.consul;
 
 import java.time.Duration;
 

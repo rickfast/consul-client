@@ -2,7 +2,6 @@ package com.orbitz.consul;
 
 import com.orbitz.consul.async.Callback;
 import com.orbitz.consul.option.QueryOptions;
-import com.orbitz.consul.util.Synchroniser;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -20,7 +19,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.junit.Assert.*;
 
-public class SnapshotClientTest extends BaseIntegrationTest {
+public class SnapshotClientITest extends BaseIntegrationTest {
 
     private File snapshotFile;
     private SnapshotClient snapshotClient;

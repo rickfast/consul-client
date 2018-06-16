@@ -19,7 +19,7 @@ import java.util.logging.Logger;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-public class StatusClientTests extends BaseIntegrationTest {
+public class StatusClientITest extends BaseIntegrationTest {
 
     private static Set<InetAddress> ips = new HashSet<>();
 
@@ -29,7 +29,7 @@ public class StatusClientTests extends BaseIntegrationTest {
             InetAddress[] externalIps = InetAddress.getAllByName(InetAddress.getLocalHost().getCanonicalHostName());
             ips.addAll(Arrays.asList(externalIps));
         } catch (UnknownHostException ex) {
-            Logger.getLogger(StatusClientTests.class.getName()).log(Level.WARNING, "Could not determine fully qualified host name. Continuing.", ex);
+            Logger.getLogger(StatusClientITest.class.getName()).log(Level.WARNING, "Could not determine fully qualified host name. Continuing.", ex);
         }
         Enumeration<NetworkInterface> netInts;
         try {
@@ -40,7 +40,7 @@ public class StatusClientTests extends BaseIntegrationTest {
                 }
             }
         } catch (SocketException ex) {
-            Logger.getLogger(StatusClientTests.class.getName()).log(Level.WARNING, "Could not access local network adapters. Continuing", ex);
+            Logger.getLogger(StatusClientITest.class.getName()).log(Level.WARNING, "Could not access local network adapters. Continuing", ex);
         }
         if (ips.isEmpty()) {
             throw new RuntimeException("Unable to discover any local IP addresses");

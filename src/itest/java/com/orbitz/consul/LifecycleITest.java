@@ -12,7 +12,7 @@ import java.util.concurrent.TimeUnit;
 
 import static org.mockito.Mockito.*;
 
-public class LifecycleTests extends BaseIntegrationTest {
+public class LifecycleITest extends BaseIntegrationTest {
 
     @Test
     public void shouldBeDestroyable() {
