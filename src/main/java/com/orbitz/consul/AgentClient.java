@@ -1,7 +1,6 @@
 package com.orbitz.consul;
 
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Lists;
 import com.google.common.net.HostAndPort;
 import com.orbitz.consul.config.ClientConfig;
 import com.orbitz.consul.model.State;
@@ -70,14 +69,6 @@ public class AgentClient extends BaseClient {
     }
 
     /**
-     * @deprecated use {@link #register(int, long, String, String, List, Map)} instead
-     */
-    @Deprecated
-    public void register(int port, long ttl, String name, String id, String... tags) {
-        register(port, ttl, name, id, Lists.newArrayList(tags), Collections.emptyMap());
-    }
-
-    /**
      * Registers the client as a service with Consul with a ttl check.
      *
      * @param port The public facing port of the service to register with Consul.
@@ -90,14 +81,6 @@ public class AgentClient extends BaseClient {
     public void register(int port, long ttl, String name, String id, List<String> tags, Map<String, String> meta) {
         Registration.RegCheck check = Registration.RegCheck.ttl(ttl);
         register(port, check, name, id, tags, meta);
-    }
-
-    /**
-     * @deprecated use {@link #register(int, String, long, String, String, List, Map)} instead
-     */
-    @Deprecated
-    public void register(int port, String args, long interval, String name, String id, String... tags) {
-        register(port, args, interval, name, id, Lists.newArrayList(tags), Collections.emptyMap());
     }
 
     /**
@@ -135,14 +118,6 @@ public class AgentClient extends BaseClient {
     }
 
     /**
-     * @deprecated use {@link #register(int, URL, long, String, String, List, Map)} instead
-     */
-    @Deprecated
-    public void register(int port, URL http, long interval, String name, String id, String... tags) {
-        register(port, http, interval, name, id, Lists.newArrayList(tags), Collections.emptyMap());
-    }
-
-    /**
      * Registers the client as a service with Consul with an http based check
      *
      * @param port     The public facing port of the service to register with Consul.
@@ -160,14 +135,6 @@ public class AgentClient extends BaseClient {
     }
 
     /**
-     * @deprecated use {@link #register(int, HostAndPort, long, String, String, List, Map)} instead
-     */
-    @Deprecated
-    public void register(int port, HostAndPort tcp, long interval, String name, String id, String... tags) {
-        register(port, tcp, interval, name, id, Lists.newArrayList(tags), Collections.emptyMap());
-    }
-
-    /**
      * Registers the client as a service with Consul with a TCP based check
      *
      * @param port     The public facing port of the service to register with Consul.
@@ -182,13 +149,6 @@ public class AgentClient extends BaseClient {
                          List<String> tags, Map<String, String> meta) {
         Registration.RegCheck check = Registration.RegCheck.tcp(tcp.toString(), interval);
         register(port, check, name, id, tags, meta);
-    }
-
-    /**
-     * @deprecated use {@link #register(int, Registration.RegCheck, String, String, List, Map)} instead
-     */
-    public void register(int port, Registration.RegCheck check, String name, String id, String... tags) {
-        register(port, check, name, id, Lists.newArrayList(tags), Collections.emptyMap());
     }
 
     /**
@@ -214,14 +174,6 @@ public class AgentClient extends BaseClient {
                 .build();
 
         register(registration);
-    }
-
-    /**
-     * @deprecated use {@link #register(int, List, String, String, List, Map)} instead
-     */
-    @Deprecated
-    public void register(int port, List<Registration.RegCheck> checks, String name, String id, String... tags) {
-        register(port, checks, name, id, Lists.newArrayList(tags), Collections.emptyMap());
     }
 
     /**

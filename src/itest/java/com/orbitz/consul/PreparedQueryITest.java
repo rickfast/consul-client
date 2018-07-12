@@ -1,5 +1,6 @@
 package com.orbitz.consul;
 
+import java.util.Collections;
 import java.util.Optional;
 import com.google.common.net.HostAndPort;
 import com.orbitz.consul.model.query.ImmutablePreparedQuery;
@@ -19,7 +20,7 @@ public class PreparedQueryITest {
         String service = UUID.randomUUID().toString();
         String query = UUID.randomUUID().toString();
         Consul consul = Consul.builder().withHostAndPort(HostAndPort.fromParts("192.168.99.100", 8500)).build();
-        consul.agentClient().register(8080, 10000L, service, service + "1");
+        consul.agentClient().register(8080, 10000L, service, service + "1", Collections.emptyList(), Collections.emptyMap());
         PreparedQueryClient preparedQueryClient = consul.preparedQueryClient();
 
         PreparedQuery preparedQuery = ImmutablePreparedQuery.builder()

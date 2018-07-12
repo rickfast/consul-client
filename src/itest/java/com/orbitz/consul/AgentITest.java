@@ -245,7 +245,7 @@ public class AgentITest extends BaseIntegrationTest {
         String serviceId = UUID.randomUUID().toString();
         String note = UUID.randomUUID().toString();
 
-        client.agentClient().register(8080, 20L, serviceName, serviceId);
+        client.agentClient().register(8080, 20L, serviceName, serviceId, Collections.emptyList(), Collections.emptyMap());
         client.agentClient().warn(serviceId, note);
 
         verifyState("warning", client, serviceId, serviceName, note);
@@ -257,7 +257,7 @@ public class AgentITest extends BaseIntegrationTest {
         String serviceId = UUID.randomUUID().toString();
         String note = UUID.randomUUID().toString();
 
-        client.agentClient().register(8080, 20L, serviceName, serviceId);
+        client.agentClient().register(8080, 20L, serviceName, serviceId, Collections.emptyList(), Collections.emptyMap());
         client.agentClient().fail(serviceId, note);
 
         verifyState("critical", client, serviceId, serviceName, note);
