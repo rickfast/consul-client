@@ -1,10 +1,12 @@
 package com.orbitz.consul.model.agent;
 
+import com.google.common.collect.Lists;
 import org.junit.Test;
 
 import java.util.Collections;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 public class CheckTest {
 
@@ -36,12 +38,25 @@ public class CheckTest {
     }
 
     @Test(expected = IllegalStateException.class)
-    public void buildingCheckWithScriptThrowsIfMissingInterval() {
+    public void buildingCheckWithArgsThrowsIfMissingInterval() {
         ImmutableCheck.builder()
                 .id("id")
-                .script("/bin/echo \"hi\"")
+                .args(Collections.singletonList("/bin/echo \"hi\""))
                 .name("name")
                 .build();
+    }
+
+    @Test
+    public void severalArgsCanBeAddedToCheck() {
+        Check check = ImmutableCheck.builder()
+                .id("id")
+                .args(Lists.newArrayList("/bin/echo \"hi\"", "/bin/echo \"hello\""))
+                .interval("1s")
+                .name("name")
+                .build();
+
+        assertTrue("Args should be present in check", check.getArgs().isPresent());
+        assertEquals("Check should contain 2 args", 2, check.getArgs().get().size());
     }
 
     @Test

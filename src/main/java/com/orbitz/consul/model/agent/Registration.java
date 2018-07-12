@@ -55,8 +55,8 @@ public abstract class Registration {
     @JsonInclude(JsonInclude.Include.NON_NULL)
     public abstract static class RegCheck {
 
-        @JsonProperty("Script")
-        public abstract Optional<String> getScript();
+        @JsonProperty("Args")
+        public abstract Optional<List<String>> getArgs();
 
         @JsonProperty("Interval")
         public abstract Optional<String> getInterval();
@@ -98,27 +98,27 @@ public abstract class Registration {
                     .build();
         }
 
-        public static RegCheck script(String script, long interval) {
+        public static RegCheck args(List<String> args, long interval) {
             return ImmutableRegCheck
                     .builder()
-                    .script(script)
+                    .args(args)
                     .interval(String.format("%ss", interval))
                     .build();
         }
 
-        public static RegCheck script(String script, long interval, long timeout) {
+        public static RegCheck args(List<String> args, long interval, long timeout) {
             return ImmutableRegCheck
                     .builder()
-                    .script(script)
+                    .args(args)
                     .interval(String.format("%ss", interval))
                     .timeout(String.format("%ss", timeout))
                     .build();
         }
         
-        public static RegCheck script(String script, long interval, long timeout, String notes) {
+        public static RegCheck args(List<String> args, long interval, long timeout, String notes) {
             return ImmutableRegCheck
                     .builder()
-                    .script(script)
+                    .args(args)
                     .interval(String.format("%ss", interval))
                     .timeout(String.format("%ss", timeout))
                     .notes(notes)
@@ -196,12 +196,12 @@ public abstract class Registration {
         protected void validate() {
 
             checkState(getHttp().isPresent() || getTtl().isPresent()
-                || getScript().isPresent() || getTcp().isPresent() || getGrpc().isPresent(),
-                    "Check must specify either http, tcp, ttl, grpc or script");
+                || getArgs().isPresent() || getTcp().isPresent() || getGrpc().isPresent(),
+                    "Check must specify either http, tcp, ttl, grpc or args");
 
-            if (getHttp().isPresent() || getScript().isPresent() || getTcp().isPresent() || getGrpc().isPresent()) {
+            if (getHttp().isPresent() || getArgs().isPresent() || getTcp().isPresent() || getGrpc().isPresent()) {
                 checkState(getInterval().isPresent(),
-                        "Interval must be set if check type is http, tcp, grpc or script");
+                        "Interval must be set if check type is http, tcp, grpc or args");
             }
         }
 

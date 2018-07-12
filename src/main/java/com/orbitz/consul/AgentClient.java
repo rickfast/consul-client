@@ -96,24 +96,41 @@ public class AgentClient extends BaseClient {
      * @deprecated use {@link #register(int, String, long, String, String, List, Map)} instead
      */
     @Deprecated
-    public void register(int port, String script, long interval, String name, String id, String... tags) {
-        register(port, script, interval, name, id, Lists.newArrayList(tags), Collections.emptyMap());
+    public void register(int port, String args, long interval, String name, String id, String... tags) {
+        register(port, args, interval, name, id, Lists.newArrayList(tags), Collections.emptyMap());
     }
 
     /**
      * Registers the client as a service with Consul with a script based check.
      *
      * @param port     The public facing port of the service to register with Consul.
-     * @param script   Health script for Consul to use.
+     * @param args     Specifies command argument to run to update the status of the check..
      * @param interval Health script run interval in seconds.
      * @param name     Service name to register.
      * @param id       Service id to register.
      * @param tags     Tags to register with.
      * @param meta     Meta to register with.
      */
-    public void register(int port, String script, long interval, String name, String id,
+    public void register(int port, String args, long interval, String name, String id,
                          List<String> tags, Map<String, String> meta) {
-        Registration.RegCheck check = Registration.RegCheck.script(script, interval);
+        Registration.RegCheck check = Registration.RegCheck.args(Collections.singletonList(args), interval);
+        register(port, check, name, id, tags, meta);
+    }
+
+    /**
+     * Registers the client as a service with Consul with a script based check.
+     *
+     * @param port     The public facing port of the service to register with Consul.
+     * @param args     Specifies command argument to run to update the status of the check..
+     * @param interval Health script run interval in seconds.
+     * @param name     Service name to register.
+     * @param id       Service id to register.
+     * @param tags     Tags to register with.
+     * @param meta     Meta to register with.
+     */
+    public void register(int port, List<String> args, long interval, String name, String id,
+                         List<String> tags, Map<String, String> meta) {
+        Registration.RegCheck check = Registration.RegCheck.args(args, interval);
         register(port, check, name, id, tags, meta);
     }
 
@@ -303,18 +320,39 @@ public class AgentClient extends BaseClient {
      *
      * @param checkId  The Check ID to use.  Must be unique for the Agent.
      * @param name     The Check Name.
-     * @param script   Health script for Consul to use.
+     * @param args     Health script for Consul to use.
      * @param interval Health script run interval in seconds.
      * @param notes    Human readable notes.  Not used by Consul.
      */
-    public void registerCheck(String checkId, String name, String script, long interval, String notes) {
+    public void registerCheck(String checkId, String name, List<String> args, long interval, String notes) {
         Check check = ImmutableCheck.builder()
             .id(checkId)
             .name(name)
-            .script(script)
+            .args(args)
             .interval(String.format("%ss", interval))
             .notes(Optional.ofNullable(notes))
             .build();
+
+        registerCheck(check);
+    }
+
+    /**
+     * Registers a script Health Check with the Agent.
+     *
+     * @param checkId  The Check ID to use.  Must be unique for the Agent.
+     * @param name     The Check Name.
+     * @param args     Specifies command argument to run to update the status of the check.
+     * @param interval Health script run interval in seconds.
+     * @param notes    Human readable notes.  Not used by Consul.
+     */
+    public void registerCheck(String checkId, String name, String args, long interval, String notes) {
+        Check check = ImmutableCheck.builder()
+                .id(checkId)
+                .name(name)
+                .args(Collections.singletonList(args))
+                .interval(String.format("%ss", interval))
+                .notes(Optional.ofNullable(notes))
+                .build();
 
         registerCheck(check);
     }

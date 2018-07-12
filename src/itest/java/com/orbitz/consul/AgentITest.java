@@ -126,7 +126,7 @@ public class AgentITest extends BaseIntegrationTest {
         String serviceId = UUID.randomUUID().toString();
 
         List<Registration.RegCheck> regChecks = ImmutableList.of(
-                Registration.RegCheck.script("/usr/bin/echo \"sup\"", 10, 1, "Custom description."),
+                Registration.RegCheck.args(Collections.singletonList("/usr/bin/echo \"sup\""), 10, 1, "Custom description."),
                 Registration.RegCheck.http("http://localhost:8080/health", 10, 1, "Custom description."));
 
         client.agentClient().register(8080, regChecks, serviceName, serviceId, NO_TAGS, NO_META);
@@ -154,7 +154,7 @@ public class AgentITest extends BaseIntegrationTest {
         String serviceName = UUID.randomUUID().toString();
         String serviceId = UUID.randomUUID().toString();
 
-        Registration.RegCheck single= Registration.RegCheck.script("/usr/bin/echo \"sup\"", 10);
+        Registration.RegCheck single= Registration.RegCheck.args(Collections.singletonList("/usr/bin/echo \"sup\""), 10);
 
         List<Registration.RegCheck> regChecks = ImmutableList.of(
                 Registration.RegCheck.http("http://localhost:8080/health", 10));
