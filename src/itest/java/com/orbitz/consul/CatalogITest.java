@@ -215,7 +215,7 @@ public class CatalogITest extends BaseIntegrationTest {
 
         String serviceName = UUID.randomUUID().toString();
         String serviceId = createAutoDeregisterServiceId();
-        client.agentClient().register(20001, 20, serviceName, serviceId);
+        client.agentClient().register(20001, 20, serviceName, serviceId, Collections.emptyList(), Collections.emptyMap());
 
         CompletableFuture<Map<String, List<String>>> cf = new CompletableFuture<>();
         catalogClient.getServices(QueryOptions.BLANK, callbackFuture(cf));
@@ -231,7 +231,7 @@ public class CatalogITest extends BaseIntegrationTest {
 
         String serviceName = UUID.randomUUID().toString();
         String serviceId = createAutoDeregisterServiceId();
-        client.agentClient().register(20001, 20, serviceName, serviceId);
+        client.agentClient().register(20001, 20, serviceName, serviceId, Collections.emptyList(), Collections.emptyMap());
 
         CompletableFuture<List<CatalogService>> cf = new CompletableFuture<>();
         catalogClient.getService(serviceName, QueryOptions.BLANK, callbackFuture(cf));

@@ -30,8 +30,8 @@ public abstract class Check {
     @JsonProperty("Output")
     public abstract Optional<String> getOutput();
 
-    @JsonProperty("Script")
-    public abstract Optional<String> getScript();
+    @JsonProperty("Args")
+    public abstract Optional<List<String>> getArgs();
 
     @JsonProperty("Interval")
     public abstract Optional<String> getInterval();
@@ -65,12 +65,12 @@ public abstract class Check {
     protected void validate() {
 
         checkState(getHttp().isPresent() || getTtl().isPresent()
-            || getScript().isPresent() || getTcp().isPresent() || getGrpc().isPresent(),
-                "Check must specify either http, tcp, ttl, grpc or script");
+            || getArgs().isPresent() || getTcp().isPresent() || getGrpc().isPresent(),
+                "Check must specify either http, tcp, ttl, grpc or args");
 
-        if (getHttp().isPresent() || getScript().isPresent() || getTcp().isPresent() || getGrpc().isPresent()) {
+        if (getHttp().isPresent() || getArgs().isPresent() || getTcp().isPresent() || getGrpc().isPresent()) {
             checkState(getInterval().isPresent(),
-                    "Interval must be set if check type is http, tcp, grpc or script");
+                    "Interval must be set if check type is http, tcp, grpc or args");
         }
 
     }
