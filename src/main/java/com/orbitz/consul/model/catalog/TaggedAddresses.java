@@ -7,6 +7,8 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import org.immutables.value.Value;
 
+import java.util.Optional;
+
 @Value.Immutable
 @JsonSerialize(as = ImmutableTaggedAddresses.class)
 @JsonDeserialize(as = ImmutableTaggedAddresses.class)
@@ -17,5 +19,5 @@ public abstract class TaggedAddresses {
     public abstract String getWan();
 
     @JsonProperty("lan")
-    public abstract String getLan();
+    public abstract Optional<String> getLan();
 }
