@@ -63,118 +63,109 @@ dependencies {
 Basic Usage
 -----------
 
-### Example 1: Register and check your service in with Consul.
+### Example 1: Connect to Consul.
 
 ```java
-Consul consul = Consul.builder().build(); // connect to Consul on localhost
-AgentClient agentClient = consul.agentClient();
+Consul client = Consul.builder().build(); // connect on localhost
+```
 
-String serviceName = "MyService";
+### Example 2: Register and check your service in with Consul.
+
+```java
+AgentClient agentClient = client.agentClient();
+
 String serviceId = "1";
+Registration service = ImmutableRegistration.builder()
+        .id(serviceId)
+        .name("myService")
+        .port(8080)
+        .check(Registration.RegCheck.ttl(3L)) // registers with a TTL of 3 seconds
+        .tags(Collections.singletonList("tag1"))
+        .meta(Collections.singletonMap("version", "1.0"))
+        .build();
 
-agentClient.register(8080, 3L, serviceName, serviceId); // registers with a TTL of 3 seconds
-agentClient.pass(serviceId); // check in with Consul, serviceId required only.  client will prepend "service:" for service level checks.
+agentClient.register(service);
+
+// Check in with Consul (serviceId required only).
+// Client will prepend "service:" for service level checks.
 // Note that you need to continually check in before the TTL expires, otherwise your service's state will be marked as "critical".
+agentClient.pass(serviceId);
 ```
 
-### Example 2: Find available (healthy) services.
+### Example 3: Find available (healthy) services.
 
 ```java
-Consul consul = Consul.builder().build(); // connect to Consul on localhost
-HealthClient healthClient = consul.healthClient();
+HealthClient healthClient = client.healthClient();
 
-List<ServiceHealth> nodes = healthClient.getHealthyServiceInstances("DataService").getResponse(); // discover only "passing" nodes
+// Discover only "passing" nodes
+List<ServiceHealth> nodes = healthClient.getHealthyServiceInstances("DataService").getResponse();
 ```
 
-### Example 3: Store key/values.
+### Example 4: Store key/values.
 
 ```java
-Consul consul = Consul.builder().build(); // connect to Consul on localhost
-KeyValueClient kvClient = consul.keyValueClient();
+KeyValueClient kvClient = client.keyValueClient();
 
 kvClient.putValue("foo", "bar");
-
 String value = kvClient.getValueAsString("foo").get(); // bar
 ```
 
-### Example 4: Blocking call for value.
+### Example 5: Subscribe to value change.
 
-A blocking is used to wait for a potential changes in the key value store.
+You can use the ConsulCache implementations to easily subscribe to Key-Value changes.
 
 ```java
-// Set a read timeout to a larger value then we will block.
-Consul consul = Consul.builder()
-    .withReadTimeoutMillis(TimeUnit.SECONDS.toMillis(315))
-    .build();
-final KeyValueClient kvClient = consul.keyValueClient();
+final KeyValueClient kvClient = client.keyValueClient();
 
 kvClient.putValue("foo", "bar");
 
-ConsulResponseCallback<Optional<Value>> callback = new ConsulResponseCallback<Optional<Value>>() {
+KVCache cache = KVCache.newCache(kvClient, "foo");
+cache.addListener(newValues -> {
+    // Cache notifies all paths with "foo" the root path
+    // If you want to watch only "foo" value, you must filter other paths
+    Optional<Value> newValue = newValues.values().stream()
+            .filter(value -> value.getKey().equals("foo"))
+            .findAny();
 
-    AtomicReference<BigInteger> index = new AtomicReference<BigInteger>(null);
-
-    @Override
-    public void onComplete(ConsulResponse<Optional<Value>> consulResponse) {
-
-        if (consulResponse.getResponse().isPresent()) {
-            Value v = consulResponse.getResponse().get();
-            LOGGER.info("Value is: {}", v.getValue());
-        }
-
-	index.set(consulResponse.getIndex());
-        watch();
-    }
-
-    void watch() {
-        kvClient.getValue("foo", QueryOptions.blockMinutes(5, index.get()).build(), this);
-    }
-
-    @Override
-        public void onFailure(Throwable throwable) {
-            LOGGER.error("Error encountered", throwable);
-            watch();
-        }
-    };
-
-    kvClient.getValue("foo", QueryOptions.blockMinutes(5, new BigInteger("0")).build(), callback);
+    newValue.ifPresent(value -> {
+        // Values are encoded in key/value store, decode it if needed
+        Optional<String> decodedValue = newValue.get().getValueAsString();
+        decodedValue.ifPresent(v -> System.out.println(String.format("Value is: %s", v))); //prints "bar"
+    });
+});
+cache.start();
+// ...
+cache.stop();
 ```
 
-### Example 5: Subscribe to healthy services
+### Example 6: Subscribe to healthy services
 
-You can also use the ConsulCache implementations to easily subscribe to healthy service changes or Key-Value changes.
+You can also use the ConsulCache implementations to easily subscribe to healthy service changes.
 
 ```java
-
-Agent agent = client.agentClient().getAgent();
+HealthClient healthClient = client.healthClient();
 String serviceName = "my-service";
 
 ServiceHealthCache svHealth = ServiceHealthCache.newCache(healthClient, serviceName);
-
-svHealth.addListener(new ConsulCache.Listener<HostAndPort, ServiceHealth>() {
-    @Override
-    public void notify(Map<HostAndPort, ServiceHealth> newValues) {
-        // do Something with updated server map
-    }
+svHealth.addListener((Map<ServiceHealthKey, ServiceHealth> newValues) -> {
+    // do something with updated server map
 });
 svHealth.start();
+// ...
+svHealth.stop();
 ```
 
-### Example 6: Find Raft peers.
+### Example 7: Find Raft peers.
 
 ```java
-StatusClient statusClient = Consul.builder().build().statusClient();
-
-for(String peer : statusClient.getPeers()) {
-	System.out.println(peer); // 127.0.0.1:8300
-}
+StatusClient statusClient = client.statusClient();
+statusClient.getPeers().forEach(System.out::println);
 ```
 
-### Example 7: Find Raft leader.
+### Example 8: Find Raft leader.
 
 ```java
-StatusClient statusClient = Consul.builder().build().statusClient();
-
+StatusClient statusClient = client.statusClient();
 System.out.println(statusClient.getLeader()); // 127.0.0.1:8300
 ```
 
