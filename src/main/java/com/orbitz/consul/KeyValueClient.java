@@ -445,7 +445,23 @@ public class KeyValueClient extends BaseClient {
      * @return A list of zero to many keys.
      */
     public List<String> getKeys(String key) {
-        return http.extract(api.getKeys(trimLeadingSlash(key), ImmutableMap.of("keys", "true")));
+        return getKeys(key, QueryOptions.BLANK);
+    }
+
+    /**
+     * Retrieves a list of matching keys for the given key.
+     *
+     * GET /v1/kv/{key}?keys
+     *
+     * @param key The key to retrieve.
+     * @param queryOptions The query options.
+     * @return A list of zero to many keys.
+     */
+    public List<String> getKeys(String key, QueryOptions queryOptions) {
+        Map<String, Object> query = queryOptions.toQuery();
+        query.put("keys", "true");
+
+        return http.extract(api.getKeys(trimLeadingSlash(key), query));
     }
 
     /**
