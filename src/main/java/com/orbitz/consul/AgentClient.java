@@ -672,7 +672,7 @@ public class AgentClient extends BaseClient {
                          @QueryMap Map<String, String> query);
 
         @PUT("agent/join/{address}")
-        Call<Void> join(String address, Map<String, String> query);
+        Call<Void> join(@Path("address") String address, @QueryMap Map<String, String> query);
 
         @PUT("agent/service/maintenance/{serviceId}")
         Call<Void> toggleMaintenanceMode(@Path("serviceId") String serviceId,
