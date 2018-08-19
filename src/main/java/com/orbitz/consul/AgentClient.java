@@ -454,7 +454,7 @@ public class AgentClient extends BaseClient {
      * @param node
      */
     public void forceLeave(String node) {
-        http.handle(api.forceLeave());
+        http.handle(api.forceLeave(node));
     }
 
     /**
@@ -663,8 +663,8 @@ public class AgentClient extends BaseClient {
         @GET("agent/members")
         Call<List<Member>> getMembers();
 
-        @PUT("agent/force-leave")
-        Call<Void> forceLeave();
+        @PUT("agent/force-leave/{node}")
+        Call<Void> forceLeave(@Path("string") String node);
 
         @PUT("agent/check/{state}/{checkId}")
         Call<Void> check(@Path("state") String state,
