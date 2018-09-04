@@ -54,7 +54,7 @@ public class ConsulFailoverInterceptor implements Interceptor {
 
 			// Get the next viable request
 			while ((nextRequest = strategy.computeNextStage(previousRequest, previousResponse)).isPresent()) {
-				System.out.println("Requesting with : " + nextRequest.get().url().uri().toString());
+
 				// Get the response from the last viable request
 				try {
 					final Response lastResponse = chain.proceed(nextRequest.get());
