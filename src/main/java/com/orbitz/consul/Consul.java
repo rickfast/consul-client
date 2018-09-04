@@ -1,19 +1,15 @@
 package com.orbitz.consul;
 
-import java.net.ConnectException;
 import java.net.MalformedURLException;
 import java.net.Proxy;
 import java.net.URL;
-import java.time.Duration;
 import java.time.Instant;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.SynchronousQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
 
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLContext;
@@ -30,13 +26,14 @@ import com.orbitz.consul.monitoring.ClientEventCallback;
 import com.orbitz.consul.util.Jackson;
 import com.orbitz.consul.util.bookend.ConsulBookend;
 import com.orbitz.consul.util.bookend.ConsulBookendInterceptor;
+import com.orbitz.consul.util.failover.ConsulFailoverInterceptor;
+import com.orbitz.consul.util.failover.strategy.ConsulFailoverStrategy;
 
 import okhttp3.Dispatcher;
 import okhttp3.HttpUrl;
 import okhttp3.Interceptor;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
-import okhttp3.Response;
 import okhttp3.internal.Util;
 import retrofit2.Retrofit;
 import retrofit2.converter.jackson.JacksonConverterFactory;
@@ -264,9 +261,6 @@ public class Consul {
     * Builder for {@link Consul} client objects.
     */
     public static class Builder {
-        private Map<Integer, Instant> failoverBlacklist;
-        private long failoverBlacklistTimeout;
-        private Collection<URL> failoverURLs;
         private URL url;
         private SSLContext sslContext;
         private X509TrustManager trustManager;
@@ -439,114 +433,22 @@ public class Consul {
             Preconditions.checkArgument(blacklistTimeInMillis >= 0, "Negative Value");
             Preconditions.checkArgument(hostAndPort.size() >= 2, "Minimum of 2 addresses are required");
 
-            // Create the set of failover urls
-            this.failoverURLs = hostAndPort.stream().map((HostAndPort hop) -> {
-                try {
-                    return new URL("http", hop.getHost(), hop.getPort(), "");
-                } catch (MalformedURLException e) {
-                    throw new RuntimeException(e);
-                }
-            }).collect(Collectors.toList());
-
-            // Set the initial url to the first URL in the stream
-            this.url = this.failoverURLs.stream().findFirst().get();
-
-            // Set the timeout
-            this.failoverBlacklistTimeout = blacklistTimeInMillis;
-
-            // Create the interceptor
-            consulFailoverInterceptor = chain -> {
-                
-                
-                Response originalResponse = null;
-                boolean needRetry = false;
-                
-                // Do the original request
-                Request originalRequest = chain.request();
-                
-                // Initialize the blacklist map
-                if (failoverBlacklist == null)
-                    failoverBlacklist = new HashMap<>();
-
-                // Hash the initial request, otherwise the original URL would always be queried,
-                // blacklisted or not
-                final int requestHash = String.format("%s:%d", originalRequest.url().host(), originalRequest.url().port()).hashCode();
-
-                // Find the original response
-                try {
-
-                    // If the original query was not blacklisted, continue with it
-                    if (!failoverBlacklist.containsKey(requestHash)) {
-                        originalResponse = chain.proceed(chain.request());
-                        
-                        // Possibly introduce logic to stop retrying 403, but this could break
-                        // cross-cluster failovers (one which has ACL support and one which does not)
-                        needRetry = !originalResponse.isSuccessful();
-                    } else {
-                        needRetry = true;
-                    }
-                } catch (ConnectException crex) {
-                    needRetry = true;
-                }
-
-                if (needRetry) {
-
-                    // Add the current hashcode of the username and port to the blacklist map. This
-                    // will allow us to temporarily
-                    // blacklist a particular combination for a set
-                    failoverBlacklist.put(requestHash, Instant.now());
-
-                    HttpUrl target = null;
-                    int targetHash = -1;
-
-                    // Find the appropriate urls
-                    for (URL url : failoverURLs) {
-
-                        // Create the blacklist key
-                        targetHash = url.hashCode();
-
-                        // Determine if this host is allowed to be a retry candidate
-                        if (failoverBlacklist.containsKey(targetHash)) {
-
-                            // Find out when the particular key was blacklisted
-                            Instant blacklistedWhen = failoverBlacklist.get(targetHash);
-
-                            // If the duration to blacklist the host and port combination has elapsed,
-                            // remove it from the set
-                            if (Duration.between(blacklistedWhen, Instant.now())
-                                    .toMillis() >= failoverBlacklistTimeout) {
-                                failoverBlacklist.remove(targetHash);
-                            } else {
-                                continue;
-                            }
-                        }
-                        // Construct an intermediate http url object representing the new URL we wish to
-                        // query
-                        HttpUrl intermediate = HttpUrl.get(url);
-
-                        // New target url
-                        target = originalRequest.url().newBuilder().host(intermediate.host()).port(intermediate.port())
-                                .build();
-                        
-                        // Attempt to return the new response
-                        try {
-                            return chain.proceed(originalRequest.newBuilder().url(target).build());
-                        } catch (ConnectException | ConsulException ex) {
-                            failoverBlacklist.put(targetHash, Instant.now());
-                            continue;
-                        }
-                    }
-
-                    // The only way to retry is to have a new URL
-                    if (target == null)
-                        throw new ConsulException("No suitable targets available");
-
-                }
-
-                return originalResponse;
-            };
-
+            consulFailoverInterceptor = new ConsulFailoverInterceptor(hostAndPort, blacklistTimeInMillis);
+            withHostAndPort(hostAndPort.stream().findFirst().get());
+            
             return this;
+        }
+        
+        /**
+         * Constructs a failover interceptor with the given {@link ConsulFailoverStrategy}.
+         * @param strategy The strategy to use.
+         * @return The builder.
+         */
+        public Builder withFailoverInterceptor(ConsulFailoverStrategy strategy) {
+        	Preconditions.checkArgument(strategy != null, "Must not provide a null strategy");
+        	
+        	consulFailoverInterceptor = new ConsulFailoverInterceptor(strategy);
+        	return this;
         }
 
         /**
