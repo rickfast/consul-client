@@ -118,52 +118,75 @@ public class CatalogITest extends BaseIntegrationTest {
 
     @Test
     public void shouldRegisterService() {
-        CatalogClient catalogClient = client.catalogClient();
         String service = UUID.randomUUID().toString();
         String serviceId = UUID.randomUUID().toString();
 
-        CatalogService expectedService = ImmutableCatalogService.builder()
-                .address("localhost")
-                .datacenter("dc1")
-                .node("node")
-                .serviceAddress("localhost")
-                .addServiceTags("sometag")
-                .serviceId(serviceId)
-                .serviceName(service)
-                .servicePort(8080)
-                .serviceMeta(Collections.singletonMap("metakey", "metavalue"))
-                .serviceEnableTagOverride(true)
-                .build();
-
-        CatalogRegistration registration = ImmutableCatalogRegistration.builder()
-                .address("localhost")
-                .datacenter("dc1")
-                .node("node")
-                .service(ImmutableService.builder()
+        createAndCheckService(
+                ImmutableCatalogService.builder()
                         .address("localhost")
-                        .addTags("sometag")
-                        .id(serviceId)
-                        .service(service)
-                        .port(8080)
-                        .putMeta("metakey", "metavalue")
-                        .enableTagOverride(true) //setting this request flag sets the ServiceEnableTagOverride in the response
-                        .build())
-                .build();
-        catalogClient.register(registration);
-        Synchroniser.pause(Duration.ofMillis(100));
+                        .datacenter("dc1")
+                        .node("node")
+                        .serviceAddress("localhost")
+                        .addServiceTags("sometag")
+                        .serviceId(serviceId)
+                        .serviceName(service)
+                        .servicePort(8080)
+                        .serviceMeta(Collections.singletonMap("metakey", "metavalue"))
+                        .serviceEnableTagOverride(true)
+                        .serviceWeights(ImmutableServiceWeights.builder().passing(42).warning(21).build())
+                        .build(),
+                ImmutableCatalogRegistration.builder()
+                        .address("localhost")
+                        .datacenter("dc1")
+                        .node("node")
+                        .service(ImmutableService.builder()
+                                .address("localhost")
+                                .addTags("sometag")
+                                .id(serviceId)
+                                .service(service)
+                                .port(8080)
+                                .putMeta("metakey", "metavalue")
+                                .enableTagOverride(true) //setting this request flag sets the ServiceEnableTagOverride in the response
+                                .weights(ImmutableServiceWeights.builder().passing(42).warning(21).build())
+                                .build())
+                        .build()
+        );
+    }
 
-        ConsulResponse<List<CatalogService>> response = catalogClient.getService(service);
+    @Test
+    public void shouldRegisterServiceNoWeights() {
+        String service = UUID.randomUUID().toString();
+        String serviceId = UUID.randomUUID().toString();
 
-        assertFalse(response.getResponse().isEmpty());
-
-        CatalogService registeredService = null;
-        for (CatalogService catalogService : response.getResponse()) {
-            if (catalogService.getServiceId().equals(serviceId)) {
-                registeredService = catalogService;
-            }
-        }
-        assertNotNull(String.format("Service \"%s\" not found", service), registeredService);
-        assertEquals(expectedService, registeredService);
+        createAndCheckService(
+                ImmutableCatalogService.builder()
+                        .address("localhost")
+                        .datacenter("dc1")
+                        .node("node")
+                        .serviceAddress("localhost")
+                        .addServiceTags("sometag")
+                        .serviceId(serviceId)
+                        .serviceName(service)
+                        .servicePort(8080)
+                        .serviceMeta(Collections.singletonMap("metakey", "metavalue"))
+                        .serviceEnableTagOverride(true)
+                        .serviceWeights(ImmutableServiceWeights.builder().passing(1).warning(1).build())
+                        .build(),
+                ImmutableCatalogRegistration.builder()
+                        .address("localhost")
+                        .datacenter("dc1")
+                        .node("node")
+                        .service(ImmutableService.builder()
+                                .address("localhost")
+                                .addTags("sometag")
+                                .id(serviceId)
+                                .service(service)
+                                .port(8080)
+                                .putMeta("metakey", "metavalue")
+                                .enableTagOverride(true) //setting this request flag sets the ServiceEnableTagOverride in the response
+                                .build())
+                        .build()
+        );
     }
 
 
@@ -289,5 +312,26 @@ public class CatalogITest extends BaseIntegrationTest {
                 cf.completeExceptionally(throwable);
             }
         };
+    }
+
+    private void createAndCheckService(CatalogService expectedService, CatalogRegistration registration) {
+        CatalogClient catalogClient = client.catalogClient();
+        catalogClient.register(registration);
+        Synchroniser.pause(Duration.ofMillis(100));
+
+        String serviceName = registration.service().get().getService();
+
+        ConsulResponse<List<CatalogService>> response = catalogClient.getService(serviceName);
+
+        assertFalse(response.getResponse().isEmpty());
+
+        CatalogService registeredService = null;
+        for (CatalogService catalogService : response.getResponse()) {
+            if (catalogService.getServiceName().equals(serviceName)) {
+                registeredService = catalogService;
+            }
+        }
+        assertNotNull(String.format("Service \"%s\" not found", serviceName), registeredService);
+        assertEquals(expectedService, registeredService);
     }
 }
