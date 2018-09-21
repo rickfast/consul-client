@@ -5,6 +5,7 @@ import com.orbitz.consul.model.agent.Agent;
 import com.orbitz.consul.model.agent.ImmutableRegCheck;
 import com.orbitz.consul.model.agent.ImmutableRegistration;
 import com.orbitz.consul.model.agent.Registration;
+import com.orbitz.consul.model.catalog.ImmutableServiceWeights;
 import com.orbitz.consul.model.health.HealthCheck;
 import com.orbitz.consul.model.health.ImmutableService;
 import com.orbitz.consul.model.health.Service;
@@ -227,7 +228,16 @@ public class AgentITest extends BaseIntegrationTest {
         client.agentClient().register(8080, 20L, name, id, tags, meta);
         Synchroniser.pause(Duration.ofMillis(100));
 
-        Service expectedService = ImmutableService.builder().id(id).service(name).address("").port(8080).tags(tags).meta(meta).enableTagOverride(false).build();
+        Service expectedService = ImmutableService.builder()
+                .id(id)
+                .service(name)
+                .address("")
+                .port(8080)
+                .tags(tags)
+                .meta(meta)
+                .enableTagOverride(false)
+                .weights(ImmutableServiceWeights.builder().warning(1).passing(1).build())
+                .build();
         Service registeredService = null;
         for (Map.Entry<String, Service> service : client.agentClient().getServices().entrySet()) {
             if (service.getValue().getId().equals(id)) {

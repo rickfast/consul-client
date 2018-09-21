@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.collect.ImmutableList;
+import com.orbitz.consul.model.catalog.ServiceWeights;
 import org.immutables.value.Value;
 
 import java.util.List;
@@ -38,4 +39,7 @@ public abstract class Service {
 
     @JsonProperty("Port")
     public abstract int getPort();
+
+    @JsonProperty("Weights")
+    public abstract Optional<ServiceWeights> getWeights();
 }

@@ -5,6 +5,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import java.util.Optional;
+
+import com.orbitz.consul.model.health.Service;
 import org.immutables.value.Value;
 
 import java.util.List;
@@ -45,6 +47,9 @@ public abstract class CatalogService {
 
     @JsonProperty("ServiceMeta")
     public abstract Optional<Map<String,String>> getServiceMeta();
+
+    @JsonProperty("ServiceWeights")
+    public abstract Optional<ServiceWeights> getServiceWeights();
 
     @JsonProperty("NodeMeta")
     public abstract Optional<Map<String,String>> getNodeMeta();
