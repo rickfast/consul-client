@@ -1,5 +1,20 @@
 package com.orbitz.consul;
 
+import java.net.MalformedURLException;
+import java.net.Proxy;
+import java.net.URL;
+import java.time.Instant;
+import java.util.Collection;
+import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.SynchronousQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
+
+import javax.net.ssl.HostnameVerifier;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.X509TrustManager;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
@@ -11,6 +26,9 @@ import com.orbitz.consul.monitoring.ClientEventCallback;
 import com.orbitz.consul.util.Jackson;
 import com.orbitz.consul.util.bookend.ConsulBookend;
 import com.orbitz.consul.util.bookend.ConsulBookendInterceptor;
+import com.orbitz.consul.util.failover.ConsulFailoverInterceptor;
+import com.orbitz.consul.util.failover.strategy.ConsulFailoverStrategy;
+
 import okhttp3.Dispatcher;
 import okhttp3.HttpUrl;
 import okhttp3.Interceptor;
@@ -20,33 +38,21 @@ import okhttp3.internal.Util;
 import retrofit2.Retrofit;
 import retrofit2.converter.jackson.JacksonConverterFactory;
 
-import javax.net.ssl.HostnameVerifier;
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.X509TrustManager;
-import java.net.MalformedURLException;
-import java.net.Proxy;
-import java.net.URL;
-import java.util.Map;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.SynchronousQueue;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
-
 /**
- * Client for interacting with the Consul HTTP API.
- *
- * @author rfast
- */
+* Client for interacting with the Consul HTTP API.
+*
+* @author rfast
+*/
 public class Consul {
 
     /**
-     * Default Consul HTTP API host.
-     */
+    * Default Consul HTTP API host.
+    */
     public static final String DEFAULT_HTTP_HOST = "localhost";
 
     /**
-     * Default Consul HTTP API port.
-     */
+    * Default Consul HTTP API port.
+    */
     public static final int DEFAULT_HTTP_PORT = 8500;
 
     private final AgentClient agentClient;
@@ -66,16 +72,16 @@ public class Consul {
     private final OkHttpClient okHttpClient;
 
     /**
-     * Private constructor.
-     *
-     */
+    * Private constructor.
+    *
+    */
     private Consul(AgentClient agentClient, HealthClient healthClient,
-                   KeyValueClient keyValueClient, CatalogClient catalogClient,
-                   StatusClient statusClient, SessionClient sessionClient,
-                   EventClient eventClient, PreparedQueryClient preparedQueryClient,
-                   CoordinateClient coordinateClient, OperatorClient operatorClient,
-                   ExecutorService executorService, AclClient aclClient,
-                   SnapshotClient snapshotClient, OkHttpClient okHttpClient) {
+                KeyValueClient keyValueClient, CatalogClient catalogClient,
+                StatusClient statusClient, SessionClient sessionClient,
+                EventClient eventClient, PreparedQueryClient preparedQueryClient,
+                CoordinateClient coordinateClient, OperatorClient operatorClient,
+                ExecutorService executorService, AclClient aclClient,
+                SnapshotClient snapshotClient, OkHttpClient okHttpClient) {
         this.agentClient = agentClient;
         this.healthClient = healthClient;
         this.keyValueClient = keyValueClient;
@@ -93,167 +99,167 @@ public class Consul {
     }
 
     /**
-     * Destroys the Object internal state.
-     */
+    * Destroys the Object internal state.
+    */
     public void destroy() {
         this.okHttpClient.dispatcher().cancelAll();
         this.executorService.shutdownNow();
     }
 
     /**
-     * Get the Agent HTTP client.
-     * <p>
-     * /v1/agent
-     *
-     * @return The Agent HTTP client.
-     */
+    * Get the Agent HTTP client.
+    * <p>
+    * /v1/agent
+    *
+    * @return The Agent HTTP client.
+    */
     public AgentClient agentClient() {
         return agentClient;
     }
 
     /**
-     * Get the ACL HTTP client.
-     * <p>
-     * /v1/acl
-     *
-     * @return The ACL HTTP client.
-     */
+    * Get the ACL HTTP client.
+    * <p>
+    * /v1/acl
+    *
+    * @return The ACL HTTP client.
+    */
     public AclClient aclClient() {
         return aclClient;
     }
 
     /**
-     * Get the Catalog HTTP client.
-     * <p>
-     * /v1/catalog
-     *
-     * @return The Catalog HTTP client.
-     */
+    * Get the Catalog HTTP client.
+    * <p>
+    * /v1/catalog
+    *
+    * @return The Catalog HTTP client.
+    */
     public CatalogClient catalogClient() {
         return catalogClient;
     }
 
     /**
-     * Get the Health HTTP client.
-     * <p>
-     * /v1/health
-     *
-     * @return The Health HTTP client.
-     */
+    * Get the Health HTTP client.
+    * <p>
+    * /v1/health
+    *
+    * @return The Health HTTP client.
+    */
     public HealthClient healthClient() {
         return healthClient;
     }
 
     /**
-     * Get the Key/Value HTTP client.
-     * <p>
-     * /v1/kv
-     *
-     * @return The Key/Value HTTP client.
-     */
+    * Get the Key/Value HTTP client.
+    * <p>
+    * /v1/kv
+    *
+    * @return The Key/Value HTTP client.
+    */
     public KeyValueClient keyValueClient() {
         return keyValueClient;
     }
 
     /**
-     * Get the Status HTTP client.
-     * <p>
-     * /v1/status
-     *
-     * @return The Status HTTP client.
-     */
+    * Get the Status HTTP client.
+    * <p>
+    * /v1/status
+    *
+    * @return The Status HTTP client.
+    */
     public StatusClient statusClient() {
         return statusClient;
     }
 
     /**
-     * Get the SessionInfo HTTP client.
-     * <p>
-     * /v1/session
-     *
-     * @return The SessionInfo HTTP client.
-     */
+    * Get the SessionInfo HTTP client.
+    * <p>
+    * /v1/session
+    *
+    * @return The SessionInfo HTTP client.
+    */
     public SessionClient sessionClient() {
         return sessionClient;
     }
 
     /**
-     * Get the Event HTTP client.
-     * <p>
-     * /v1/event
-     *
-     * @return The Event HTTP client.
-     */
+    * Get the Event HTTP client.
+    * <p>
+    * /v1/event
+    *
+    * @return The Event HTTP client.
+    */
     public EventClient eventClient() {
         return eventClient;
     }
 
     /**
-     * Get the Prepared Query HTTP client.
-     * <p>
-     * /v1/query
-     *
-     * @return The Prepared Query HTTP client.
-     */
+    * Get the Prepared Query HTTP client.
+    * <p>
+    * /v1/query
+    *
+    * @return The Prepared Query HTTP client.
+    */
     public PreparedQueryClient preparedQueryClient() {
         return preparedQueryClient;
     }
 
     /**
-     * Get the Coordinate HTTP client.
-     * <p>
-     * /v1/coordinate
-     *
-     * @return The Coordinate HTTP client.
-     */
+    * Get the Coordinate HTTP client.
+    * <p>
+    * /v1/coordinate
+    *
+    * @return The Coordinate HTTP client.
+    */
     public CoordinateClient coordinateClient() {
         return coordinateClient;
     }
 
     /**
-     * Get the Operator HTTP client.
-     * <p>
-     * /v1/operator
-     *
-     * @return The Operator HTTP client.
-     */
+    * Get the Operator HTTP client.
+    * <p>
+    * /v1/operator
+    *
+    * @return The Operator HTTP client.
+    */
     public OperatorClient operatorClient() {
         return operatorClient;
     }
 
     /**
-     * Get the Snapshot HTTP client.
-     * <p>
-     * /v1/snapshot
-     *
-     * @return The Snapshot HTTP client.
-     */
+    * Get the Snapshot HTTP client.
+    * <p>
+    * /v1/snapshot
+    *
+    * @return The Snapshot HTTP client.
+    */
     public SnapshotClient snapshotClient() {
         return snapshotClient;
     }
 
     /**
-     * Creates a new {@link Builder} object.
-     *
-     * @return A new Consul builder.
-     */
+    * Creates a new {@link Builder} object.
+    *
+    * @return A new Consul builder.
+    */
     public static Builder builder() {
         return new Builder();
     }
 
     /**
-     * Used to create a default Consul client.
-     *
-     * @return A default {@link Consul} client.
-     */
+    * Used to create a default Consul client.
+    *
+    * @return A default {@link Consul} client.
+    */
     @VisibleForTesting
     public static Consul newClient() {
         return builder().build();
     }
 
     /**
-     * Builder for {@link Consul} client objects.
-     */
+    * Builder for {@link Consul} client objects.
+    */
     public static class Builder {
         private URL url;
         private SSLContext sslContext;
@@ -265,6 +271,7 @@ public class Consul {
         private Interceptor aclTokenInterceptor;
         private Interceptor headerInterceptor;
         private Interceptor consulBookendInterceptor;
+        private Interceptor consulFailoverInterceptor;
         private Long connectTimeoutMillis;
         private Long readTimeoutMillis;
         private Long writeTimeoutMillis;
@@ -281,18 +288,18 @@ public class Consul {
         }
 
         /**
-         * Constructs a new builder.
-         */
+        * Constructs a new builder.
+        */
         Builder() {
 
         }
 
         /**
-         * Sets the URL from a {@link URL} object.
-         *
-         * @param url The Consul agent URL.
-         * @return The builder.
-         */
+        * Sets the URL from a {@link URL} object.
+        *
+        * @param url The Consul agent URL.
+        * @return The builder.
+        */
         public Builder withUrl(URL url) {
             this.url = url;
 
@@ -300,11 +307,11 @@ public class Consul {
         }
 
         /**
-         * Instructs the builder that the AgentClient should attempt a ping before returning the Consul instance
-         *
-         * @param ping Whether the ping should be done or not
-         * @return The builder.
-         */
+        * Instructs the builder that the AgentClient should attempt a ping before returning the Consul instance
+        *
+        * @param ping Whether the ping should be done or not
+        * @return The builder.
+        */
         public Builder withPing(boolean ping) {
             this.ping = ping;
 
@@ -312,12 +319,12 @@ public class Consul {
         }
 
         /**
-         * Sets the username and password to be used for basic authentication
-         *
-         * @param username the value of the username
-         * @param password the value of the password
-         * @return The builder.
-         */
+        * Sets the username and password to be used for basic authentication
+        *
+        * @param username the value of the username
+        * @param password the value of the password
+        * @return The builder.
+        */
         public Builder withBasicAuth(String username, String password) {
             String credentials = username + ":" + password;
             final String basic = "Basic " + BaseEncoding.base64().encode(credentials.getBytes());
@@ -336,11 +343,11 @@ public class Consul {
         }
 
         /**
-         * Sets the ACL token to be used with Consul
-         *
-         * @param token the value of the token
-         * @return The builder.
-         */
+        * Sets the ACL token to be used with Consul
+        *
+        * @param token the value of the token
+        * @return The builder.
+        */
         public Builder withAclToken(final String token) {
             aclTokenInterceptor = chain -> {
                 Request original = chain.request();
@@ -365,11 +372,11 @@ public class Consul {
         }
 
         /**
-         * Sets headers to be included with each Consul request.
-         *
-         * @param headers Map of headers.
-         * @return The builder.
-         */
+        * Sets headers to be included with each Consul request.
+        *
+        * @param headers Map of headers.
+        * @return The builder.
+        */
         public Builder withHeaders(final Map<String, String> headers) {
             headerInterceptor = chain -> {
                 Request.Builder requestBuilder = chain.request().newBuilder();
@@ -385,12 +392,12 @@ public class Consul {
         }
 
         /**
-         * Attaches a {@link ConsulBookend} to each Consul request. This can be used for gathering
-         * metrics timings or debugging. {@see ConsulBookend}
-         *
-         * @param consulBookend The bookend implementation.
-         * @return The builder.
-         */
+        * Attaches a {@link ConsulBookend} to each Consul request. This can be used for gathering
+        * metrics timings or debugging. {@see ConsulBookend}
+        *
+        * @param consulBookend The bookend implementation.
+        * @return The builder.
+        */
         public Builder withConsulBookend(ConsulBookend consulBookend) {
             consulBookendInterceptor = new ConsulBookendInterceptor(consulBookend);
 
@@ -398,11 +405,11 @@ public class Consul {
         }
 
         /**
-         * Sets the URL from a {@link HostAndPort} object.
-         *
-         * @param hostAndPort The Consul agent host and port.
-         * @return The builder.
-         */
+        * Sets the URL from a {@link HostAndPort} object.
+        *
+        * @param hostAndPort The Consul agent host and port.
+        * @return The builder.
+        */
         public Builder withHostAndPort(HostAndPort hostAndPort) {
             try {
                 this.url = new URL("http", hostAndPort.getHost(), hostAndPort.getPort(), "");
@@ -412,13 +419,44 @@ public class Consul {
 
             return this;
         }
-
+        
         /**
-         * Sets the URL from a string.
-         *
-         * @param url The Consul agent URL.
+        * Sets the list of hosts to contact if the current request target is
+        * unavailable. When the call to a particular URL fails for any reason, the next {@link HostAndPort} specified
+        * is used to retry the request. This will continue until all urls are exhuasted.
+        * 
+        * @param hostAndPort A collection of {@link HostAndPort} that define the list of Consul agent addresses to use.
+        * @param blacklistTimeInMillis The timeout (in milliseconds) to blacklist a particular {@link HostAndPort} before trying to use it again.
+        * @return The builder.
+        */
+        public Builder withMultipleHostAndPort(Collection<HostAndPort> hostAndPort, long blacklistTimeInMillis) {
+            Preconditions.checkArgument(blacklistTimeInMillis >= 0, "Negative Value");
+            Preconditions.checkArgument(hostAndPort.size() >= 2, "Minimum of 2 addresses are required");
+
+            consulFailoverInterceptor = new ConsulFailoverInterceptor(hostAndPort, blacklistTimeInMillis);
+            withHostAndPort(hostAndPort.stream().findFirst().get());
+            
+            return this;
+        }
+        
+        /**
+         * Constructs a failover interceptor with the given {@link ConsulFailoverStrategy}.
+         * @param strategy The strategy to use.
          * @return The builder.
          */
+        public Builder withFailoverInterceptor(ConsulFailoverStrategy strategy) {
+        	Preconditions.checkArgument(strategy != null, "Must not provide a null strategy");
+        	
+        	consulFailoverInterceptor = new ConsulFailoverInterceptor(strategy);
+        	return this;
+        }
+
+        /**
+        * Sets the URL from a string.
+        *
+        * @param url The Consul agent URL.
+        * @return The builder.
+        */
         public Builder withUrl(String url) {
             try {
                 this.url = new URL(url);
@@ -430,11 +468,11 @@ public class Consul {
         }
 
         /**
-         * Sets the {@link SSLContext} for the client.
-         *
-         * @param sslContext The SSL context for HTTPS agents.
-         * @return The builder.
-         */
+        * Sets the {@link SSLContext} for the client.
+        *
+        * @param sslContext The SSL context for HTTPS agents.
+        * @return The builder.
+        */
         public Builder withSslContext(SSLContext sslContext) {
             this.sslContext = sslContext;
 
@@ -442,11 +480,11 @@ public class Consul {
         }
 
         /**
-         * Sets the {@link X509TrustManager} for the client.
-         *
-         * @param trustManager The SSL trust manager for HTTPS agents.
-         * @return The builder.
-         */
+        * Sets the {@link X509TrustManager} for the client.
+        *
+        * @param trustManager The SSL trust manager for HTTPS agents.
+        * @return The builder.
+        */
         public Builder withTrustManager(X509TrustManager trustManager) {
             this.trustManager = trustManager;
 
@@ -454,11 +492,11 @@ public class Consul {
         }
 
         /**
-         * Sets the {@link HostnameVerifier} for the client.
-         *
-         * @param hostnameVerifier The hostname verifier to use.
-         * @return The builder.
-         */
+        * Sets the {@link HostnameVerifier} for the client.
+        *
+        * @param hostnameVerifier The hostname verifier to use.
+        * @return The builder.
+        */
         public Builder withHostnameVerifier(HostnameVerifier hostnameVerifier) {
             this.hostnameVerifier = hostnameVerifier;
 
@@ -466,11 +504,11 @@ public class Consul {
         }
 
         /**
-         * Sets the {@link Proxy} for the client.
-         *
-         * @param proxy The proxy to use.
-         * @return The builder
-         */
+        * Sets the {@link Proxy} for the client.
+        *
+        * @param proxy The proxy to use.
+        * @return The builder
+        */
         public Builder withProxy(Proxy proxy) {
             this.proxy = proxy;
 
@@ -478,10 +516,10 @@ public class Consul {
         }
 
         /**
-         * Connect timeout for OkHttpClient
-         * @param timeoutMillis timeout values in milliseconds
-         * @return The builder
-         */
+        * Connect timeout for OkHttpClient
+        * @param timeoutMillis timeout values in milliseconds
+        * @return The builder
+        */
         public Builder withConnectTimeoutMillis(long timeoutMillis) {
             Preconditions.checkArgument(timeoutMillis >= 0, "Negative value");
             this.connectTimeoutMillis = timeoutMillis;
@@ -490,10 +528,10 @@ public class Consul {
         }
 
         /**
-         * Read timeout for OkHttpClient
-         * @param timeoutMillis timeout value in milliseconds
-         * @return The builder
-         */
+        * Read timeout for OkHttpClient
+        * @param timeoutMillis timeout value in milliseconds
+        * @return The builder
+        */
         public Builder withReadTimeoutMillis(long timeoutMillis) {
             Preconditions.checkArgument(timeoutMillis >= 0, "Negative value");
             this.readTimeoutMillis = timeoutMillis;
@@ -502,10 +540,10 @@ public class Consul {
         }
 
         /**
-         * Write timeout for OkHttpClient
-         * @param timeoutMillis timeout value in milliseconds
-         * @return The builder
-         */
+        * Write timeout for OkHttpClient
+        * @param timeoutMillis timeout value in milliseconds
+        * @return The builder
+        */
         public Builder withWriteTimeoutMillis(long timeoutMillis) {
             Preconditions.checkArgument(timeoutMillis >= 0, "Negative value");
             this.writeTimeoutMillis = timeoutMillis;
@@ -514,18 +552,18 @@ public class Consul {
         }
 
         /**
-         * Sets the ExecutorService to be used by the internal tasks dispatcher.
-         *
-         * By default, an ExecutorService is created internally.
-         * In this case, it will not be customizable nor manageable by the user application.
-         * It can only be shutdown by the {@link Consul#destroy()} method.
-         *
-         * When an application needs to be able to customize the ExecutorService parameters, and/or manage its lifecycle,
-         * it can provide an instance of ExecutorService to the Builder. In that case, this ExecutorService will be used instead of creating one internally.
-         *
-         * @param executorService The ExecutorService to be injected in the internal tasks dispatcher.
-         * @return
-         */
+        * Sets the ExecutorService to be used by the internal tasks dispatcher.
+        *
+        * By default, an ExecutorService is created internally.
+        * In this case, it will not be customizable nor manageable by the user application.
+        * It can only be shutdown by the {@link Consul#destroy()} method.
+        *
+        * When an application needs to be able to customize the ExecutorService parameters, and/or manage its lifecycle,
+        * it can provide an instance of ExecutorService to the Builder. In that case, this ExecutorService will be used instead of creating one internally.
+        *
+        * @param executorService The ExecutorService to be injected in the internal tasks dispatcher.
+        * @return
+        */
         public Builder withExecutorService(ExecutorService executorService) {
             this.executorService = executorService;
 
@@ -533,12 +571,12 @@ public class Consul {
         }
 
         /**
-         * Sets the configuration for the clients.
-         * The configuration will fallback on the library default configuration if elements are not set.
-         *
-         * @param clientConfig the configuration to use.
-         * @return The Builder
-         */
+        * Sets the configuration for the clients.
+        * The configuration will fallback on the library default configuration if elements are not set.
+        *
+        * @param clientConfig the configuration to use.
+        * @return The Builder
+        */
         public Builder withClientConfiguration(ClientConfig clientConfig) {
             this.clientConfig = clientConfig;
 
@@ -546,12 +584,12 @@ public class Consul {
         }
 
         /**
-         * Sets the event callback for the clients.
-         * The callback will be called by the consul client after each event.
-         *
-         * @param callback the callback to call.
-         * @return The Builder
-         */
+        * Sets the event callback for the clients.
+        * The callback will be called by the consul client after each event.
+        *
+        * @param callback the callback to call.
+        * @return The Builder
+        */
         public Builder withClientEventCallback(ClientEventCallback callback) {
             this.clientEventCallback = callback;
 
@@ -559,10 +597,10 @@ public class Consul {
         }
 
         /**
-         * Constructs a new {@link Consul} client.
-         *
-         * @return A new Consul client.
-         */
+        * Constructs a new {@link Consul} client.
+        *
+        * @return A new Consul client.
+        */
         public Consul build() {
             final Retrofit retrofit;
 
@@ -570,9 +608,9 @@ public class Consul {
             ExecutorService executorService = this.executorService;
             if (executorService == null) {
                 /**
-                 * mimics okhttp3.Dispatcher#executorService implementation, except
-                 * using daemon thread so shutdown is not blocked (issue #133)
-                 */
+                * mimics okhttp3.Dispatcher#executorService implementation, except
+                * using daemon thread so shutdown is not blocked (issue #133)
+                */
                 executorService = new ThreadPoolExecutor(0, Integer.MAX_VALUE, 60, TimeUnit.SECONDS,
                         new SynchronousQueue<>(), Util.threadFactory("OkHttp Dispatcher", true));
             }
@@ -645,6 +683,10 @@ public class Consul {
 
             if (consulBookendInterceptor != null) {
                 builder.addInterceptor(consulBookendInterceptor);
+            }
+            
+            if (consulFailoverInterceptor != null) {
+                builder.addInterceptor(consulFailoverInterceptor);
             }
 
             if (sslContext != null && trustManager != null) {
