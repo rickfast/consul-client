@@ -64,7 +64,7 @@ public class ConsulCache<K, V> implements AutoCloseable {
     private final ClientEventHandler eventHandler;
     private final CacheDescriptor cacheDescriptor;
 
-    ConsulCache(
+    protected ConsulCache(
             Function<V, K> keyConversion,
             CallbackConsumer<V> callbackConsumer,
             CacheConfig cacheConfig,
@@ -124,7 +124,13 @@ public class ConsulCache<K, V> implements AutoCloseable {
                         initLatch.countDown();
                     }
 
-                    Duration timeToWait = cacheConfig.getMinimumDurationBetweenRequests().minus(elapsedTime);
+                    Duration timeToWait = cacheConfig.getMinimumDurationBetweenRequests();
+                    if ((consulResponse.getResponse() == null || consulResponse.getResponse().isEmpty()) &&
+                            cacheConfig.getMinimumDurationDelayOnEmptyResult().compareTo(timeToWait) > 0) {
+                        timeToWait = cacheConfig.getMinimumDurationDelayOnEmptyResult();
+                    }
+                    timeToWait = timeToWait.minus(elapsedTime);
+
                     if (timeToWait.isNegative() || timeToWait.isZero()) {
                         runCallback();
                     } else {
