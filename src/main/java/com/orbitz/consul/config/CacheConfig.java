@@ -15,6 +15,8 @@ public class CacheConfig {
     @VisibleForTesting
     static final Duration DEFAULT_MIN_DELAY_BETWEEN_REQUESTS = Duration.ZERO;
     @VisibleForTesting
+    static final Duration DEFAULT_MIN_DELAY_ON_EMPTY_RESULT = Duration.ZERO;
+    @VisibleForTesting
     static final boolean DEFAULT_TIMEOUT_AUTO_ADJUSTMENT_ENABLED = true;
     @VisibleForTesting
     static final Duration DEFAULT_TIMEOUT_AUTO_ADJUSTMENT_MARGIN = Duration.ofSeconds(2);
@@ -24,16 +26,18 @@ public class CacheConfig {
     private final Duration minBackOffDelay;
     private final Duration maxBackOffDelay;
     private final Duration minDelayBetweenRequests;
+    private final Duration minDelayOnEmptyResult;
     private final Duration timeoutAutoAdjustmentMargin;
     private final boolean timeoutAutoAdjustmentEnabled;
     private final RefreshErrorLogConsumer refreshErrorLogConsumer;
 
     private CacheConfig(Duration minBackOffDelay, Duration maxBackOffDelay, Duration minDelayBetweenRequests,
-                        boolean timeoutAutoAdjustmentEnabled, Duration timeoutAutoAdjustmentMargin,
-                        RefreshErrorLogConsumer refreshErrorLogConsumer) {
+                        Duration minDelayOnEmptyResult, boolean timeoutAutoAdjustmentEnabled,
+                        Duration timeoutAutoAdjustmentMargin, RefreshErrorLogConsumer refreshErrorLogConsumer) {
         this.minBackOffDelay = minBackOffDelay;
         this.maxBackOffDelay = maxBackOffDelay;
         this.minDelayBetweenRequests = minDelayBetweenRequests;
+        this.minDelayOnEmptyResult = minDelayOnEmptyResult;
         this.timeoutAutoAdjustmentEnabled = timeoutAutoAdjustmentEnabled;
         this.timeoutAutoAdjustmentMargin = timeoutAutoAdjustmentMargin;
         this.refreshErrorLogConsumer = refreshErrorLogConsumer;
@@ -83,6 +87,13 @@ public class CacheConfig {
     }
 
     /**
+     * Gets the minimum time between two requests for caches.
+     */
+    public Duration getMinimumDurationDelayOnEmptyResult() {
+        return minDelayOnEmptyResult;
+    }
+
+    /**
      * Gets the function that will be called in case of error.
      */
     public RefreshErrorLogConsumer getRefreshErrorLoggingConsumer() {
@@ -102,6 +113,7 @@ public class CacheConfig {
         private Duration minBackOffDelay = DEFAULT_BACKOFF_DELAY;
         private Duration maxBackOffDelay = DEFAULT_BACKOFF_DELAY;
         private Duration minDelayBetweenRequests = DEFAULT_MIN_DELAY_BETWEEN_REQUESTS;
+        private Duration minDelayOnEmptyResult = DEFAULT_MIN_DELAY_ON_EMPTY_RESULT;
         private Duration timeoutAutoAdjustmentMargin = DEFAULT_TIMEOUT_AUTO_ADJUSTMENT_MARGIN;
         private boolean timeoutAutoAdjustmentEnabled = DEFAULT_TIMEOUT_AUTO_ADJUSTMENT_ENABLED;
         private RefreshErrorLogConsumer refreshErrorLogConsumer = DEFAULT_REFRESH_ERROR_LOG_CONSUMER;
@@ -138,6 +150,14 @@ public class CacheConfig {
          */
         public Builder withMinDelayBetweenRequests(Duration delay) {
             this.minDelayBetweenRequests = Preconditions.checkNotNull(delay, "Delay cannot be null");
+            return this;
+        }
+
+        /**
+         * Sets the minimum time between two requests for caches when an empty result is returned.
+         */
+        public Builder withMinDelayOnEmptyResult(Duration delay) {
+            this.minDelayOnEmptyResult = Preconditions.checkNotNull(delay, "Delay cannot be null");
             return this;
         }
 
@@ -183,7 +203,7 @@ public class CacheConfig {
         }
 
         public CacheConfig build() {
-            return new CacheConfig(minBackOffDelay, maxBackOffDelay, minDelayBetweenRequests,
+            return new CacheConfig(minBackOffDelay, maxBackOffDelay, minDelayBetweenRequests, minDelayOnEmptyResult,
                     timeoutAutoAdjustmentEnabled, timeoutAutoAdjustmentMargin,
                     refreshErrorLogConsumer);
         }
