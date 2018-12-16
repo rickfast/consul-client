@@ -1,5 +1,4 @@
 [![Build Status](https://travis-ci.org/rickfast/consul-client.svg?branch=master)](https://travis-ci.org/rickfast/consul-client)
-[ ![Download](https://api.bintray.com/packages/orbitz/consul-client/consul-client/images/download.svg) ](https://bintray.com/orbitz/consul-client/consul-client/_latestVersion)
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.orbitz.consul/consul-client/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.orbitz.consul/consul-client)
 
 Consul Client for Java
@@ -20,19 +19,11 @@ In 0.13.x, both shaded and non-shaded JARs are provided. The shaded JAR has a `s
 
 In 0.11.X and 0.12.x, the Consul JAR is a shaded JAR, with most dependencies included. This was done because a number of issues being files were related to dependency conflicts. The JAR is a bit bigger, but the HTTP + JSON libraries are now internal to the JAR. Only Guava is still a transitive dependency.
 
-### Bintray:
-
-Grab the latest binary (1.2.6) [here](http://dl.bintray.com/orbitz/consul-client/com/orbitz/consul/consul-client/1.1.2/#consul-client-1.0.1.jar).
-
 ### Gradle:
 
 ```groovy
-repositories {
-    jcenter() // or mavenCentral()
-}
-
 dependencies {
-    compile 'com.orbitz.consul:consul-client:1.2.6'
+    compile 'com.orbitz.consul:consul-client:1.2.7'
 }
 ```
 
@@ -43,7 +34,7 @@ dependencies {
     <dependency>
         <groupId>com.orbitz.consul</groupId>
         <artifactId>consul-client</artifactId>
-        <version>1.2.6</version>
+        <version>1.2.7</version>
     </dependency>
 </dependencies>
 
