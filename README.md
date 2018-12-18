@@ -157,7 +157,7 @@ Integrations Tests rely on the assumption that a Consul server is running on loc
 
 You can run a Consul server in docker using the following command line:
 ```
-docker kill dev-consul ; docker rm dev-consul ; docker run -d -p 127.0.0.1:8500:8500 --name=dev-consul consul
+docker kill dev-consul ; docker rm dev-consul ; docker run -d -p 127.0.0.1:8500:8500 --name=dev-consul consul agent -dev -client 0.0.0.0 --enable-script-checks=true
 ```
 
 ### Eclipse-specific notes

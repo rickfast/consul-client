@@ -11,6 +11,7 @@ import com.orbitz.consul.model.ConsulResponse;
 import com.orbitz.consul.monitoring.ClientEventHandler;
 import com.orbitz.consul.option.ImmutableQueryOptions;
 import com.orbitz.consul.option.QueryOptions;
+import org.apache.commons.lang3.Validate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -53,7 +54,10 @@ public class ConsulCache<K, V> implements AutoCloseable {
     private final AtomicReference<State> state = new AtomicReference<>(State.latent);
     private final CountDownLatch initLatch = new CountDownLatch(1);
     private final ScheduledExecutorService executorService = Executors.newSingleThreadScheduledExecutor(
-            new ThreadFactoryBuilder().setDaemon(true).build());
+            new ThreadFactoryBuilder()
+                    .setNameFormat("consulCacheScheduledCallback-%d")
+                    .setDaemon(true)
+                    .build());
     private final CopyOnWriteArrayList<Listener<K, V>> listeners = new CopyOnWriteArrayList<>();
     private final ReentrantLock listenersStartingLock = new ReentrantLock();
     private final Stopwatch stopWatch = Stopwatch.createUnstarted();
@@ -70,6 +74,18 @@ public class ConsulCache<K, V> implements AutoCloseable {
             CacheConfig cacheConfig,
             ClientEventHandler eventHandler,
             CacheDescriptor cacheDescriptor) {
+        if (keyConversion == null) {
+            Validate.notNull(keyConversion, "keyConversion must not be null");
+        }
+        if (callbackConsumer == null) {
+            Validate.notNull(callbackConsumer, "callbackConsumer must not be null");
+        }
+        if (cacheConfig == null) {
+            Validate.notNull(cacheConfig, "cacheConfig must not be null");
+        }
+        if (eventHandler == null) {
+            Validate.notNull(eventHandler, "eventHandler must not be null");
+        }
 
         this.keyConversion = keyConversion;
         this.callBackConsumer = callbackConsumer;
@@ -110,7 +126,11 @@ public class ConsulCache<K, V> implements AutoCloseable {
                         }
                         try {
                             for (Listener<K, V> l : listeners) {
-                                l.notify(full);
+                                try {
+                                    l.notify(full);
+                                } catch (RuntimeException e) {
+                                    LOGGER.warn("ConsulCache Listener's notify method threw an exception.", e);
+                                }
                             }
                         }
                         finally {
@@ -131,12 +151,8 @@ public class ConsulCache<K, V> implements AutoCloseable {
                     }
                     timeToWait = timeToWait.minus(elapsedTime);
 
-                    if (timeToWait.isNegative() || timeToWait.isZero()) {
-                        runCallback();
-                    } else {
-                        executorService.schedule(ConsulCache.this::runCallback,
-                                timeToWait.toMillis(), TimeUnit.MILLISECONDS);
-                    }
+                    executorService.schedule(ConsulCache.this::runCallback,
+                            timeToWait.toMillis(), TimeUnit.MILLISECONDS);
 
                 } else {
                     onFailure(new ConsulException("Consul cluster has no elected leader"));
@@ -183,7 +199,7 @@ public class ConsulCache<K, V> implements AutoCloseable {
     }
 
     @Override
-    public void close() throws Exception {
+    public void close() {
         stop();
     }
 
@@ -291,7 +307,11 @@ public class ConsulCache<K, V> implements AutoCloseable {
         try {
             added = listeners.add(listener);
             if (state.get() == State.started) {
-                listener.notify(lastResponse.get());
+                try {
+                    listener.notify(lastResponse.get());
+                } catch (RuntimeException e) {
+                    LOGGER.warn("ConsulCache Listener's notify method threw an exception.", e);
+                }
             }
         }
         finally {
