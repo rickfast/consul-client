@@ -4,6 +4,8 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 
 import java.nio.charset.Charset;
 import java.util.Optional;
+
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.primitives.UnsignedLongs;
 import com.orbitz.consul.async.ConsulResponseCallback;
@@ -61,6 +63,11 @@ public class KeyValueClient extends BaseClient {
     KeyValueClient(Retrofit retrofit, ClientConfig config, ClientEventCallback eventCallback) {
         super(CLIENT_NAME, config, eventCallback);
         this.api = retrofit.create(Api.class);
+    }
+
+    KeyValueClient(Api api, ClientConfig config, ClientEventCallback eventCallback) {
+        super(CLIENT_NAME, config, eventCallback);
+        this.api = api;
     }
 
     /**
@@ -633,7 +640,8 @@ public class KeyValueClient extends BaseClient {
     /**
      * Retrofit API interface.
      */
-    interface Api {
+    @VisibleForTesting
+    public interface Api {
 
         @GET("kv/{key}")
         Call<List<Value>> getValue(@Path("key") String key,
