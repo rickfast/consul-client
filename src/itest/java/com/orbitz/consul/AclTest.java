@@ -69,7 +69,7 @@ public class AclTest {
         aclClient.deletePolicy(createdPolicy.id());
         int newPolicyCount = aclClient.listPolicies().size();
 
-        assertThat(oldPolicyCount, is(newPolicyCount + 1));
+        assertThat(newPolicyCount, is(oldPolicyCount - 1));
     }
 
     @Test
@@ -84,8 +84,54 @@ public class AclTest {
 
         TokenResponse readToken = aclClient.readToken(createdToken.accessorId());
 
-        assertThat(readToken.description().get(), is(tokenDescription));
+        assertThat(readToken.description(), is(tokenDescription));
         assertThat(readToken.policies().get(0).name().get(), is(policyName));
+    }
+
+    @Test
+    public void testReadSelfToken() {
+        AclClient aclClient = client.aclClient();
+
+        TokenResponse selfToken = aclClient.readSelfToken();
+        assertThat(selfToken.description(), is("Master Token"));
+    }
+
+    @Test
+    public void testUpdateToken() {
+        AclClient aclClient = client.aclClient();
+
+        String policyName = UUID.randomUUID().toString();
+        PolicyResponse createdPolicy = aclClient.createPolicy(ImmutablePolicy.builder().name(policyName).build());
+
+        TokenResponse createdToken = aclClient.createToken(ImmutableToken.builder().description("none").local(false).addPolicies(ImmutablePolicyLink.builder().id(createdPolicy.id()).build()).build());
+        String newDescription = UUID.randomUUID().toString();
+        aclClient.updateToken(createdToken.accessorId(), ImmutableToken.builder().local(false).description(newDescription).build());
+
+        TokenResponse readToken = aclClient.readToken(createdToken.accessorId());
+        assertThat(readToken.description(), is(newDescription));
+    }
+
+    @Test
+    public void testListTokens() {
+        AclClient aclClient = client.aclClient();
+
+        assertTrue(aclClient.listTokens().stream().anyMatch(p -> Objects.equals(p.description(), "Anonymous Token")));
+        assertTrue(aclClient.listTokens().stream().anyMatch(p -> Objects.equals(p.description(), "Master Token")));
+    }
+
+    @Test
+    public void testDeleteToken() {
+        AclClient aclClient = client.aclClient();
+
+        String policyName = UUID.randomUUID().toString();
+        PolicyResponse createdPolicy = aclClient.createPolicy(ImmutablePolicy.builder().name(policyName).build());
+        TokenResponse createdToken = aclClient.createToken(ImmutableToken.builder().description(UUID.randomUUID().toString()).local(false).addPolicies(ImmutablePolicyLink.builder().id(createdPolicy.id()).build()).build());
+
+        int oldTokenCount = aclClient.listTokens().size();
+        aclClient.deleteToken(createdToken.accessorId());
+
+        int newTokenCount = aclClient.listTokens().size();
+        assertThat(newTokenCount, is(oldTokenCount - 1));
     }
 
 }

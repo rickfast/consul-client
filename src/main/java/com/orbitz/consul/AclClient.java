@@ -1,13 +1,7 @@
 package com.orbitz.consul;
 
 import com.orbitz.consul.config.ClientConfig;
-import com.orbitz.consul.model.acl.AclResponse;
-import com.orbitz.consul.model.acl.AclToken;
-import com.orbitz.consul.model.acl.AclTokenId;
-import com.orbitz.consul.model.acl.Policy;
-import com.orbitz.consul.model.acl.PolicyResponse;
-import com.orbitz.consul.model.acl.Token;
-import com.orbitz.consul.model.acl.TokenResponse;
+import com.orbitz.consul.model.acl.*;
 import com.orbitz.consul.monitoring.ClientEventCallback;
 import retrofit2.Call;
 import retrofit2.Retrofit;
@@ -78,6 +72,22 @@ public class AclClient extends BaseClient {
         return http.extract(api.readToken(id));
     }
 
+    public TokenResponse readSelfToken() {
+        return http.extract(api.readToken("self"));
+    }
+
+    public TokenResponse updateToken(String id, Token token) {
+        return http.extract(api.updateToken(id, token));
+    }
+
+    public List<TokenListResponse> listTokens() {
+        return http.extract(api.listTokens());
+    }
+
+    public void deleteToken(String id) {
+        http.extract(api.deleteToken(id));
+    }
+
     interface Api {
 
         @PUT("acl/create")
@@ -119,6 +129,14 @@ public class AclClient extends BaseClient {
         @GET("acl/token/{id}")
         Call<TokenResponse> readToken(@Path("id") String id);
 
+        @PUT("acl/token/{id}")
+        Call<TokenResponse> updateToken(@Path("id") String id, @Body Token token);
+
+        @GET("acl/tokens")
+        Call<List<TokenListResponse>> listTokens();
+
+        @DELETE("acl/token/{id}")
+        Call<Void> deleteToken(@Path("id") String id);
     }
 
 }
