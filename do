@@ -18,22 +18,26 @@ CONSUL_ACL_CONFIG=$(cat <<EOF
 EOF
 )
 
-function task_clean {
+function task_clean_environment {
     docker rm -f "${CONSUL_DEV_NAME}"
     docker rm -f "${CONSUL_DEV_ACL_NAME}"
 }
 
-function task_test {
-    task_clean
-
+function task_setup_environment {
     docker run -d -p 127.0.0.1:8500:8500 --name="${CONSUL_DEV_NAME}" consul agent -dev -client 0.0.0.0 --enable-script-checks=true
     docker run -d -p 127.0.0.1:8501:8500 --name="${CONSUL_DEV_ACL_NAME}"  -e CONSUL_LOCAL_CONFIG="${CONSUL_ACL_CONFIG}" consul agent -dev -client 0.0.0.0 --enable-script-checks=true
+}
+
+function task_test {
+    task_clean_environment
+    task_setup_environment
+
     (
         cd "${DIR}"
         mvn test
     )
 
-    task_clean
+    task_clean_environment
 }
 
 task_usage() {
@@ -44,7 +48,8 @@ task_usage() {
 arg=${1:-}
 shift || true
 case ${arg} in
-    test) task_test "$@" ;;
-    clean) task_clean "$@" ;;
+    test) task_test ;;
+    clean-environment) task_clean_environment ;;
+    setup-environment) task_setup_environment ;;
     *) task_usage ;;
 esac
