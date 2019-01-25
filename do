@@ -41,7 +41,7 @@ function task_test {
 }
 
 task_usage() {
-  echo "Usage: $0 test | clean"
+  echo "Usage: $0 test | setup-environment | clean-environment"
   exit 1
 }
 

@@ -163,8 +163,16 @@ A shell skript that sets up the integration test environment is available, to ex
 you can clean up any leftover Docker containers with
 
 ```
-./do clean
+./do clean-environment
 ```
+
+for local development setup you can use
+
+```
+./do setup-environment
+```
+
+to start the needed docker containers.
 
 ### Eclipse-specific notes
 
