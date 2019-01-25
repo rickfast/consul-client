@@ -56,7 +56,6 @@ public class Consul {
 
     private final AgentClient agentClient;
     private final AclClient aclClient;
-    private final PolicyClient policyClient;
     private final HealthClient healthClient;
     private final KeyValueClient keyValueClient;
     private final CatalogClient catalogClient;
@@ -81,8 +80,7 @@ public class Consul {
                 EventClient eventClient, PreparedQueryClient preparedQueryClient,
                 CoordinateClient coordinateClient, OperatorClient operatorClient,
                 ExecutorService executorService, AclClient aclClient,
-                PolicyClient policyClient, SnapshotClient snapshotClient,
-                OkHttpClient okHttpClient) {
+                SnapshotClient snapshotClient, OkHttpClient okHttpClient) {
         this.agentClient = agentClient;
         this.healthClient = healthClient;
         this.keyValueClient = keyValueClient;
@@ -95,7 +93,6 @@ public class Consul {
         this.operatorClient = operatorClient;
         this.executorService = executorService;
         this.aclClient = aclClient;
-        this.policyClient = policyClient;
         this.snapshotClient = snapshotClient;
         this.okHttpClient = okHttpClient;
     }
@@ -128,17 +125,6 @@ public class Consul {
     */
     public AclClient aclClient() {
         return aclClient;
-    }
-
-    /**
-    * Get the Policy HTTP client.
-    * <p>
-    * /v1/acl/policy
-    *
-    * @return The Policy HTTP client.
-    */
-    public PolicyClient policyClient() {
-        return policyClient;
     }
 
     /**
@@ -662,7 +648,6 @@ public class Consul {
             CoordinateClient coordinateClient = new CoordinateClient(retrofit, config, eventCallback);
             OperatorClient operatorClient = new OperatorClient(retrofit, config, eventCallback);
             AclClient aclClient = new AclClient(retrofit, config, eventCallback);
-            PolicyClient policyClient = new PolicyClient(retrofit, config, eventCallback);
             SnapshotClient snapshotClient = new SnapshotClient(retrofit, config, eventCallback);
 
             if (ping) {
@@ -671,7 +656,7 @@ public class Consul {
             return new Consul(agentClient, healthClient, keyValueClient,
                     catalogClient, statusClient, sessionClient, eventClient,
                     preparedQueryClient, coordinateClient, operatorClient,
-                    executorService, aclClient, policyClient, snapshotClient, okHttpClient);
+                    executorService, aclClient, snapshotClient, okHttpClient);
         }
 
         private String buildUrl(URL url) {

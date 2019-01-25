@@ -1,4 +1,4 @@
-package com.orbitz.consul.model.policy;
+package com.orbitz.consul.model.acl;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -23,7 +23,7 @@ public abstract class Policy {
     public abstract Optional<String> description();
 
     @JsonProperty("Name")
-    public abstract Optional<String> name();
+    public abstract String name();
 
     @JsonProperty("Rules")
     public abstract Optional<String> rules();
