@@ -153,12 +153,26 @@ Official instructions are [here](http://immutables.github.io/apt.html), although
 
 ### Integration Tests
 
-Integrations Tests rely on the assumption that a Consul server is running on localhost's default port 8500.
+Integrations Tests rely on the assumption that a Consul server is running on localhost's default port 8500 and another one with enabled ACLs on port 8501.
 
-You can run a Consul server in docker using the following command line:
+A shell skript that sets up the integration test environment is available, to execute all tests run:
 ```
-docker kill dev-consul ; docker rm dev-consul ; docker run -d -p 127.0.0.1:8500:8500 --name=dev-consul consul agent -dev -client 0.0.0.0 --enable-script-checks=true
+./do test
 ```
+
+you can clean up any leftover Docker containers with
+
+```
+./do clean-environment
+```
+
+for local development setup you can use
+
+```
+./do setup-environment
+```
+
+to start the needed docker containers.
 
 ### Eclipse-specific notes
 

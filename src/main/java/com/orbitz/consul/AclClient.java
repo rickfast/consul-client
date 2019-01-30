@@ -1,16 +1,11 @@
 package com.orbitz.consul;
 
 import com.orbitz.consul.config.ClientConfig;
-import com.orbitz.consul.model.acl.AclResponse;
-import com.orbitz.consul.model.acl.AclToken;
-import com.orbitz.consul.model.acl.AclTokenId;
+import com.orbitz.consul.model.acl.*;
 import com.orbitz.consul.monitoring.ClientEventCallback;
 import retrofit2.Call;
 import retrofit2.Retrofit;
-import retrofit2.http.Body;
-import retrofit2.http.GET;
-import retrofit2.http.PUT;
-import retrofit2.http.Path;
+import retrofit2.http.*;
 
 import java.util.List;
 
@@ -49,6 +44,50 @@ public class AclClient extends BaseClient {
         return http.extract(api.listAcls());
     }
 
+    public PolicyResponse createPolicy(Policy policy) {
+        return http.extract(api.createPolicy(policy));
+    }
+
+    public PolicyResponse readPolicy(String id) {
+        return http.extract(api.readPolicy(id));
+    }
+
+    public PolicyResponse updatePolicy(String id, Policy policy) {
+        return http.extract(api.updatePolicy(id, policy));
+    }
+
+    public void deletePolicy(String id) {
+        http.extract(api.deletePolicy(id));
+    }
+
+    public List<PolicyResponse> listPolicies() {
+        return http.extract(api.listPolicies());
+    }
+
+    public TokenResponse createToken(Token token) {
+        return http.extract(api.createToken(token));
+    }
+
+    public TokenResponse readToken(String id) {
+        return http.extract(api.readToken(id));
+    }
+
+    public TokenResponse readSelfToken() {
+        return http.extract(api.readToken("self"));
+    }
+
+    public TokenResponse updateToken(String id, Token token) {
+        return http.extract(api.updateToken(id, token));
+    }
+
+    public List<TokenListResponse> listTokens() {
+        return http.extract(api.listTokens());
+    }
+
+    public void deleteToken(String id) {
+        http.extract(api.deleteToken(id));
+    }
+
     interface Api {
 
         @PUT("acl/create")
@@ -68,5 +107,36 @@ public class AclClient extends BaseClient {
 
         @GET("acl/list")
         Call<List<AclResponse>> listAcls();
+
+        @PUT("acl/policy")
+        Call<PolicyResponse> createPolicy(@Body Policy policy);
+
+        @GET("acl/policy/{id}")
+        Call<PolicyResponse> readPolicy(@Path("id") String id);
+
+        @PUT("acl/policy/{id}")
+        Call<PolicyResponse> updatePolicy(@Path("id") String id, @Body Policy policy);
+
+        @DELETE("acl/policy/{id}")
+        Call<Void> deletePolicy(@Path("id") String id);
+
+        @GET("acl/policies")
+        Call<List<PolicyResponse>> listPolicies();
+
+        @PUT("acl/token")
+        Call<TokenResponse> createToken(@Body Token token);
+
+        @GET("acl/token/{id}")
+        Call<TokenResponse> readToken(@Path("id") String id);
+
+        @PUT("acl/token/{id}")
+        Call<TokenResponse> updateToken(@Path("id") String id, @Body Token token);
+
+        @GET("acl/tokens")
+        Call<List<TokenListResponse>> listTokens();
+
+        @DELETE("acl/token/{id}")
+        Call<Void> deleteToken(@Path("id") String id);
     }
+
 }

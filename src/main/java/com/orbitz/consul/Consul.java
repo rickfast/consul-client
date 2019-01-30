@@ -3,7 +3,6 @@ package com.orbitz.consul;
 import java.net.MalformedURLException;
 import java.net.Proxy;
 import java.net.URL;
-import java.time.Instant;
 import java.util.Collection;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
