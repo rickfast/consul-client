@@ -51,4 +51,8 @@ public class ClientEventHandler {
         EVENT_EXECUTOR.submit(() -> callback.onCachePollingSuccess(clientName, cacheDescriptor, withNotification, duration));
     }
 
+    public void stop() {
+        EVENT_EXECUTOR.shutdownNow();
+    }
+
 }
