@@ -1,35 +1,35 @@
 package com.orbitz.consul;
 
 import com.google.common.collect.ImmutableMap;
+import com.orbitz.consul.async.ConsulResponseCallback;
 import com.orbitz.consul.async.EventResponseCallback;
+import com.orbitz.consul.config.ClientConfig;
+import com.orbitz.consul.model.ConsulResponse;
 import com.orbitz.consul.model.EventResponse;
 import com.orbitz.consul.model.ImmutableEventResponse;
 import com.orbitz.consul.model.event.Event;
+import com.orbitz.consul.monitoring.ClientEventCallback;
 import com.orbitz.consul.option.EventOptions;
 import com.orbitz.consul.option.QueryOptions;
 import okhttp3.MediaType;
 import okhttp3.RequestBody;
 import org.apache.commons.lang3.StringUtils;
 import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
 import retrofit2.Retrofit;
 import retrofit2.http.*;
 
-import java.io.IOException;
-import java.math.BigInteger;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-
-import static com.orbitz.consul.util.Http.extract;
 
 /**
  * HTTP Client for /v1/event/ endpoints.
  *
  * @see <a href="http://www.consul.io/docs/agent/http.html#event">The Consul API Docs</a>
  */
-public class EventClient {
+public class EventClient extends BaseClient {
+
+    private static String CLIENT_NAME = "event";
 
     private final Api api;
 
@@ -38,7 +38,8 @@ public class EventClient {
      *
      * @param retrofit The {@link Retrofit} to build a client from.
      */
-    EventClient(Retrofit retrofit) {
+    EventClient(Retrofit retrofit, ClientConfig config, ClientEventCallback eventCallback) {
+        super(CLIENT_NAME, config, eventCallback);
         this.api = retrofit.create(Api.class);
     }
 
@@ -53,7 +54,7 @@ public class EventClient {
      * @return The newly created {@link com.orbitz.consul.model.event.Event}.
      */
     public Event fireEvent(String name, EventOptions eventOptions, String payload) {
-        return extract(api.fireEvent(name,
+        return http.extract(api.fireEvent(name,
                 RequestBody.create(MediaType.parse("text/plain"), payload),
                 eventOptions.toQuery()));
     }
@@ -80,7 +81,7 @@ public class EventClient {
      * @return The newly created {@link com.orbitz.consul.model.event.Event}.
      */
     public Event fireEvent(String name, EventOptions eventOptions) {
-        return extract(api.fireEvent(name, eventOptions.toQuery()));
+        return http.extract(api.fireEvent(name, eventOptions.toQuery()));
     }
 
     /**
@@ -107,13 +108,10 @@ public class EventClient {
      *  a list of {@link com.orbitz.consul.model.event.Event} objects.
      */
     public EventResponse listEvents(String name, QueryOptions queryOptions) {
-        Map<String, String> query = Collections.emptyMap();
+        Map<String, String> query = StringUtils.isNotEmpty(name) ? ImmutableMap.of("name", name) : Collections.emptyMap();
 
-        if (StringUtils.isNotEmpty(name)) {
-            query = ImmutableMap.of("name", name);
-        }
-
-        return response(api.listEvents(query));
+        ConsulResponse<List<Event>> response = http.extractConsulResponse(api.listEvents(query));
+        return ImmutableEventResponse.of(response.getResponse(), response.getIndex());
     }
 
     /**
@@ -164,13 +162,23 @@ public class EventClient {
      * @param callback The callback to asynchronously process the result.
      */
     public void listEvents(String name, QueryOptions queryOptions, EventResponseCallback callback) {
-        Map<String, String> query = Collections.emptyMap();
+        Map<String, String> query = StringUtils.isNotEmpty(name) ? ImmutableMap.of("name", name) : Collections.emptyMap();
 
-        if (StringUtils.isNotEmpty(name)) {
-            query = ImmutableMap.of("name", name);
-        }
+        http.extractConsulResponse(api.listEvents(query), createConsulResponseCallbackWrapper(callback));
+    }
 
-        response(api.listEvents(query), callback);
+    private ConsulResponseCallback<List<Event>> createConsulResponseCallbackWrapper(EventResponseCallback callback) {
+        return new ConsulResponseCallback<List<Event>>() {
+            @Override
+            public void onComplete(ConsulResponse<List<Event>> response) {
+                callback.onComplete(ImmutableEventResponse.of(response.getResponse(), response.getIndex()));
+            }
+
+            @Override
+            public void onFailure(Throwable throwable) {
+                callback.onFailure(throwable);
+            }
+        };
     }
 
     /**
@@ -195,49 +203,6 @@ public class EventClient {
     public void listEvents(EventResponseCallback callback) {
         listEvents(null, QueryOptions.BLANK, callback);
     }
-
-    private static void response(Call<List<Event>> call, final EventResponseCallback callback) {
-        call.enqueue(new Callback<List<Event>>() {
-
-            @Override
-            public void onResponse(Call<List<Event>> call, Response<List<Event>> response) {
-                try {
-                    callback.onComplete(eventResponse(response));
-                } catch (Exception ex) {
-                    callback.onFailure(ex);
-                }
-            }
-
-            @Override
-            public void onFailure(Call<List<Event>> call, Throwable t) {
-                callback.onFailure(t);
-            }
-        });
-    }
-
-    private static EventResponse response(Call<List<Event>> call) {
-        Response<List<Event>> response;
-        try {
-            response = call.execute();
-        } catch (IOException e) {
-            throw new ConsulException(e);
-        }
-
-        if(!response.isSuccessful()) {
-            throw new ConsulException(response.code(), response);
-        }
-
-        return eventResponse(response);
-    }
-
-    private static EventResponse eventResponse(Response<List<Event>> response) {
-        String indexHeaderValue = response.headers().get("X-Consul-Index");
-
-        BigInteger index = new BigInteger(indexHeaderValue);
-
-        return ImmutableEventResponse.of(response.body(), index);
-    }
-
     /**
      * Retrofit API interface.
      */

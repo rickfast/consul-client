@@ -1,14 +1,15 @@
 package com.orbitz.consul;
 
 import com.orbitz.consul.async.ConsulResponseCallback;
+import com.orbitz.consul.config.ClientConfig;
 import com.orbitz.consul.model.ConsulResponse;
 import com.orbitz.consul.model.catalog.CatalogDeregistration;
 import com.orbitz.consul.model.catalog.CatalogNode;
 import com.orbitz.consul.model.catalog.CatalogRegistration;
 import com.orbitz.consul.model.catalog.CatalogService;
 import com.orbitz.consul.model.health.Node;
+import com.orbitz.consul.monitoring.ClientEventCallback;
 import com.orbitz.consul.option.QueryOptions;
-import com.orbitz.consul.util.Http;
 import retrofit2.Call;
 import retrofit2.Retrofit;
 import retrofit2.http.*;
@@ -16,13 +17,12 @@ import retrofit2.http.*;
 import java.util.List;
 import java.util.Map;
 
-import static com.orbitz.consul.util.Http.extractConsulResponse;
-import static com.orbitz.consul.util.Http.handle;
-
 /**
  * HTTP Client for /v1/catalog/ endpoints.
  */
-public class CatalogClient {
+public class CatalogClient extends BaseClient {
+
+    private static String CLIENT_NAME = "catalog";
 
     private final Api api;
 
@@ -31,7 +31,8 @@ public class CatalogClient {
      *
      * @param retrofit The {@link Retrofit} to build a client from.
      */
-    CatalogClient(Retrofit retrofit) {
+    CatalogClient(Retrofit retrofit, ClientConfig config, ClientEventCallback eventCallback) {
+        super(CLIENT_NAME, config, eventCallback);
         this.api = retrofit.create(Api.class);
     }
 
@@ -43,7 +44,7 @@ public class CatalogClient {
      * @return A list of datacenter names.
      */
     public List<String> getDatacenters() {
-        return Http.extract(api.getDatacenters());
+        return http.extract(api.getDatacenters());
     }
 
     /**
@@ -68,7 +69,7 @@ public class CatalogClient {
      * {@link com.orbitz.consul.model.health.Node} objects.
      */
     public ConsulResponse<List<Node>> getNodes(QueryOptions queryOptions) {
-        return extractConsulResponse(api.getNodes(queryOptions.toQuery(),
+        return http.extractConsulResponse(api.getNodes(queryOptions.toQuery(),
                 queryOptions.getTag(), queryOptions.getNodeMeta()));
     }
 
@@ -82,7 +83,7 @@ public class CatalogClient {
      *                     {@link com.orbitz.consul.model.health.Node} objects.
      */
     public void getNodes(QueryOptions queryOptions, ConsulResponseCallback<List<Node>> callback) {
-        extractConsulResponse(api.getNodes(queryOptions.toQuery(), queryOptions.getTag(),
+        http.extractConsulResponse(api.getNodes(queryOptions.toQuery(), queryOptions.getTag(),
                 queryOptions.getNodeMeta()), callback);
     }
 
@@ -98,6 +99,18 @@ public class CatalogClient {
     }
 
     /**
+     * Asynchronously retrieves the services for a given datacenter.
+     * <p/>
+     * GET /v1/catalog/services?dc={datacenter}
+     *
+     * @param callback     Callback implemented by callee to handle results.
+     * @return A {@link com.orbitz.consul.model.ConsulResponse} containing a map of service name to list of tags.
+     */
+    public void getServices(ConsulResponseCallback<Map<String, List<String>>> callback) {
+        getServices(QueryOptions.BLANK, callback);
+    }
+
+    /**
      * Retrieves all services for a given datacenter.
      * <p/>
      * GET /v1/catalog/services?dc={datacenter}
@@ -106,12 +119,26 @@ public class CatalogClient {
      * @return A {@link com.orbitz.consul.model.ConsulResponse} containing a map of service name to list of tags.
      */
     public ConsulResponse<Map<String, List<String>>> getServices(QueryOptions queryOptions) {
-        return extractConsulResponse(api.getServices(queryOptions.toQuery(),
+        return http.extractConsulResponse(api.getServices(queryOptions.toQuery(),
                 queryOptions.getTag(), queryOptions.getNodeMeta()));
     }
 
     /**
-     * Retrieves a single service.
+     * Asynchronously retrieves the services for a given datacenter.
+     * <p/>
+     * GET /v1/catalog/services?dc={datacenter}
+     *
+     * @param queryOptions The Query Options to use.
+     * @param callback     Callback implemented by callee to handle results.
+     * @return A {@link com.orbitz.consul.model.ConsulResponse} containing a map of service name to list of tags.
+     */
+    public void getServices(QueryOptions queryOptions, ConsulResponseCallback<Map<String, List<String>>> callback) {
+        http.extractConsulResponse(api.getServices(queryOptions.toQuery(),
+                queryOptions.getTag(), queryOptions.getNodeMeta()), callback);
+    }
+
+    /**
+     * Retrieves the single service.
      * <p/>
      * GET /v1/catalog/service/{service}
      *
@@ -132,8 +159,23 @@ public class CatalogClient {
      * {@link com.orbitz.consul.model.catalog.CatalogService} objects.
      */
     public ConsulResponse<List<CatalogService>> getService(String service, QueryOptions queryOptions) {
-        return extractConsulResponse(api.getService(service, queryOptions.toQuery(),
+        return http.extractConsulResponse(api.getService(service, queryOptions.toQuery(),
                 queryOptions.getTag(), queryOptions.getNodeMeta()));
+    }
+
+    /**
+     * Asynchronously retrieves the single service for a given datacenter with {@link com.orbitz.consul.option.QueryOptions}.
+     * <p/>
+     * GET /v1/catalog/service/{service}?dc={datacenter}
+     *
+     * @param queryOptions The Query Options to use.
+     * @param callback     Callback implemented by callee to handle results.
+     * @return A {@link com.orbitz.consul.model.ConsulResponse} containing
+     * {@link com.orbitz.consul.model.catalog.CatalogService} objects.
+     */
+    public void getService(String service, QueryOptions queryOptions, ConsulResponseCallback<List<CatalogService>> callback) {
+        http.extractConsulResponse(api.getService(service, queryOptions.toQuery(),
+                queryOptions.getTag(), queryOptions.getNodeMeta()), callback);
     }
 
     /**
@@ -156,8 +198,21 @@ public class CatalogClient {
      * @return A list of matching {@link com.orbitz.consul.model.catalog.CatalogService} objects.
      */
     public ConsulResponse<CatalogNode> getNode(String node, QueryOptions queryOptions) {
-        return extractConsulResponse(api.getNode(node, queryOptions.toQuery(),
+        return http.extractConsulResponse(api.getNode(node, queryOptions.toQuery(),
                 queryOptions.getTag(), queryOptions.getNodeMeta()));
+    }
+
+    /**
+     * Asynchronously retrieves the single node for a given datacenter with {@link com.orbitz.consul.option.QueryOptions}.
+     * <p/>
+     * GET /v1/catalog/node/{node}?dc={datacenter}
+     *
+     * @param queryOptions The Query Options to use.
+     * @param callback     Callback implemented by callee to handle results.
+     */
+    public void getNode(String node, QueryOptions queryOptions, ConsulResponseCallback<CatalogNode> callback) {
+        http.extractConsulResponse(api.getNode(node, queryOptions.toQuery(),
+                queryOptions.getTag(), queryOptions.getNodeMeta()), callback);
     }
 
     /**
@@ -179,7 +234,7 @@ public class CatalogClient {
      * @param registration A {@link CatalogRegistration}
      */
     public void register(CatalogRegistration registration, QueryOptions options) {
-        handle(api.register(registration, options.toQuery()));
+        http.handle(api.register(registration, options.toQuery()));
     }
 
     /**
@@ -201,7 +256,7 @@ public class CatalogClient {
      * @param deregistration A {@link CatalogDeregistration}
      */
     public void deregister(CatalogDeregistration deregistration, QueryOptions options) {
-        handle(api.deregister(deregistration, options.toQuery()));
+        http.handle(api.deregister(deregistration, options.toQuery()));
     }
 
     /**

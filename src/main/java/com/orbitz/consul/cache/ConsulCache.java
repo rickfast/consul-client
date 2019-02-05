@@ -1,24 +1,26 @@
 package com.orbitz.consul.cache;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.Function;
-import com.google.common.base.Strings;
+import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.orbitz.consul.ConsulException;
 import com.orbitz.consul.async.ConsulResponseCallback;
+import com.orbitz.consul.config.CacheConfig;
 import com.orbitz.consul.model.ConsulResponse;
+import com.orbitz.consul.monitoring.ClientEventHandler;
 import com.orbitz.consul.option.ImmutableQueryOptions;
 import com.orbitz.consul.option.QueryOptions;
+import org.apache.commons.lang3.Validate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.math.BigInteger;
+import java.time.Duration;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.CountDownLatch;
@@ -29,6 +31,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.function.Function;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkState;
@@ -39,37 +42,55 @@ import static com.google.common.base.Preconditions.checkState;
  *
  * @param <V>
  */
-public class ConsulCache<K, V> {
-
+public class ConsulCache<K, V> implements AutoCloseable {
     enum State {latent, starting, started, stopped }
 
     private final static Logger LOGGER = LoggerFactory.getLogger(ConsulCache.class);
 
-    @VisibleForTesting
-    static final String BACKOFF_DELAY_PROPERTY = "com.orbitz.consul.cache.backOffDelay";
-    private static final long BACKOFF_DELAY_QTY_IN_MS = getBackOffDelayInMs(System.getProperties());
-
-    private final AtomicReference<BigInteger> latestIndex = new AtomicReference<BigInteger>(null);
+    private final AtomicReference<BigInteger> latestIndex = new AtomicReference<>(null);
     private final AtomicLong lastContact = new AtomicLong();
     private final AtomicBoolean isKnownLeader = new AtomicBoolean();
-    private final AtomicReference<ImmutableMap<K, V>> lastResponse = new AtomicReference<ImmutableMap<K, V>>(null);
-    private final AtomicReference<State> state = new AtomicReference<State>(State.latent);
+    private final AtomicReference<ImmutableMap<K, V>> lastResponse = new AtomicReference<>(null);
+    private final AtomicReference<State> state = new AtomicReference<>(State.latent);
     private final CountDownLatch initLatch = new CountDownLatch(1);
     private final ScheduledExecutorService executorService = Executors.newSingleThreadScheduledExecutor(
-            new ThreadFactoryBuilder().setDaemon(true).build());
-    private final CopyOnWriteArrayList<Listener<K, V>> listeners = new CopyOnWriteArrayList<Listener<K, V>>();
+            new ThreadFactoryBuilder()
+                    .setNameFormat("consulCacheScheduledCallback-%d")
+                    .setDaemon(true)
+                    .build());
+    private final CopyOnWriteArrayList<Listener<K, V>> listeners = new CopyOnWriteArrayList<>();
     private final ReentrantLock listenersStartingLock = new ReentrantLock();
+    private final Stopwatch stopWatch = Stopwatch.createUnstarted();
 
     private final Function<V, K> keyConversion;
     private final CallbackConsumer<V> callBackConsumer;
     private final ConsulResponseCallback<List<V>> responseCallback;
+    private final ClientEventHandler eventHandler;
+    private final CacheDescriptor cacheDescriptor;
 
-    ConsulCache(
+    protected ConsulCache(
             Function<V, K> keyConversion,
-            CallbackConsumer<V> callbackConsumer) {
+            CallbackConsumer<V> callbackConsumer,
+            CacheConfig cacheConfig,
+            ClientEventHandler eventHandler,
+            CacheDescriptor cacheDescriptor) {
+        if (keyConversion == null) {
+            Validate.notNull(keyConversion, "keyConversion must not be null");
+        }
+        if (callbackConsumer == null) {
+            Validate.notNull(callbackConsumer, "callbackConsumer must not be null");
+        }
+        if (cacheConfig == null) {
+            Validate.notNull(cacheConfig, "cacheConfig must not be null");
+        }
+        if (eventHandler == null) {
+            Validate.notNull(eventHandler, "eventHandler must not be null");
+        }
 
         this.keyConversion = keyConversion;
         this.callBackConsumer = callbackConsumer;
+        this.eventHandler = eventHandler;
+        this.cacheDescriptor = cacheDescriptor;
 
         this.responseCallback = new ConsulResponseCallback<List<V>>() {
             @Override
@@ -79,12 +100,16 @@ public class ConsulCache<K, V> {
                     if (!isRunning()) {
                         return;
                     }
+                    Duration elapsedTime = stopWatch.elapsed();
                     updateIndex(consulResponse);
-                    LOGGER.debug("Consul cache updated (index={})", latestIndex);
+                    LOGGER.debug("Consul cache updated for {} (index={}), request duration: {} ms",
+                            cacheDescriptor, latestIndex, elapsedTime.toMillis());
 
                     ImmutableMap<K, V> full = convertToMap(consulResponse);
 
                     boolean changed = !full.equals(lastResponse.get());
+                    eventHandler.cachePollingSuccess(cacheDescriptor, changed, elapsedTime);
+
                     if (changed) {
                         // changes
                         lastResponse.set(full);
@@ -101,7 +126,11 @@ public class ConsulCache<K, V> {
                         }
                         try {
                             for (Listener<K, V> l : listeners) {
-                                l.notify(full);
+                                try {
+                                    l.notify(full);
+                                } catch (RuntimeException e) {
+                                    LOGGER.warn("ConsulCache Listener's notify method threw an exception.", e);
+                                }
                             }
                         }
                         finally {
@@ -114,7 +143,17 @@ public class ConsulCache<K, V> {
                     if (state.compareAndSet(State.starting, State.started)) {
                         initLatch.countDown();
                     }
-                    runCallback();
+
+                    Duration timeToWait = cacheConfig.getMinimumDurationBetweenRequests();
+                    if ((consulResponse.getResponse() == null || consulResponse.getResponse().isEmpty()) &&
+                            cacheConfig.getMinimumDurationDelayOnEmptyResult().compareTo(timeToWait) > 0) {
+                        timeToWait = cacheConfig.getMinimumDurationDelayOnEmptyResult();
+                    }
+                    timeToWait = timeToWait.minus(elapsedTime);
+
+                    executorService.schedule(ConsulCache.this::runCallback,
+                            timeToWait.toMillis(), TimeUnit.MILLISECONDS);
+
                 } else {
                     onFailure(new ConsulException("Consul cluster has no elected leader"));
                 }
@@ -122,53 +161,51 @@ public class ConsulCache<K, V> {
 
             @Override
             public void onFailure(Throwable throwable) {
-
                 if (!isRunning()) {
                     return;
                 }
-                LOGGER.error(String.format("Error getting response from consul. will retry in %d %s", BACKOFF_DELAY_QTY_IN_MS, TimeUnit.MILLISECONDS), throwable);
+                eventHandler.cachePollingError(cacheDescriptor, throwable);
+                long delayMs = computeBackOffDelayMs(cacheConfig);
+                String message = String.format("Error getting response from consul for %s, will retry in %d %s",
+                        cacheDescriptor, delayMs, TimeUnit.MILLISECONDS);
 
-                executorService.schedule(new Runnable() {
-                    @Override
-                    public void run() {
-                        runCallback();
-                    }
-                }, BACKOFF_DELAY_QTY_IN_MS, TimeUnit.MILLISECONDS);
+                cacheConfig.getRefreshErrorLoggingConsumer().accept(LOGGER, message, throwable);
+
+                executorService.schedule(ConsulCache.this::runCallback, delayMs, TimeUnit.MILLISECONDS);
             }
         };
     }
 
-    @VisibleForTesting
-    static long getBackOffDelayInMs(Properties properties) {
-        String backOffDelay = null;
-        try {
-            backOffDelay = properties.getProperty(BACKOFF_DELAY_PROPERTY);
-            if (!Strings.isNullOrEmpty(backOffDelay)) {
-                return Long.parseLong(backOffDelay);
-            }
-        } catch (Exception ex) {
-            LOGGER.warn(backOffDelay != null ?
-                    String.format("Error parsing property variable %s: %s", BACKOFF_DELAY_PROPERTY, backOffDelay) :
-                    String.format("Error extracting property variable %s", BACKOFF_DELAY_PROPERTY),
-                    ex);
-        }
-        return TimeUnit.SECONDS.toMillis(10);
+    static long computeBackOffDelayMs(CacheConfig cacheConfig) {
+        return cacheConfig.getMinimumBackOffDelay().toMillis() +
+                Math.round(Math.random() * (cacheConfig.getMaximumBackOffDelay().minus(cacheConfig.getMinimumBackOffDelay()).toMillis()));
     }
 
-    public void start() throws Exception {
+    public void start() {
         checkState(state.compareAndSet(State.latent, State.starting),"Cannot transition from state %s to %s", state.get(), State.starting);
+        eventHandler.cacheStart(cacheDescriptor);
         runCallback();
     }
 
-    public void stop() throws Exception {
+    public void stop() {
+        eventHandler.cacheStop(cacheDescriptor);
         State previous = state.getAndSet(State.stopped);
+        if (stopWatch.isRunning()) {
+            stopWatch.stop();
+        }
         if (previous != State.stopped) {
             executorService.shutdownNow();
         }
     }
 
+    @Override
+    public void close() {
+        stop();
+    }
+
     private void runCallback() {
         if (isRunning()) {
+            stopWatch.reset().start();
             callBackConsumer.consume(latestIndex.get(), responseCallback);
         }
     }
@@ -221,13 +258,16 @@ public class ConsulCache<K, V> {
         checkArgument(!queryOptions.getIndex().isPresent() && !queryOptions.getWait().isPresent(),
                 "Index and wait cannot be overridden");
 
-        return ImmutableQueryOptions.builder()
+        ImmutableQueryOptions.Builder builder =  ImmutableQueryOptions.builder()
                 .from(watchDefaultParams(index, blockSeconds))
                 .token(queryOptions.getToken())
                 .consistencyMode(queryOptions.getConsistencyMode())
                 .near(queryOptions.getNear())
-                .datacenter(queryOptions.getDatacenter())
-                .build();
+                .datacenter(queryOptions.getDatacenter());
+        for (String tag : queryOptions.getTag()) {
+            builder.addTag(tag);
+        }
+        return builder.build();
     }
 
     private static QueryOptions watchDefaultParams(final BigInteger index, final int blockSeconds) {
@@ -267,7 +307,11 @@ public class ConsulCache<K, V> {
         try {
             added = listeners.add(listener);
             if (state.get() == State.started) {
-                listener.notify(lastResponse.get());
+                try {
+                    listener.notify(lastResponse.get());
+                } catch (RuntimeException e) {
+                    LOGGER.warn("ConsulCache Listener's notify method threw an exception.", e);
+                }
             }
         }
         finally {

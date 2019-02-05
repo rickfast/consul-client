@@ -1,6 +1,6 @@
 package com.orbitz.consul.option;
 
-import com.google.common.base.Optional;
+import java.util.Optional;
 
 public enum ConsistencyMode {
     DEFAULT(null), STALE("stale"), CONSISTENT("consistent");
@@ -12,6 +12,6 @@ public enum ConsistencyMode {
     }
 
     public Optional<String> toParam() {
-        return Optional.fromNullable(param);
+        return Optional.ofNullable(param);
     }
 }

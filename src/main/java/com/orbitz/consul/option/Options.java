@@ -1,17 +1,15 @@
 package com.orbitz.consul.option;
 
-import com.google.common.base.Optional;
+import java.util.Optional;
 
 import java.util.HashMap;
 import java.util.Map;
 
 public class Options {
-    private Options(){};
+    private Options(){}
 
-    static void optionallyAdd(Map<String, Object> data, String key, Optional val) {
-        if (val.isPresent()) {
-            data.put(key, val.get().toString());
-        }
+    static void optionallyAdd(Map<String, Object> data, String key, @SuppressWarnings("OptionalUsedAsFieldOrParameterType") Optional<?> val) {
+        val.ifPresent(value -> data.put(key, value.toString()));
     }
 
     public static Map<String, Object> from(ParamAdder... options) {

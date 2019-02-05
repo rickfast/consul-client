@@ -1,6 +1,6 @@
 package com.orbitz.consul.option;
 
-import com.google.common.base.Optional;
+import java.util.Optional;
 import org.immutables.value.Value;
 
 import java.util.HashMap;
@@ -28,9 +28,7 @@ public abstract class TransactionOptions implements ParamAdder {
         Map<String, Object> result = new HashMap<>();
 
         Optional<String> consistencyMode = getConsistencyMode().toParam();
-        if (consistencyMode.isPresent()) {
-            result.put(consistencyMode.get(), "true");
-        }
+        consistencyMode.ifPresent(s -> result.put(s, "true"));
 
         optionallyAdd(result, "dc", getDatacenter());
 

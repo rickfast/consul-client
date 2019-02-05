@@ -1,12 +1,13 @@
 package com.orbitz.consul;
 
-import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.net.HostAndPort;
+import com.orbitz.consul.config.ClientConfig;
 import com.orbitz.consul.model.State;
 import com.orbitz.consul.model.agent.*;
 import com.orbitz.consul.model.health.HealthCheck;
 import com.orbitz.consul.model.health.Service;
+import com.orbitz.consul.monitoring.ClientEventCallback;
 import com.orbitz.consul.option.QueryOptions;
 import retrofit2.Call;
 import retrofit2.Retrofit;
@@ -16,16 +17,16 @@ import java.net.URL;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-
-import static com.orbitz.consul.util.Http.extract;
-import static com.orbitz.consul.util.Http.handle;
+import java.util.Optional;
 
 /**
  * HTTP Client for /v1/agent/ endpoints.
  *
  * @see <a href="http://www.consul.io/docs/agent/http.html#agent">The Consul API Docs</a>
  */
-public class AgentClient {
+public class AgentClient extends BaseClient {
+
+    private static String CLIENT_NAME = "agent";
 
     private final Api api;
 
@@ -34,7 +35,8 @@ public class AgentClient {
      *
      * @param retrofit The {@link Retrofit} to build a client from.
      */
-    AgentClient(Retrofit retrofit) {
+    AgentClient(Retrofit retrofit, ClientConfig config, ClientEventCallback eventCallback) {
+        super(CLIENT_NAME, config, eventCallback);
         this.api = retrofit.create(Api.class);
     }
 
@@ -70,29 +72,49 @@ public class AgentClient {
      * Registers the client as a service with Consul with a ttl check.
      *
      * @param port The public facing port of the service to register with Consul.
-     * @param ttl  Time to live for the Consul dead man's switch.
+     * @param ttl  Time to live in seconds for the Consul dead man's switch.
      * @param name Service name to register.
      * @param id   Service id to register.
      * @param tags Tags to register with.
+     * @param meta Meta to register with.
      */
-    public void register(int port, long ttl, String name, String id, String... tags) {
+    public void register(int port, long ttl, String name, String id, List<String> tags, Map<String, String> meta) {
         Registration.RegCheck check = Registration.RegCheck.ttl(ttl);
-        register(port, check, name, id, tags);
+        register(port, check, name, id, tags, meta);
     }
 
     /**
      * Registers the client as a service with Consul with a script based check.
      *
      * @param port     The public facing port of the service to register with Consul.
-     * @param script   Health script for Consul to use.
+     * @param args     Specifies command argument to run to update the status of the check..
      * @param interval Health script run interval in seconds.
      * @param name     Service name to register.
      * @param id       Service id to register.
      * @param tags     Tags to register with.
+     * @param meta     Meta to register with.
      */
-    public void register(int port, String script, long interval, String name, String id, String... tags) {
-        Registration.RegCheck check = Registration.RegCheck.script(script, interval);
-        register(port, check, name, id, tags);
+    public void register(int port, String args, long interval, String name, String id,
+                         List<String> tags, Map<String, String> meta) {
+        Registration.RegCheck check = Registration.RegCheck.args(Collections.singletonList(args), interval);
+        register(port, check, name, id, tags, meta);
+    }
+
+    /**
+     * Registers the client as a service with Consul with a script based check.
+     *
+     * @param port     The public facing port of the service to register with Consul.
+     * @param args     Specifies command argument to run to update the status of the check..
+     * @param interval Health script run interval in seconds.
+     * @param name     Service name to register.
+     * @param id       Service id to register.
+     * @param tags     Tags to register with.
+     * @param meta     Meta to register with.
+     */
+    public void register(int port, List<String> args, long interval, String name, String id,
+                         List<String> tags, Map<String, String> meta) {
+        Registration.RegCheck check = Registration.RegCheck.args(args, interval);
+        register(port, check, name, id, tags, meta);
     }
 
     /**
@@ -104,10 +126,12 @@ public class AgentClient {
      * @param name     Service name to register.
      * @param id       Service id to register.
      * @param tags     Tags to register with.
+     * @param meta     Meta to register with.
      */
-    public void register(int port, URL http, long interval, String name, String id, String... tags) {
+    public void register(int port, URL http, long interval, String name, String id,
+                         List<String> tags, Map<String, String> meta) {
         Registration.RegCheck check = Registration.RegCheck.http(http.toExternalForm(), interval);
-        register(port, check, name, id, tags);
+        register(port, check, name, id, tags, meta);
     }
 
     /**
@@ -119,10 +143,12 @@ public class AgentClient {
      * @param name     Service name to register.
      * @param id       Service id to register.
      * @param tags     Tags to register with.
+     * @param meta     Meta to register with.
      */
-    public void register(int port, HostAndPort tcp, long interval, String name, String id, String... tags) {
+    public void register(int port, HostAndPort tcp, long interval, String name, String id,
+                         List<String> tags, Map<String, String> meta) {
         Registration.RegCheck check = Registration.RegCheck.tcp(tcp.toString(), interval);
-        register(port, check, name, id, tags);
+        register(port, check, name, id, tags, meta);
     }
 
     /**
@@ -133,15 +159,18 @@ public class AgentClient {
      * @param name  Service name to register.
      * @param id    Service id to register.
      * @param tags  Tags to register with.
+     * @param meta  Meta to register with.
      */
-    public void register(int port, Registration.RegCheck check, String name, String id, String... tags) {
+    public void register(int port, Registration.RegCheck check, String name, String id,
+                         List<String> tags, Map<String, String> meta) {
         Registration registration = ImmutableRegistration
                 .builder()
                 .port(port)
-                .check(Optional.fromNullable(check))
+                .check(Optional.ofNullable(check))
                 .name(name)
                 .id(id)
-                .addTags(tags)
+                .tags(tags)
+                .meta(meta)
                 .build();
 
         register(registration);
@@ -155,15 +184,18 @@ public class AgentClient {
      * @param name  Service name to register.
      * @param id    Service id to register.
      * @param tags  Tags to register with.
+     * @param meta  Meta to register with.
      */
-    public void register(int port, List<Registration.RegCheck> checks, String name, String id, String... tags) {
+    public void register(int port, List<Registration.RegCheck> checks, String name, String id,
+                         List<String> tags, Map<String, String> meta) {
         Registration registration = ImmutableRegistration
                 .builder()
                 .port(port)
                 .checks(checks)
                 .name(name)
                 .id(id)
-                .addTags(tags)
+                .tags(tags)
+                .meta(meta)
                 .build();
 
         register(registration);
@@ -177,7 +209,7 @@ public class AgentClient {
      * @param options An optional QueryOptions instance.
      */
     public void register(Registration registration, QueryOptions options) {
-        handle(api.register(registration, options.toQuery()));
+        http.handle(api.register(registration, options.toQuery()));
     }
 
     public void register(Registration registration) {
@@ -189,7 +221,7 @@ public class AgentClient {
      * De-register a particular service from the Consul Agent.
      */
     public void deregister(String serviceId, QueryOptions options) {
-        handle(api.deregister(serviceId, options.toQuery()));
+        http.handle(api.deregister(serviceId, options.toQuery()));
     }
 
     /**
@@ -240,18 +272,39 @@ public class AgentClient {
      *
      * @param checkId  The Check ID to use.  Must be unique for the Agent.
      * @param name     The Check Name.
-     * @param script   Health script for Consul to use.
+     * @param args     Health script for Consul to use.
      * @param interval Health script run interval in seconds.
      * @param notes    Human readable notes.  Not used by Consul.
      */
-    public void registerCheck(String checkId, String name, String script, long interval, String notes) {
+    public void registerCheck(String checkId, String name, List<String> args, long interval, String notes) {
         Check check = ImmutableCheck.builder()
             .id(checkId)
             .name(name)
-            .script(script)
+            .args(args)
             .interval(String.format("%ss", interval))
-            .notes(Optional.fromNullable(notes))
+            .notes(Optional.ofNullable(notes))
             .build();
+
+        registerCheck(check);
+    }
+
+    /**
+     * Registers a script Health Check with the Agent.
+     *
+     * @param checkId  The Check ID to use.  Must be unique for the Agent.
+     * @param name     The Check Name.
+     * @param args     Specifies command argument to run to update the status of the check.
+     * @param interval Health script run interval in seconds.
+     * @param notes    Human readable notes.  Not used by Consul.
+     */
+    public void registerCheck(String checkId, String name, String args, long interval, String notes) {
+        Check check = ImmutableCheck.builder()
+                .id(checkId)
+                .name(name)
+                .args(Collections.singletonList(args))
+                .interval(String.format("%ss", interval))
+                .notes(Optional.ofNullable(notes))
+                .build();
 
         registerCheck(check);
     }
@@ -272,7 +325,7 @@ public class AgentClient {
                 .name(name)
                 .http(http.toExternalForm())
                 .interval(String.format("%ss", interval))
-                .notes(Optional.fromNullable(notes))
+                .notes(Optional.ofNullable(notes))
                 .build();
 
         registerCheck(check);
@@ -294,7 +347,7 @@ public class AgentClient {
                 .name(name)
                 .tcp(tcp.toString())
                 .interval(String.format("%ss", interval))
-                .notes(Optional.fromNullable(notes))
+                .notes(Optional.ofNullable(notes))
                 .build();
 
         registerCheck(check);
@@ -325,7 +378,7 @@ public class AgentClient {
                 .id(checkId)
                 .name(name)
                 .ttl(String.format("%ss", ttl))
-                .notes(Optional.fromNullable(notes))
+                .notes(Optional.ofNullable(notes))
                 .build();
 
         registerCheck(check);
@@ -337,7 +390,7 @@ public class AgentClient {
      * @param check The Check to register.
      */
     public void registerCheck(Check check) {
-        handle(api.registerCheck(check));
+        http.handle(api.registerCheck(check));
     }
 
     /**
@@ -346,7 +399,7 @@ public class AgentClient {
      * @param checkId the id of the Check to deregister
      */
     public void deregisterCheck(String checkId) {
-        handle(api.deregisterCheck(checkId));
+        http.handle(api.deregisterCheck(checkId));
     }
 
     /**
@@ -357,7 +410,7 @@ public class AgentClient {
      * @return The Agent information.
      */
     public Agent getAgent() {
-        return extract(api.getAgent());
+        return http.extract(api.getAgent());
     }
 
     /**
@@ -368,7 +421,7 @@ public class AgentClient {
      * @return Map of Check ID to Checks.
      */
     public Map<String, HealthCheck> getChecks() {
-        return extract(api.getChecks());
+        return http.extract(api.getChecks());
     }
 
     /**
@@ -379,7 +432,7 @@ public class AgentClient {
      * @return Map of Service ID to Services.
      */
     public Map<String, Service> getServices() {
-        return extract(api.getServices());
+        return http.extract(api.getServices());
     }
 
     /**
@@ -390,7 +443,7 @@ public class AgentClient {
      * @return List of Members.
      */
     public List<Member> getMembers() {
-        return extract(api.getMembers());
+        return http.extract(api.getMembers());
     }
 
     /**
@@ -401,7 +454,7 @@ public class AgentClient {
      * @param node
      */
     public void forceLeave(String node) {
-        handle(api.forceLeave());
+        http.handle(api.forceLeave(node));
     }
 
     /**
@@ -413,13 +466,9 @@ public class AgentClient {
      */
     public void check(String checkId, State state, String note) throws NotRegisteredException {
         try {
-            Map<String, String> query = Collections.emptyMap();
+            Map<String, String> query = note == null ? Collections.emptyMap() : ImmutableMap.of("note", note);
 
-            if (note != null) {
-                query = ImmutableMap.of("note", note);
-            }
-
-            handle(api.check(state.getPath(), checkId, query));
+            http.handle(api.check(state.getPath(), checkId, query));
         } catch (Exception ex) {
             throw new NotRegisteredException("Error checking state", ex);
         }
@@ -430,11 +479,6 @@ public class AgentClient {
      * then delegates to check(String checkId, State state, String note)
      * This method only works with TTL checks that have not been given a custom
      * name.
-     *
-     * @param serviceId
-     * @param state
-     * @param note
-     * @throws NotRegisteredException
      */
     public void checkTtl(String serviceId, State state, String note) throws NotRegisteredException {
         check("service:" + serviceId, state, note);
@@ -546,15 +590,11 @@ public class AgentClient {
      * @return <code>true</code> if successful, otherwise <code>false</code>.
      */
     public boolean join(String address, boolean wan) {
-        Map<String, String> query = Collections.emptyMap();
+        Map<String, String> query = wan ? ImmutableMap.of("wan", "1") : Collections.emptyMap();
         boolean result = true;
 
-        if (wan) {
-            query = ImmutableMap.of("wan", "1");
-        }
-
         try {
-            handle(api.join(address, query));
+            http.handle(api.join(address, query));
         } catch(Exception ex) {
             result = false;
         }
@@ -570,7 +610,7 @@ public class AgentClient {
      *               maintenance mode, otherwise <code>false</code>.
      */
     public void toggleMaintenanceMode(String serviceId, boolean enable) {
-        handle(api.toggleMaintenanceMode(serviceId,
+        http.handle(api.toggleMaintenanceMode(serviceId,
                 ImmutableMap.of("enable", Boolean.toString(enable))));
     }
 
@@ -585,7 +625,7 @@ public class AgentClient {
     public void toggleMaintenanceMode(String serviceId,
                                       boolean enable,
                                       String reason) {
-        handle(api.toggleMaintenanceMode(serviceId,
+        http.handle(api.toggleMaintenanceMode(serviceId,
                 ImmutableMap.of("enable", Boolean.toString(enable),
                                 "reason", reason)));
     }
@@ -623,8 +663,8 @@ public class AgentClient {
         @GET("agent/members")
         Call<List<Member>> getMembers();
 
-        @PUT("agent/force-leave")
-        Call<Void> forceLeave();
+        @PUT("agent/force-leave/{node}")
+        Call<Void> forceLeave(@Path("string") String node);
 
         @PUT("agent/check/{state}/{checkId}")
         Call<Void> check(@Path("state") String state,
@@ -632,7 +672,7 @@ public class AgentClient {
                          @QueryMap Map<String, String> query);
 
         @PUT("agent/join/{address}")
-        Call<Void> join(String address, Map<String, String> query);
+        Call<Void> join(@Path("address") String address, @QueryMap Map<String, String> query);
 
         @PUT("agent/service/maintenance/{serviceId}")
         Call<Void> toggleMaintenanceMode(@Path("serviceId") String serviceId,

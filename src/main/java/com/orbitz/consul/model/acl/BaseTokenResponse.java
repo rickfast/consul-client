@@ -1,0 +1,41 @@
+package com.orbitz.consul.model.acl;
+
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import org.immutables.value.Value;
+
+import java.math.BigInteger;
+import java.util.Date;
+import java.util.List;
+import java.util.Optional;
+
+
+public abstract class BaseTokenResponse {
+
+    @JsonProperty("AccessorID")
+    public abstract String accessorId();
+
+    @JsonProperty("Description")
+    public abstract String description();
+
+    @JsonProperty("Policies")
+    public abstract List<Token.PolicyLink> policies();
+
+    @JsonProperty("CreateIndex")
+    public abstract BigInteger createIndex();
+
+    @JsonProperty("ModifyIndex")
+    public abstract BigInteger modifyIndex();
+
+    @JsonProperty("Local")
+    public abstract boolean local();
+
+    @JsonProperty("CreateTime")
+    public abstract Date createTime();
+
+    @JsonProperty("Hash")
+    public abstract String hash();
+
+}

@@ -1,6 +1,6 @@
 package com.orbitz.consul.option;
 
-import com.google.common.base.Optional;
+import java.util.Optional;
 import com.google.common.collect.ImmutableList;
 import org.immutables.value.Value;
 
@@ -47,14 +47,14 @@ public abstract class QueryOptions implements ParamAdder {
     @Value.Derived
     public List<String> getNodeMetaQuery() {
         return getNodeMeta() == null
-                ? Collections.<String>emptyList()
+                ? Collections.emptyList()
                 : ImmutableList.copyOf(getNodeMeta());
     }
 
     @Value.Derived
     public List<String> getTagsQuery() {
         return getTag() == null
-                ? Collections.<String>emptyList()
+                ? Collections.emptyList()
                 : ImmutableList.copyOf(getTag());
     }
 

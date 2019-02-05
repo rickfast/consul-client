@@ -1,18 +1,22 @@
 package com.orbitz.consul.cache;
 
-import com.google.common.base.Function;
+import com.google.common.primitives.Ints;
 import com.orbitz.consul.HealthClient;
-import com.orbitz.consul.async.ConsulResponseCallback;
+import com.orbitz.consul.config.CacheConfig;
 import com.orbitz.consul.model.health.HealthCheck;
+import com.orbitz.consul.monitoring.ClientEventHandler;
 import com.orbitz.consul.option.QueryOptions;
 
-import java.math.BigInteger;
-import java.util.List;
+import java.util.function.Function;
 
 public class HealthCheckCache extends ConsulCache<String, HealthCheck> {
 
-    private HealthCheckCache(Function<HealthCheck, String> keyConversion, CallbackConsumer<HealthCheck> callbackConsumer) {
-        super(keyConversion, callbackConsumer);
+    private HealthCheckCache(Function<HealthCheck, String> keyConversion,
+                             CallbackConsumer<HealthCheck> callbackConsumer,
+                             CacheConfig cacheConfig,
+                             ClientEventHandler eventHandler,
+                             CacheDescriptor cacheDescriptor) {
+        super(keyConversion, callbackConsumer, cacheConfig, eventHandler, cacheDescriptor);
     }
 
     /**
@@ -31,15 +35,17 @@ public class HealthCheckCache extends ConsulCache<String, HealthCheck> {
             final QueryOptions queryOptions,
             Function<HealthCheck, String> keyExtractor) {
 
-        CallbackConsumer<HealthCheck> callbackConsumer = new CallbackConsumer<HealthCheck>() {
-            @Override
-            public void consume(BigInteger index, ConsulResponseCallback<List<HealthCheck>> callback) {
-                QueryOptions params = watchParams(index, watchSeconds, queryOptions);
-                healthClient.getChecksByState(state, params, callback);
-            }
+        final CallbackConsumer<HealthCheck> callbackConsumer = (index, callback) -> {
+            QueryOptions params = watchParams(index, watchSeconds, queryOptions);
+            healthClient.getChecksByState(state, params, callback);
         };
 
-        return new HealthCheckCache(keyExtractor, callbackConsumer);
+        CacheDescriptor cacheDescriptor = new CacheDescriptor("health.state", state.getName());
+        return new HealthCheckCache(keyExtractor,
+                callbackConsumer,
+                healthClient.getConfig().getCacheConfig(),
+                healthClient.getEventHandler(),
+                cacheDescriptor);
     }
 
     public static HealthCheckCache newCache(
@@ -48,14 +54,7 @@ public class HealthCheckCache extends ConsulCache<String, HealthCheck> {
             final int watchSeconds,
             final QueryOptions queryOptions) {
 
-        Function<HealthCheck, String> keyExtractor = new Function<HealthCheck, String>() {
-            @Override
-            public String apply(HealthCheck input) {
-                return input.getCheckId();
-            }
-        };
-
-        return newCache(healthClient, state, watchSeconds, queryOptions, keyExtractor);
+        return newCache(healthClient, state, watchSeconds, queryOptions, HealthCheck::getCheckId);
     }
 
     public static HealthCheckCache newCache(
@@ -66,7 +65,9 @@ public class HealthCheckCache extends ConsulCache<String, HealthCheck> {
     }
 
     public static HealthCheckCache newCache(final HealthClient healthClient, final com.orbitz.consul.model.State state) {
-        return newCache(healthClient, state, 10);
+        CacheConfig cacheConfig = healthClient.getConfig().getCacheConfig();
+        int watchSeconds = Ints.checkedCast(cacheConfig.getWatchDuration().getSeconds());
+        return newCache(healthClient, state, watchSeconds);
     }
 
 }

@@ -1,10 +1,11 @@
 package com.orbitz.consul;
 
-import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableMap;
+import com.orbitz.consul.config.ClientConfig;
 import com.orbitz.consul.model.session.Session;
 import com.orbitz.consul.model.session.SessionCreatedResponse;
 import com.orbitz.consul.model.session.SessionInfo;
+import com.orbitz.consul.monitoring.ClientEventCallback;
 import retrofit2.Call;
 import retrofit2.Retrofit;
 import retrofit2.http.*;
@@ -12,16 +13,16 @@ import retrofit2.http.*;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-
-import static com.orbitz.consul.util.Http.extract;
-import static com.orbitz.consul.util.Http.handle;
+import java.util.Optional;
 
 /**
  * HTTP Client for /v1/session/ endpoints.
  *
  * @see <a href="http://www.consul.io/docs/agent/http.html#session">The Consul API Docs</a>
  */
-public class SessionClient {
+public class SessionClient extends BaseClient {
+
+    private static String CLIENT_NAME = "session";
 
     private final Api api;
 
@@ -30,7 +31,8 @@ public class SessionClient {
      *
      * @param retrofit The {@link Retrofit} to build a client from.
      */
-    SessionClient(Retrofit retrofit) {
+    SessionClient(Retrofit retrofit, ClientConfig config, ClientEventCallback eventCallback) {
+        super(CLIENT_NAME, config, eventCallback);
         this.api = retrofit.create(Api.class);
     }
 
@@ -56,16 +58,11 @@ public class SessionClient {
      * @return Response containing the session ID.
      */
     public SessionCreatedResponse createSession(final Session value, final String dc) {
-        return extract(api.createSession(value, dcQuery(dc)));
+        return http.extract(api.createSession(value, dcQuery(dc)));
     }
 
     private Map<String, String> dcQuery(String dc) {
-        Map<String, String> query = Collections.emptyMap();
-
-        if (dc != null) {
-            query = ImmutableMap.of("dc", dc);
-        }
-        return query;
+        return dc != null ? ImmutableMap.of("dc", dc) : Collections.emptyMap();
     }
 
     public Optional<SessionInfo> renewSession(final String sessionId) {
@@ -80,10 +77,10 @@ public class SessionClient {
      * @return The {@link SessionInfo} object for the renewed session.
      */
     public Optional<SessionInfo> renewSession(final String dc, final String sessionId) {
-        List<SessionInfo> sessionInfo = extract(api.renewSession(sessionId,
-                ImmutableMap.<String, String>of(), dcQuery(dc)));
+        List<SessionInfo> sessionInfo = http.extract(api.renewSession(sessionId,
+                ImmutableMap.of(), dcQuery(dc)));
 
-        return sessionInfo != null && sessionInfo.isEmpty() ? Optional.<SessionInfo>absent() :
+        return sessionInfo == null || sessionInfo.isEmpty() ? Optional.empty() :
                 Optional.of(sessionInfo.get(0));
     }
 
@@ -107,7 +104,7 @@ public class SessionClient {
      * @param dc        The data center.
      */
     public void destroySession(final String sessionId, final String dc) {
-        handle(api.destroySession(sessionId, dcQuery(dc)));
+        http.handle(api.destroySession(sessionId, dcQuery(dc)));
     }
 
     /**
@@ -132,9 +129,9 @@ public class SessionClient {
      * @return {@link SessionInfo}.
      */
     public Optional<SessionInfo> getSessionInfo(final String sessionId, final String dc) {
-        List<SessionInfo> sessionInfo = extract(api.getSessionInfo(sessionId, dcQuery(dc)));
+        List<SessionInfo> sessionInfo = http.extract(api.getSessionInfo(sessionId, dcQuery(dc)));
 
-        return sessionInfo != null && sessionInfo.isEmpty() ? Optional.<SessionInfo>absent() :
+        return sessionInfo == null || sessionInfo.isEmpty() ? Optional.empty() :
                 Optional.of(sessionInfo.get(0));
     }
 
@@ -147,7 +144,7 @@ public class SessionClient {
      * @return A list of available sessions.
      */
     public List<SessionInfo> listSessions(final String dc) {
-        return extract(api.listSessions(dcQuery(dc)));
+        return http.extract(api.listSessions(dcQuery(dc)));
     }
 
     /**

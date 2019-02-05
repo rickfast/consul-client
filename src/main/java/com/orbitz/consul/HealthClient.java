@@ -2,10 +2,12 @@ package com.orbitz.consul;
 
 import com.google.common.collect.ImmutableMap;
 import com.orbitz.consul.async.ConsulResponseCallback;
+import com.orbitz.consul.config.ClientConfig;
 import com.orbitz.consul.model.ConsulResponse;
 import com.orbitz.consul.model.State;
 import com.orbitz.consul.model.health.HealthCheck;
 import com.orbitz.consul.model.health.ServiceHealth;
+import com.orbitz.consul.monitoring.ClientEventCallback;
 import com.orbitz.consul.option.QueryOptions;
 import retrofit2.Call;
 import retrofit2.Retrofit;
@@ -18,12 +20,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static com.orbitz.consul.util.Http.extractConsulResponse;
-
 /**
  * HTTP Client for /v1/health/ endpoints.
  */
-public class HealthClient {
+public class HealthClient extends BaseClient {
+
+    private static String CLIENT_NAME = "health";
 
     private final Api api;
 
@@ -32,7 +34,8 @@ public class HealthClient {
      *
      * @param retrofit The {@link Retrofit} to build a client from.
      */
-    HealthClient(Retrofit retrofit) {
+    HealthClient(Retrofit retrofit, ClientConfig config, ClientEventCallback eventCallback) {
+        super(CLIENT_NAME, config, eventCallback);
         this.api = retrofit.create(Api.class);
     }
 
@@ -61,7 +64,7 @@ public class HealthClient {
      */
     public ConsulResponse<List<HealthCheck>> getNodeChecks(String node,
                                                            QueryOptions queryOptions) {
-        return extractConsulResponse(api.getNodeChecks(node, queryOptions.toQuery(),
+        return http.extractConsulResponse(api.getNodeChecks(node, queryOptions.toQuery(),
                 queryOptions.getTag(), queryOptions.getNodeMeta()));
     }
 
@@ -88,7 +91,7 @@ public class HealthClient {
      */
     public ConsulResponse<List<HealthCheck>> getServiceChecks(String service,
                                                               QueryOptions queryOptions) {
-        return extractConsulResponse(api.getServiceChecks(service, queryOptions.toQuery(),
+        return http.extractConsulResponse(api.getServiceChecks(service, queryOptions.toQuery(),
                 queryOptions.getTag(), queryOptions.getNodeMeta()));
     }
 
@@ -106,7 +109,7 @@ public class HealthClient {
     public void getServiceChecks(String service,
                                  QueryOptions queryOptions,
                                  ConsulResponseCallback<List<HealthCheck>> callback) {
-        extractConsulResponse(api.getServiceChecks(service, queryOptions.toQuery(),
+        http.extractConsulResponse(api.getServiceChecks(service, queryOptions.toQuery(),
                 queryOptions.getTag(), queryOptions.getNodeMeta()), callback);
     }
 
@@ -135,7 +138,7 @@ public class HealthClient {
      */
     public ConsulResponse<List<HealthCheck>> getChecksByState(State state,
                                                               QueryOptions queryOptions) {
-        return extractConsulResponse(api.getChecksByState(state.getName(), queryOptions.toQuery(),
+        return http.extractConsulResponse(api.getChecksByState(state.getName(), queryOptions.toQuery(),
                 queryOptions.getTag(), queryOptions.getNodeMeta()));
     }
 
@@ -152,7 +155,7 @@ public class HealthClient {
      */
     public void getChecksByState(State state, QueryOptions queryOptions,
                                  ConsulResponseCallback<List<HealthCheck>> callback) {
-        extractConsulResponse(api.getChecksByState(state.getName(), queryOptions.toQuery(),
+        http.extractConsulResponse(api.getChecksByState(state.getName(), queryOptions.toQuery(),
                 queryOptions.getTag(), queryOptions.getNodeMeta()), callback);
     }
 
@@ -182,7 +185,7 @@ public class HealthClient {
      */
     public ConsulResponse<List<ServiceHealth>> getHealthyServiceInstances(String service,
                                                                           QueryOptions queryOptions) {
-        return extractConsulResponse(api.getServiceInstances(service,
+        return http.extractConsulResponse(api.getServiceInstances(service,
                 optionsFrom(ImmutableMap.of("passing", "true"), queryOptions.toQuery()),
                 queryOptions.getTag(), queryOptions.getNodeMeta()));
     }
@@ -202,7 +205,7 @@ public class HealthClient {
      */
     public void getHealthyServiceInstances(String service, QueryOptions queryOptions,
                                            ConsulResponseCallback<List<ServiceHealth>> callback) {
-        extractConsulResponse(api.getServiceInstances(service,
+        http.extractConsulResponse(api.getServiceInstances(service,
                 optionsFrom(ImmutableMap.of("passing", "true"), queryOptions.toQuery()),
                 queryOptions.getTag(), queryOptions.getNodeMeta()), callback);
     }
@@ -232,7 +235,7 @@ public class HealthClient {
      * {@link com.orbitz.consul.model.health.HealthCheck} objects.
      */
     public ConsulResponse<List<ServiceHealth>> getAllServiceInstances(String service, QueryOptions queryOptions) {
-        return extractConsulResponse(api.getServiceInstances(service, queryOptions.toQuery(),
+        return http.extractConsulResponse(api.getServiceInstances(service, queryOptions.toQuery(),
                 queryOptions.getTag(), queryOptions.getNodeMeta()));
     }
 
@@ -250,7 +253,7 @@ public class HealthClient {
      */
     public void getAllServiceInstances(String service, QueryOptions queryOptions,
                                        ConsulResponseCallback<List<ServiceHealth>> callback) {
-        extractConsulResponse(api.getServiceInstances(service, queryOptions.toQuery(),
+        http.extractConsulResponse(api.getServiceInstances(service, queryOptions.toQuery(),
                 queryOptions.getTag(), queryOptions.getNodeMeta()), callback);
     }
 

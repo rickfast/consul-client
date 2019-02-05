@@ -1,8 +1,8 @@
 language: java
 services: docker
 before_install:
-  - docker run -d -p 127.0.0.1:8500:8500 consul:0.7.2
+  - ./do setup-environment
+
 jdk:
   - oraclejdk8
 script: mvn clean test
-

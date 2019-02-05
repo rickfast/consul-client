@@ -1,7 +1,6 @@
 package com.orbitz.consul.util;
 
 import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonDeserializer;
 import org.apache.commons.lang3.StringUtils;
@@ -14,7 +13,7 @@ import java.io.IOException;
 public class SecondsDeserializer extends JsonDeserializer<Long> {
 
     @Override
-    public Long deserialize(JsonParser p, DeserializationContext ctxt) throws IOException, JsonProcessingException {
+    public Long deserialize(JsonParser p, DeserializationContext ctxt) throws IOException {
         String value = p.getValueAsString();
 
         if (StringUtils.isNotEmpty(value)) {

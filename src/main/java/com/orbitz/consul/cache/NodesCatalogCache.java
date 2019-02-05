@@ -1,45 +1,41 @@
 package com.orbitz.consul.cache;
 
-import com.google.common.base.Function;
+import com.google.common.primitives.Ints;
 import com.orbitz.consul.CatalogClient;
-import com.orbitz.consul.async.ConsulResponseCallback;
+import com.orbitz.consul.config.CacheConfig;
 import com.orbitz.consul.model.health.Node;
+import com.orbitz.consul.monitoring.ClientEventHandler;
 import com.orbitz.consul.option.QueryOptions;
 
-import java.math.BigInteger;
-import java.util.List;
-
+import java.util.function.Function;
 
 public class NodesCatalogCache extends ConsulCache<String, Node> {
 
-    private NodesCatalogCache(Function<Node, String> keyConversion, CallbackConsumer<Node> callbackConsumer) {
-        super(keyConversion, callbackConsumer);
+    private NodesCatalogCache(Function<Node, String> keyConversion,
+                              CallbackConsumer<Node> callbackConsumer,
+                              CacheConfig cacheConfig,
+                              ClientEventHandler eventHandler) {
+        super(keyConversion, callbackConsumer, cacheConfig, eventHandler, new CacheDescriptor("catalog.nodes"));
     }
 
     public static NodesCatalogCache newCache(
             final CatalogClient catalogClient,
             final QueryOptions queryOptions,
             final int watchSeconds) {
-        Function<Node, String> keyExtractor = new Function<Node, String>() {
-            @Override
-            public String apply(Node node) {
-                return node.getNode();
-            }
-        };
 
-        CallbackConsumer<Node> callbackConsumer = new CallbackConsumer<Node>() {
-            @Override
-            public void consume(BigInteger index, ConsulResponseCallback<List<Node>> callback) {
+        final CallbackConsumer<Node> callbackConsumer = (index, callback) ->
                 catalogClient.getNodes(watchParams(index, watchSeconds, queryOptions), callback);
-            }
-        };
 
-        return new NodesCatalogCache(keyExtractor, callbackConsumer);
-
+        return new NodesCatalogCache(Node::getNode,
+                callbackConsumer,
+                catalogClient.getConfig().getCacheConfig(),
+                catalogClient.getEventHandler());
     }
 
     public static NodesCatalogCache newCache(final CatalogClient catalogClient) {
-        return newCache(catalogClient, QueryOptions.BLANK, 10);
+        CacheConfig cacheConfig = catalogClient.getConfig().getCacheConfig();
+        int watchSeconds = Ints.checkedCast(cacheConfig.getWatchDuration().getSeconds());
+        return newCache(catalogClient, QueryOptions.BLANK, watchSeconds);
     }
 
 }

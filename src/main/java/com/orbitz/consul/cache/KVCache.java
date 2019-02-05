@@ -1,39 +1,40 @@
 package com.orbitz.consul.cache;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
+import com.google.common.primitives.Ints;
 import com.orbitz.consul.KeyValueClient;
-import com.orbitz.consul.async.ConsulResponseCallback;
+import com.orbitz.consul.config.CacheConfig;
 import com.orbitz.consul.model.kv.Value;
+import com.orbitz.consul.monitoring.ClientEventHandler;
 import com.orbitz.consul.option.QueryOptions;
 
-import java.math.BigInteger;
-import java.util.List;
+import java.util.function.Function;
 
 public class KVCache extends ConsulCache<String, Value> {
 
-    private KVCache(Function<Value, String> keyConversion, ConsulCache.CallbackConsumer<Value> callbackConsumer) {
-        super(keyConversion, callbackConsumer);
+    private KVCache(Function<Value, String> keyConversion,
+                    ConsulCache.CallbackConsumer<Value> callbackConsumer,
+                    CacheConfig cacheConfig,
+                    ClientEventHandler eventHandler,
+                    CacheDescriptor cacheDescriptor) {
+        super(keyConversion, callbackConsumer, cacheConfig, eventHandler, cacheDescriptor);
     }
 
     @VisibleForTesting
     static Function<Value, String> getKeyExtractorFunction(final String rootPath) {
-        return new Function<Value, String>() {
-            @Override
-            public String apply(Value input) {
-                Preconditions.checkNotNull(input, "Input to key extractor is null");
-                Preconditions.checkNotNull(input.getKey(), "Input to key extractor has no key");
+        return input -> {
+            Preconditions.checkNotNull(input, "Input to key extractor is null");
+            Preconditions.checkNotNull(input.getKey(), "Input to key extractor has no key");
 
-                if (rootPath.equals(input.getKey())) {
-                    return "";
-                }
-                int lastSlashIndex = rootPath.lastIndexOf("/");
-                if (lastSlashIndex >= 0) {
-                    return input.getKey().substring(lastSlashIndex+1);
-                }
-                return input.getKey();
+            if (rootPath.equals(input.getKey())) {
+                return "";
             }
+            int lastSlashIndex = rootPath.lastIndexOf("/");
+            if (lastSlashIndex >= 0) {
+                return input.getKey().substring(lastSlashIndex+1);
+            }
+            return input.getKey();
         };
     }
 
@@ -47,15 +48,17 @@ public class KVCache extends ConsulCache<String, Value> {
 
         final Function<Value, String> keyExtractor = getKeyExtractorFunction(keyPath);
 
-        final CallbackConsumer<Value> callbackConsumer = new CallbackConsumer<Value>() {
-            @Override
-            public void consume(BigInteger index, ConsulResponseCallback<List<Value>> callback) {
-                QueryOptions params = watchParams(index, watchSeconds, queryOptions);
-                kvClient.getValues(keyPath, params, callback);
-            }
+        final ConsulCache.CallbackConsumer<Value> callbackConsumer = (index, callback) -> {
+            QueryOptions params = watchParams(index, watchSeconds, queryOptions);
+            kvClient.getValues(keyPath, params, callback);
         };
 
-        return new KVCache(keyExtractor, callbackConsumer);
+        CacheDescriptor cacheDescriptor = new CacheDescriptor("keyvalue", rootPath);
+        return new KVCache(keyExtractor,
+                callbackConsumer,
+                kvClient.getConfig().getCacheConfig(),
+                kvClient.getEventHandler(),
+                cacheDescriptor);
     }
 
     @VisibleForTesting
@@ -88,9 +91,9 @@ public class KVCache extends ConsulCache<String, Value> {
      * @param rootPath the root path
      * @return the cache object
      */
-    public static KVCache newCache(
-            final KeyValueClient kvClient,
-            final String rootPath) {
-        return newCache(kvClient, rootPath, 10);
+    public static KVCache newCache(final KeyValueClient kvClient, final String rootPath) {
+        CacheConfig cacheConfig = kvClient.getConfig().getCacheConfig();
+        int watchSeconds = Ints.checkedCast(cacheConfig.getWatchDuration().getSeconds());
+        return newCache(kvClient, rootPath, watchSeconds);
     }
 }

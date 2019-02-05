@@ -1,7 +1,9 @@
 package com.orbitz.consul;
 
 import com.google.common.collect.ImmutableMap;
+import com.orbitz.consul.config.ClientConfig;
 import com.orbitz.consul.model.operator.RaftConfiguration;
+import com.orbitz.consul.monitoring.ClientEventCallback;
 import retrofit2.Call;
 import retrofit2.Retrofit;
 import retrofit2.http.DELETE;
@@ -11,43 +13,43 @@ import retrofit2.http.QueryMap;
 
 import java.util.Map;
 
-import static com.orbitz.consul.util.Http.extract;
-import static com.orbitz.consul.util.Http.handle;
+public class OperatorClient extends BaseClient {
 
-public class OperatorClient {
+    private static String CLIENT_NAME = "operator";
 
     private final Api api;
 
-    OperatorClient(Retrofit retrofit) {
+    OperatorClient(Retrofit retrofit, ClientConfig config, ClientEventCallback eventCallback) {
+        super(CLIENT_NAME, config, eventCallback);
         this.api = retrofit.create(Api.class);
     }
 
     public RaftConfiguration getRaftConfiguration() {
-        return extract(api.getConfiguration(ImmutableMap.<String, String>of()));
+        return http.extract(api.getConfiguration(ImmutableMap.of()));
     }
 
     public RaftConfiguration getRaftConfiguration(String datacenter) {
-        return extract(api.getConfiguration(ImmutableMap.of("dc", datacenter)));
+        return http.extract(api.getConfiguration(ImmutableMap.of("dc", datacenter)));
     }
 
     public RaftConfiguration getStaleRaftConfiguration(String datacenter) {
-        return extract(api.getConfiguration(ImmutableMap.of(
+        return http.extract(api.getConfiguration(ImmutableMap.of(
             "dc", datacenter, "stale", "true"
         )));
     }
 
     public RaftConfiguration getStaleRaftConfiguration() {
-        return extract(api.getConfiguration(ImmutableMap.of(
+        return http.extract(api.getConfiguration(ImmutableMap.of(
                 "stale", "true"
         )));
     }
 
     public void deletePeer(String address) {
-        handle(api.deletePeer(address, ImmutableMap.<String, String>of()));
+        http.handle(api.deletePeer(address, ImmutableMap.of()));
     }
 
     public void deletePeer(String address, String datacenter) {
-        handle(api.deletePeer(address, ImmutableMap.of("dc", datacenter)));
+        http.handle(api.deletePeer(address, ImmutableMap.of("dc", datacenter)));
     }
 
     interface Api {

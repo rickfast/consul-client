@@ -1,352 +1,41 @@
 package com.orbitz.consul.cache;
 
-import com.google.common.base.Function;
 import com.google.common.collect.ImmutableMap;
-import com.orbitz.consul.BaseIntegrationTest;
-import com.orbitz.consul.HealthClient;
-import com.orbitz.consul.KeyValueClient;
+import com.orbitz.consul.config.CacheConfig;
 import com.orbitz.consul.model.ConsulResponse;
-import com.orbitz.consul.model.State;
-import com.orbitz.consul.model.agent.Agent;
-import com.orbitz.consul.model.health.HealthCheck;
-import com.orbitz.consul.model.health.ServiceHealth;
+import com.orbitz.consul.model.kv.ImmutableValue;
 import com.orbitz.consul.model.kv.Value;
+import com.orbitz.consul.monitoring.ClientEventHandler;
 import com.orbitz.consul.option.ConsistencyMode;
 import com.orbitz.consul.option.ImmutableQueryOptions;
 import com.orbitz.consul.option.QueryOptions;
+import junitparams.JUnitParamsRunner;
+import junitparams.Parameters;
+import junitparams.naming.TestCaseName;
+import org.apache.commons.lang3.time.StopWatch;
 import org.junit.Assert;
 import org.junit.Test;
-import org.mockito.Mockito;
+import org.junit.runner.RunWith;
+import org.mockito.internal.matchers.GreaterOrEqual;
+import org.mockito.internal.matchers.LessOrEqual;
 
 import java.math.BigInteger;
-import java.util.*;
-import java.util.concurrent.TimeUnit;
+import java.time.Duration;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
 
+import static org.hamcrest.CoreMatchers.allOf;
+import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.fail;
-
-public class ConsulCacheTest extends BaseIntegrationTest {
-
-    @Test
-    public void nodeCacheHealthCheckTest() throws Exception {
-        HealthClient healthClient = client.healthClient();
-        String checkName = UUID.randomUUID().toString();
-        String checkId = UUID.randomUUID().toString();
-
-        client.agentClient().registerCheck(checkId, checkName, 20L);
-        try {
-            client.agentClient().passCheck(checkId);
-            Thread.sleep(100);
-
-            HealthCheckCache hCheck = HealthCheckCache.newCache(healthClient, State.PASS);
-
-            hCheck.start();
-            hCheck.awaitInitialized(3, TimeUnit.SECONDS);
-
-            HealthCheck check = hCheck.getMap().get(checkId);
-            assertEquals(checkId, check.getCheckId());
-
-            client.agentClient().failCheck(checkId);
-            Thread.sleep(100);
-
-            check = hCheck.getMap().get(checkId);
-            assertNull(check);
-        }
-        finally {
-            client.agentClient().deregister(checkId);
-        }
-    }
-
-    @Test
-    public void nodeCacheServicePassingTest() throws Exception {
-        HealthClient healthClient = client.healthClient();
-        String serviceName = UUID.randomUUID().toString();
-        String serviceId = UUID.randomUUID().toString();
-
-        client.agentClient().register(8080, 20L, serviceName, serviceId);
-        client.agentClient().pass(serviceId);
-        Agent agent = client.agentClient().getAgent();
-        Thread.sleep(100);
-
-        ServiceHealthCache svHealth = ServiceHealthCache.newCache(healthClient, serviceName);
-
-        svHealth.start();
-        svHealth.awaitInitialized(3, TimeUnit.SECONDS);
-
-        ServiceHealthKey serviceKey = ServiceHealthKey.of(serviceId, agent.getDebugConfig().getAdvertiseAddrLAN(), 8080);
-        ServiceHealth health = svHealth.getMap().get(serviceKey);
-        assertEquals(serviceId, health.getService().getId());
-
-        client.agentClient().fail(serviceId);
-        Thread.sleep(100);
-
-        health = svHealth.getMap().get(serviceKey);
-        assertNull(health);
-
-    }
-
-    @Test
-    public void testServicesAreUniqueByID() throws Exception {
-        HealthClient healthClient = client.healthClient();
-        String serviceName = UUID.randomUUID().toString();
-        String serviceId = UUID.randomUUID().toString();
-        String serviceId2 = UUID.randomUUID().toString();
-
-        client.agentClient().register(8080, 20L, serviceName, serviceId);
-        client.agentClient().pass(serviceId);
-
-        client.agentClient().register(8080, 20L, serviceName, serviceId2);
-        client.agentClient().pass(serviceId2);
-
-        ServiceHealthCache svHealth = ServiceHealthCache.newCache(healthClient, serviceName);
-
-        svHealth.start();
-        svHealth.awaitInitialized(3, TimeUnit.SECONDS);
-
-        Agent agent = client.agentClient().getAgent();
-        Thread.sleep(100);
-
-        ServiceHealthKey serviceKey1 = ServiceHealthKey.of(serviceId, agent.getDebugConfig().getAdvertiseAddrLAN(), 8080);
-        ServiceHealthKey serviceKey2 = ServiceHealthKey.of(serviceId2, agent.getDebugConfig().getAdvertiseAddrLAN(), 8080);
-
-        ImmutableMap<ServiceHealthKey, ServiceHealth> healthMap = svHealth.getMap();
-        assertEquals(healthMap.size(), 2);
-        ServiceHealth health =healthMap.get(serviceKey1);
-        ServiceHealth health2 = healthMap.get(serviceKey2);
-
-        assertEquals(serviceId, health.getService().getId());
-        assertEquals(serviceId2, health2.getService().getId());
-    }
-
-    @Test
-    public void nodeCacheKvTest() throws Exception {
-
-        KeyValueClient kvClient = client.keyValueClient();
-        String root = UUID.randomUUID().toString();
-
-        for (int i = 0; i < 5; i++) {
-            kvClient.putValue(root + "/" + i, String.valueOf(i));
-        }
-
-        KVCache nc = KVCache.newCache(
-                kvClient, root, 10
-        );
-        nc.start();
-
-        if (!nc.awaitInitialized(1, TimeUnit.SECONDS)) {
-            fail("cache initialization failed");
-        }
-
-        ImmutableMap<String, Value> map = nc.getMap();
-        for (int i = 0; i < 5; i++) {
-            String keyStr = "" + i;
-            String valStr = keyStr;
-            assertEquals(valStr, map.get(keyStr).getValueAsString().get());
-        }
-
-        for (int i = 0; i < 5; i++) {
-            if (i % 2 == 0) {
-                kvClient.putValue(root + "/" + i, String.valueOf(i * 10));
-            }
-        }
-
-        Thread.sleep(100);
-
-        map = nc.getMap();
-        for (int i = 0; i < 5; i++) {
-            String keyStr = "" + i;
-            String valStr = i % 2 == 0 ? "" + (i * 10) : keyStr;
-            assertEquals(valStr, map.get(keyStr).getValueAsString().get());
-        }
-
-        kvClient.deleteKeys(root);
-
-    }
-
-    @Test
-    public void testListeners() throws Exception {
-        KeyValueClient kvClient = client.keyValueClient();
-        String root = UUID.randomUUID().toString();
-
-        KVCache nc = KVCache.newCache(
-                kvClient, root, 10
-        );
-
-        final List<Map<String, Value>> events = new ArrayList<Map<String, Value>>();
-        nc.addListener(new ConsulCache.Listener<String, Value>() {
-            @Override
-            public void notify(Map<String, Value> newValues) {
-                events.add(newValues);
-            }
-        });
-
-        nc.start();
-
-        if (!nc.awaitInitialized(1, TimeUnit.SECONDS)) {
-            fail("cache initialization failed");
-        }
-
-        for (int i = 0; i < 5; i++) {
-            kvClient.putValue(root + "/" + i, String.valueOf(i));
-            Thread.sleep(100);
-        }
-
-        assertEquals(6, events.size());
-
-        for (int i = -1; i < 5; i++) {
-
-            Map<String, Value> map = events.get(i+1);
-            assertEquals(i + 1, map.size());
-            for (int j = 0; j < i; j++) {
-                String keyStr = "" + j;
-                String valStr = keyStr;
-                assertEquals(valStr, map.get(keyStr).getValueAsString().get());
-            }
-        }
-        kvClient.deleteKeys(root);
-
-    }
-
-    @Test
-    public void testLateListenersGetValues() throws Exception {
-        KeyValueClient kvClient = client.keyValueClient();
-        String root = UUID.randomUUID().toString();
-
-        KVCache nc = KVCache.newCache(
-                kvClient, root, 10
-        );
-        nc.start();
-
-        if (!nc.awaitInitialized(1, TimeUnit.SECONDS)) {
-            fail("cache initialization failed");
-        }
-
-        final List<Map<String, Value>> events = new ArrayList<Map<String, Value>>();
-
-        for (int i = 0; i < 5; i++) {
-            kvClient.putValue(root + "/" + i, String.valueOf(i));
-            Thread.sleep(100);
-        }
-
-        nc.addListener(new ConsulCache.Listener<String, Value>() {
-            @Override
-            public void notify(Map<String, Value> newValues) {
-                events.add(newValues);
-            }
-        });
-
-        assertEquals(1, events.size());
-
-        Map<String, Value> map = events.get(0);
-        assertEquals(5, map.size());
-        for (int j = 0; j < 5; j++) {
-            String keyStr = "" + j;
-            String valStr = keyStr;
-            assertEquals(valStr, map.get(keyStr).getValueAsString().get());
-        }
-        kvClient.deleteKeys(root);
-    }
-
-    @Test
-    public void testListenersNonExistingKeys() throws Exception {
-        KeyValueClient kvClient = client.keyValueClient();
-        String root = UUID.randomUUID().toString();
-
-        KVCache nc = KVCache.newCache(
-                kvClient, root, 10
-        );
-
-        final List<Map<String, Value>> events = new ArrayList<Map<String, Value>>();
-        nc.addListener(new ConsulCache.Listener<String, Value>() {
-            @Override
-            public void notify(Map<String, Value> newValues) {
-                events.add(newValues);
-            }
-        });
-
-        nc.start();
-
-        if (!nc.awaitInitialized(1, TimeUnit.SECONDS)) {
-            fail("cache initialization failed");
-        }
-
-        Thread.sleep(100);
-
-        assertEquals(1, events.size());
-        Map<String, Value> map = events.get(0);
-        assertEquals(0, map.size());
-    }
-
-    @Test(expected = IllegalStateException.class)
-    public void testLifeCycleDoubleStart() throws Exception {
-        KeyValueClient kvClient = client.keyValueClient();
-        String root = UUID.randomUUID().toString();
-
-        KVCache nc = KVCache.newCache(
-                kvClient, root, 10
-        );
-
-        assertEquals(ConsulCache.State.latent, nc.getState());
-        nc.start();
-        assertEquals(ConsulCache.State.starting, nc.getState());
-
-        if (!nc.awaitInitialized(10, TimeUnit.SECONDS)) {
-            fail("cache initialization failed");
-        }
-        assertEquals(ConsulCache.State.started, nc.getState());
-        nc.start();
-
-    }
-
-    @Test
-    public void testLifeCycle() throws Exception {
-        KeyValueClient kvClient = client.keyValueClient();
-        String root = UUID.randomUUID().toString();
-
-        KVCache nc = KVCache.newCache(
-                kvClient, root, 10
-        );
-
-        final List<Map<String, Value>> events = new ArrayList<Map<String, Value>>();
-        nc.addListener(new ConsulCache.Listener<String, Value>() {
-            @Override
-            public void notify(Map<String, Value> newValues) {
-                events.add(newValues);
-            }
-        });
-
-        assertEquals(ConsulCache.State.latent, nc.getState());
-        nc.start();
-        assertEquals(ConsulCache.State.starting, nc.getState());
-
-        if (!nc.awaitInitialized(1, TimeUnit.SECONDS)) {
-            fail("cache initialization failed");
-        }
-        assertEquals(ConsulCache.State.started, nc.getState());
-
-
-        for (int i = 0; i < 5; i++) {
-            kvClient.putValue(root + "/" + i, String.valueOf(i));
-            Thread.sleep(100);
-        }
-        assertEquals(5, events.size());
-        nc.stop();
-        assertEquals(ConsulCache.State.stopped, nc.getState());
-
-        // now assert that we get no more update to the listener
-        for (int i = 0; i < 5; i++) {
-            kvClient.putValue(root + "/" + i + "-again", String.valueOf(i));
-            Thread.sleep(100);
-        }
-
-        assertEquals(5, events.size());
-
-        kvClient.deleteKeys(root);
-
-    }
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.mock;
+
+@RunWith(JUnitParamsRunner.class)
+public class ConsulCacheTest {
 
     /**
      * Test that if Consul for some reason returns a duplicate service or keyvalue entry
@@ -355,14 +44,14 @@ public class ConsulCacheTest extends BaseIntegrationTest {
      */
     @Test
     public void testDuplicateServicesDontCauseFailure() {
-        final Function<Value, String> keyExtractor = new Function<Value, String>() {
-            @Override
-            public String apply(final Value input) {
-                return "SAME_KEY";
-            }
-        };
-        final List<Value> response = Arrays.asList(Mockito.mock(Value.class), Mockito.mock(Value.class));
-        final ConsulCache<String, Value> consulCache = new ConsulCache<>(keyExtractor, null);
+        final Function<Value, String> keyExtractor = input -> "SAME_KEY";
+        final List<Value> response = Arrays.asList(mock(Value.class), mock(Value.class));
+        CacheConfig cacheConfig = mock(CacheConfig.class);
+        ClientEventHandler eventHandler = mock(ClientEventHandler.class);
+
+        final StubCallbackConsumer callbackConsumer = new StubCallbackConsumer(Collections.emptyList());
+
+        final ConsulCache<String, Value> consulCache = new ConsulCache<>(keyExtractor, callbackConsumer, cacheConfig, eventHandler, new CacheDescriptor(""));
         final ConsulResponse<List<Value>> consulResponse = new ConsulResponse<>(response, 0, false, BigInteger.ONE);
         final ImmutableMap<String, Value> map = consulCache.convertToMap(consulResponse);
         assertNotNull(map);
@@ -386,6 +75,7 @@ public class ConsulCacheTest extends BaseIntegrationTest {
         BigInteger index = new BigInteger("12");
         QueryOptions additionalOptions = ImmutableQueryOptions.builder()
                 .consistencyMode(ConsistencyMode.STALE)
+                .addTag("someTag")
                 .token("186596")
                 .near("156892")
                 .build();
@@ -394,6 +84,7 @@ public class ConsulCacheTest extends BaseIntegrationTest {
                 .index(index)
                 .wait("10s")
                 .consistencyMode(ConsistencyMode.STALE)
+                .addTag("someTag")
                 .token("186596")
                 .near("156892")
                 .build();
@@ -413,22 +104,153 @@ public class ConsulCacheTest extends BaseIntegrationTest {
     }
 
     @Test
-    public void testDefaultBackOffDelay() {
-        Properties properties = new Properties();
-        Assert.assertEquals(10000L, ConsulCache.getBackOffDelayInMs(properties));
+    @Parameters(method = "getRetryDurationSamples")
+    @TestCaseName("min Delay: {0}, max Delay: {1}")
+    public void testRetryDuration(Duration minDelay, Duration maxDelay) {
+        CacheConfig cacheConfig = CacheConfig.builder().withBackOffDelay(minDelay, maxDelay).build();
+        for (int i=0; i < 1000; i++) {
+            long retryDurationMs = ConsulCache.computeBackOffDelayMs(cacheConfig);
+            Assert.assertThat(
+                    String.format("Retry duration expected between %s and %s but got %d ms", minDelay, maxDelay, retryDurationMs),
+                    retryDurationMs,
+                    is(allOf(new GreaterOrEqual<>(minDelay.toMillis()), new LessOrEqual<>(maxDelay.toMillis()))));
+        }
+    }
+
+    public Object getRetryDurationSamples() {
+        return new Object[]{
+                // Same duration
+                new Object[]{Duration.ZERO, Duration.ZERO},
+                new Object[]{Duration.ofSeconds(10), Duration.ofSeconds(10)},
+                // Different durations
+                new Object[]{Duration.ofSeconds(10), Duration.ofSeconds(11)},
+                new Object[]{Duration.ofMillis(10), Duration.ofMinutes(1)},
+        };
     }
 
     @Test
-    public void testBackOffDelayFromProperties() {
-        Properties properties = new Properties();
-        properties.setProperty(ConsulCache.BACKOFF_DELAY_PROPERTY, "500");
-        Assert.assertEquals(500L, ConsulCache.getBackOffDelayInMs(properties));
+    public void testListenerIsCalled() {
+        final Function<Value, String> keyExtractor = Value::getKey;
+        final CacheConfig cacheConfig = CacheConfig.builder().build();
+        ClientEventHandler eventHandler = mock(ClientEventHandler.class);
+
+        final String key = "foo";
+        final ImmutableValue value = ImmutableValue.builder()
+                .createIndex(1)
+                .modifyIndex(2)
+                .lockIndex(2)
+                .key(key)
+                .flags(0)
+                .build();
+        final List<Value> result = Collections.singletonList(value);
+        final StubCallbackConsumer callbackConsumer = new StubCallbackConsumer(
+                result);
+
+        final ConsulCache<String, Value> cache = new ConsulCache<>(keyExtractor, callbackConsumer, cacheConfig,
+                eventHandler, new CacheDescriptor(""));
+        try {
+            final StubListener listener = new StubListener();
+
+            cache.addListener(listener);
+            cache.start();
+
+            assertEquals(1, listener.getCallCount());
+            assertEquals(1, callbackConsumer.getCallCount());
+
+            final Map<String, Value> lastValues = listener.getLastValues();
+            assertNotNull(lastValues);
+            assertEquals(result.size(), lastValues.size());
+            assertTrue(lastValues.containsKey(key));
+            assertEquals(value, lastValues.get(key));
+        } finally {
+            cache.stop();
+        }
     }
 
     @Test
-    public void testBackOffDelayDoesNotThrow() {
-        Properties properties = new Properties();
-        properties.setProperty(ConsulCache.BACKOFF_DELAY_PROPERTY, "unparseableLong");
-        Assert.assertEquals(10000L, ConsulCache.getBackOffDelayInMs(properties));
+    public void testListenerThrowingExceptionIsIsolated() throws InterruptedException {
+        final Function<Value, String> keyExtractor = Value::getKey;
+        final CacheConfig cacheConfig = CacheConfig.builder()
+                .withMinDelayBetweenRequests(Duration.ofSeconds(10))
+                .build();
+        ClientEventHandler eventHandler = mock(ClientEventHandler.class);
+
+        final String key = "foo";
+        final ImmutableValue value = ImmutableValue.builder()
+                .createIndex(1)
+                .modifyIndex(2)
+                .lockIndex(2)
+                .key(key)
+                .flags(0)
+                .build();
+        final List<Value> result = Collections.singletonList(value);
+        try (final AsyncCallbackConsumer callbackConsumer = new AsyncCallbackConsumer(result)) {
+            try (final ConsulCache<String, Value> cache = new ConsulCache<>(keyExtractor, callbackConsumer, cacheConfig,
+                        eventHandler, new CacheDescriptor(""))) {
+
+                final StubListener goodListener = new StubListener();
+                final AlwaysThrowsListener badListener1 = new AlwaysThrowsListener();
+
+                cache.addListener(badListener1);
+                cache.addListener(goodListener);
+                cache.start();
+
+                final StopWatch stopWatch = new StopWatch();
+                stopWatch.start();
+
+                // Make sure that we wait some duration of time for asynchronous things to occur
+                while (stopWatch.getTime() < 5000 && goodListener.getCallCount() < 1) {
+                    Thread.sleep(50);
+                }
+
+                assertEquals(1, goodListener.getCallCount());
+                assertEquals(1, callbackConsumer.getCallCount());
+
+                final Map<String, Value> lastValues = goodListener.getLastValues();
+                assertNotNull(lastValues);
+                assertEquals(result.size(), lastValues.size());
+                assertTrue(lastValues.containsKey(key));
+                assertEquals(value, lastValues.get(key));
+            }
+        }
     }
+
+    @Test
+    public void testExceptionReceivedFromListenerWhenAlreadyStarted() {
+        final Function<Value, String> keyExtractor = Value::getKey;
+        final CacheConfig cacheConfig = CacheConfig.builder()
+                .withMinDelayBetweenRequests(Duration.ofSeconds(10))
+                .build();
+        final ClientEventHandler eventHandler = mock(ClientEventHandler.class);
+
+        final String key = "foo";
+        final ImmutableValue value = ImmutableValue.builder()
+                .createIndex(1)
+                .modifyIndex(2)
+                .lockIndex(2)
+                .key(key)
+                .flags(0)
+                .build();
+        final List<Value> result = Collections.singletonList(value);
+        final StubCallbackConsumer callbackConsumer = new StubCallbackConsumer(
+                result);
+
+        try (final ConsulCache<String, Value> cache = new ConsulCache<>(keyExtractor, callbackConsumer, cacheConfig,
+                eventHandler, new CacheDescriptor(""))) {
+
+            final AlwaysThrowsListener badListener = new AlwaysThrowsListener();
+
+            cache.start();
+
+            // Adding listener after cache is already started
+            final boolean isAdded = cache.addListener(badListener);
+            assertTrue(isAdded);
+
+            final StubListener goodListener = new StubListener();
+            cache.addListener(goodListener);
+
+            assertEquals(1, goodListener.getCallCount());
+        }
+    }
+
 }

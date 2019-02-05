@@ -1,6 +1,6 @@
 package com.orbitz.consul.util;
 
-import com.google.common.base.Optional;
+import java.util.Optional;
 import com.orbitz.consul.Consul;
 import com.orbitz.consul.KeyValueClient;
 import com.orbitz.consul.model.kv.Value;
@@ -18,12 +18,12 @@ public class LeaderElectionUtil {
     public Optional<String> getLeaderInfoForService(final String serviceName) {
         String key = getServiceKey(serviceName);
         Optional<Value> value = client.keyValueClient().getValue(key);
-        if(value.isPresent()){
-            if(value.get().getSession().isPresent()) {
-                return value.get().getValueAsString();
+        return value.flatMap(val -> {
+            if(val.getSession().isPresent()) {
+                return val.getValueAsString();
             }
-        }
-        return Optional.absent();
+            return Optional.empty();
+        });
     }
 
     public Optional<String> electNewLeaderForService(final String serviceName, final String info) {
