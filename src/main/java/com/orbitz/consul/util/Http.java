@@ -8,6 +8,7 @@ import com.orbitz.consul.async.ConsulResponseCallback;
 import com.orbitz.consul.model.ConsulResponse;
 import com.orbitz.consul.monitoring.ClientEventHandler;
 import okhttp3.Headers;
+import org.apache.commons.lang3.math.NumberUtils;
 import retrofit2.Call;
 import retrofit2.Response;
 
@@ -118,7 +119,7 @@ public class Http {
         String knownLeaderHeaderValue = headers.get("X-Consul-Knownleader");
 
         BigInteger index = indexHeaderValue == null ? BigInteger.ZERO : new BigInteger(indexHeaderValue);
-        long lastContact = lastContactHeaderValue == null ? 0 : Long.valueOf(lastContactHeaderValue);
+        long lastContact = lastContactHeaderValue == null ? 0 : NumberUtils.toLong(lastContactHeaderValue);
         boolean knownLeader = knownLeaderHeaderValue == null ? false : Boolean.valueOf(knownLeaderHeaderValue);
 
         return new ConsulResponse<>(response.body(), lastContact, knownLeader, index);
