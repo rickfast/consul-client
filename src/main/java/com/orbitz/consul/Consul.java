@@ -28,6 +28,7 @@ import com.orbitz.consul.util.bookend.ConsulBookendInterceptor;
 import com.orbitz.consul.util.failover.ConsulFailoverInterceptor;
 import com.orbitz.consul.util.failover.strategy.ConsulFailoverStrategy;
 
+import okhttp3.ConnectionPool;
 import okhttp3.Dispatcher;
 import okhttp3.HttpUrl;
 import okhttp3.Interceptor;
@@ -68,6 +69,7 @@ public class Consul {
     private final SnapshotClient snapshotClient;
 
     private final ExecutorService executorService;
+    private final ConnectionPool connectionPool;
     private final OkHttpClient okHttpClient;
 
     /**
@@ -79,8 +81,9 @@ public class Consul {
                 StatusClient statusClient, SessionClient sessionClient,
                 EventClient eventClient, PreparedQueryClient preparedQueryClient,
                 CoordinateClient coordinateClient, OperatorClient operatorClient,
-                ExecutorService executorService, AclClient aclClient,
-                SnapshotClient snapshotClient, OkHttpClient okHttpClient) {
+                ExecutorService executorService, ConnectionPool connectionPool, 
+                AclClient aclClient, SnapshotClient snapshotClient,
+                OkHttpClient okHttpClient) {
         this.agentClient = agentClient;
         this.healthClient = healthClient;
         this.keyValueClient = keyValueClient;
@@ -92,6 +95,7 @@ public class Consul {
         this.coordinateClient = coordinateClient;
         this.operatorClient = operatorClient;
         this.executorService = executorService;
+        this.connectionPool = connectionPool;
         this.aclClient = aclClient;
         this.snapshotClient = snapshotClient;
         this.okHttpClient = okHttpClient;
@@ -103,6 +107,7 @@ public class Consul {
     public void destroy() {
         this.okHttpClient.dispatcher().cancelAll();
         this.executorService.shutdownNow();
+        this.connectionPool.evictAll();
     }
 
     /**
@@ -275,6 +280,7 @@ public class Consul {
         private Long readTimeoutMillis;
         private Long writeTimeoutMillis;
         private ExecutorService executorService;
+        private ConnectionPool connectionPool;
         private ClientConfig clientConfig;
         private ClientEventCallback clientEventCallback;
 
@@ -569,6 +575,26 @@ public class Consul {
             return this;
         }
 
+
+        /**
+        * Sets the ConnectionPool to be used by OkHttp Client
+        *
+        * By default, an ConnectionPool is created internally.
+        * In this case, it will not be customizable nor manageable by the user application.
+        * It can only be shutdown by the {@link Consul#destroy()} method.
+        *
+        * When an application needs to be able to customize the ConnectionPool parameters, and/or manage its lifecycle,
+        * it can provide an instance of ConnectionPool to the Builder. In that case, this ConnectionPool will be used instead of creating one internally.
+        *
+        * @param connectionPool The ConnetcionPool to be injected in the internal  OkHttpClient
+        * @return
+        */
+        public Builder withConnectionPool(ConnectionPool connectionPool) {
+            this.connectionPool = connectionPool;
+
+            return this;
+        }
+
         /**
         * Sets the configuration for the clients.
         * The configuration will fallback on the library default configuration if elements are not set.
@@ -614,6 +640,10 @@ public class Consul {
                         new SynchronousQueue<>(), Util.threadFactory("OkHttp Dispatcher", true));
             }
 
+            if (connectionPool == null) {
+                connectionPool = new ConnectionPool();
+            }
+
             ClientConfig config = (clientConfig != null) ? clientConfig : new ClientConfig();
 
             OkHttpClient okHttpClient = createOkHttpClient(
@@ -622,6 +652,7 @@ public class Consul {
                     this.hostnameVerifier,
                     this.proxy,
                     executorService,
+                    connectionPool,
                     config);
 
             try {
@@ -656,7 +687,7 @@ public class Consul {
             return new Consul(agentClient, healthClient, keyValueClient,
                     catalogClient, statusClient, sessionClient, eventClient,
                     preparedQueryClient, coordinateClient, operatorClient,
-                    executorService, aclClient, snapshotClient, okHttpClient);
+                    executorService, connectionPool, aclClient, snapshotClient, okHttpClient);
         }
 
         private String buildUrl(URL url) {
@@ -664,7 +695,7 @@ public class Consul {
         }
 
         private OkHttpClient createOkHttpClient(SSLContext sslContext, X509TrustManager trustManager, HostnameVerifier hostnameVerifier,
-                                                Proxy proxy, ExecutorService executorService, ClientConfig clientConfig) {
+                                                Proxy proxy, ExecutorService executorService, ConnectionPool connectionPool, ClientConfig clientConfig) {
 
             final OkHttpClient.Builder builder = new OkHttpClient.Builder();
 
@@ -683,7 +714,7 @@ public class Consul {
             if (consulBookendInterceptor != null) {
                 builder.addInterceptor(consulBookendInterceptor);
             }
-            
+
             if (consulFailoverInterceptor != null) {
                 builder.addInterceptor(consulFailoverInterceptor);
             }
@@ -720,6 +751,10 @@ public class Consul {
             dispatcher.setMaxRequests(Integer.MAX_VALUE);
             dispatcher.setMaxRequestsPerHost(Integer.MAX_VALUE);
             builder.dispatcher(dispatcher);
+
+            if (connectionPool != null) {
+                builder.connectionPool(connectionPool);
+            }
             return builder.build();
         }
 
