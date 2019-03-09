@@ -31,18 +31,18 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <java.version>8</java.version>
 
-        <apache.commons.version>3.4</apache.commons.version>
-        <commonscodec.version>1.9</commonscodec.version>
+        <apache.commons.version>3.8.1</apache.commons.version>
+        <commonscodec.version>1.12</commonscodec.version>
         <findbugs.version>1.3.9</findbugs.version>
-        <guava.version>22.0</guava.version>
-        <immutables.version>2.1.19</immutables.version>
+        <guava.version>27.1-jre</guava.version>
+        <immutables.version>2.7.5</immutables.version>
         <jackson.version>2.9.8</jackson.version>
         <junit.version>4.12</junit.version>
-        <junitparams.version>1.0.5</junitparams.version>
+        <junitparams.version>1.1.1</junitparams.version>
         <mockito.version>1.10.19</mockito.version>
         <retrofit.version>2.5.0</retrofit.version>
         <okhttp.version>3.12.1</okhttp.version>
-        <slf4j.version>1.7.21</slf4j.version>
+        <slf4j.version>1.7.26</slf4j.version>
         <logback.version>1.2.3</logback.version>
     </properties>
     <distributionManagement>
