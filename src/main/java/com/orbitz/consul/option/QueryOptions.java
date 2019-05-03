@@ -1,6 +1,5 @@
 package com.orbitz.consul.option;
 
-import java.util.Optional;
 import com.google.common.collect.ImmutableList;
 import org.immutables.value.Value;
 
@@ -9,6 +8,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.orbitz.consul.option.Options.optionallyAdd;
@@ -23,6 +23,7 @@ public abstract class QueryOptions implements ParamAdder {
 
     public abstract Optional<String> getWait();
     public abstract Optional<String> getToken();
+    public abstract Optional<String> getHash();
     public abstract Optional<BigInteger> getIndex();
     public abstract Optional<String> getNear();
     public abstract Optional<String> getDatacenter();
@@ -61,7 +62,8 @@ public abstract class QueryOptions implements ParamAdder {
     @Value.Check
     void validate() {
         if (isBlocking()) {
-            checkArgument(getIndex().isPresent(), "If wait is specified, index must also be specified");
+            checkArgument(getIndex().isPresent() || getHash().isPresent(), "If wait is specified, index/hash must also be specified");
+            checkArgument(!(getIndex().isPresent() && getHash().isPresent()), "Cannot specify index and hash ath the same time");
         }
     }
 
@@ -77,6 +79,20 @@ public abstract class QueryOptions implements ParamAdder {
         return ImmutableQueryOptions.builder()
                 .wait(String.format("%s%s", qty, identifier))
                 .index(index);
+    }
+
+    public static ImmutableQueryOptions.Builder blockSeconds(int seconds, String hash) {
+        return blockBuilder("s", seconds, hash);
+    }
+
+    public static ImmutableQueryOptions.Builder blockMinutes(int minutes, String hash) {
+        return blockBuilder("m", minutes, hash);
+    }
+
+    private static ImmutableQueryOptions.Builder blockBuilder(String identifier, int qty, String hash) {
+        return ImmutableQueryOptions.builder()
+                .wait(String.format("%s%s", qty, identifier))
+                .hash(hash);
     }
 
     @Override
@@ -95,6 +111,7 @@ public abstract class QueryOptions implements ParamAdder {
         if (isBlocking()) {
             optionallyAdd(result, "wait", getWait());
             optionallyAdd(result, "index", getIndex());
+            optionallyAdd(result, "hash", getHash());
         }
 
         optionallyAdd(result, "token", getToken());

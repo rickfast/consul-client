@@ -2,7 +2,9 @@ package com.orbitz.consul;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.net.HostAndPort;
+import com.orbitz.consul.async.ConsulResponseCallback;
 import com.orbitz.consul.config.ClientConfig;
+import com.orbitz.consul.model.ConsulResponse;
 import com.orbitz.consul.model.State;
 import com.orbitz.consul.model.agent.*;
 import com.orbitz.consul.model.health.HealthCheck;
@@ -436,6 +438,37 @@ public class AgentClient extends BaseClient {
     }
 
     /**
+     * Retrieves all information about a service.
+     * <p/>
+     * GET /v1/agent/service/:service_id
+     *
+     * @param id           The service id.
+     * @param queryOptions The Query Options to use.
+     * @return A {@link com.orbitz.consul.model.ConsulResponse} containing {@link FullService} object.
+     */
+    public ConsulResponse<FullService> getService(String id, QueryOptions queryOptions) throws NotRegisteredException {
+        try {
+            return http.extractConsulResponse(api.getService(id, queryOptions.toQuery()));
+        } catch (Exception e) {
+            throw new NotRegisteredException("Error getting service state");
+        }
+    }
+
+    /**
+     * Retrieves all information about a service.
+     * <p/>
+     * GET /v1/agent/service/:service_id
+     *
+     * @param id           The service id.
+     * @param queryOptions The Query Options to use.
+     * @param callback     Callback implemented by callee to handle results.
+     */
+    public void getService(String id, QueryOptions queryOptions, ConsulResponseCallback<FullService> callback) {
+        http.extractConsulResponse(api.getService(id, queryOptions.toQuery()), callback);
+    }
+
+
+    /**
      * Retrieves all members that the Agent can see in the gossip pool.
      * <p/>
      * GET /v1/agent/members
@@ -659,6 +692,9 @@ public class AgentClient extends BaseClient {
 
         @GET("agent/services")
         Call<Map<String, Service>> getServices();
+
+        @GET("agent/service/{id}")
+        Call<FullService> getService(@Path("id") String id, @QueryMap Map<String, Object> query);
 
         @GET("agent/members")
         Call<List<Member>> getMembers();
