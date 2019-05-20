@@ -1,7 +1,10 @@
 package com.orbitz.consul;
 
 import com.google.common.collect.ImmutableList;
+import com.orbitz.consul.model.ConsulResponse;
 import com.orbitz.consul.model.agent.Agent;
+import com.orbitz.consul.model.agent.FullService;
+import com.orbitz.consul.model.agent.ImmutableFullService;
 import com.orbitz.consul.model.agent.ImmutableRegCheck;
 import com.orbitz.consul.model.agent.ImmutableRegistration;
 import com.orbitz.consul.model.agent.Registration;
@@ -10,6 +13,7 @@ import com.orbitz.consul.model.health.HealthCheck;
 import com.orbitz.consul.model.health.ImmutableService;
 import com.orbitz.consul.model.health.Service;
 import com.orbitz.consul.model.health.ServiceHealth;
+import com.orbitz.consul.option.QueryOptions;
 import org.junit.Ignore;
 import org.junit.Test;
 
@@ -247,6 +251,53 @@ public class AgentITest extends BaseIntegrationTest {
 
         assertNotNull(String.format("Service \"%s\" not found", name), registeredService);
         assertEquals(expectedService, registeredService);
+    }
+
+    @Test
+    public void shouldGetService() throws NotRegisteredException {
+        String id = UUID.randomUUID().toString();
+        String name = UUID.randomUUID().toString();
+        List<String> tags = Collections.singletonList(UUID.randomUUID().toString());
+        Map<String, String> meta = Collections.singletonMap(UUID.randomUUID().toString(), UUID.randomUUID().toString());
+        client.agentClient().register(8080, 20L, name, id, tags, meta);
+        Synchroniser.pause(Duration.ofMillis(100));
+
+        ConsulResponse<FullService> service = client.agentClient().getService(id, QueryOptions.BLANK);
+
+        FullService expectedService = ImmutableFullService.builder()
+                .id(id)
+                .service(name)
+                .address("")
+                .port(8080)
+                .tags(tags)
+                .meta(meta)
+                .enableTagOverride(false)
+                .weights(ImmutableServiceWeights.builder().warning(1).passing(1).build())
+                .contentHash(service.getResponse().getContentHash())
+                .build();
+
+        assertEquals(expectedService, service.getResponse());
+    }
+
+    @Test
+    public void shouldGetServiceWithWait() throws NotRegisteredException {
+        String id = UUID.randomUUID().toString();
+        String name = UUID.randomUUID().toString();
+        List<String> tags = Collections.singletonList(UUID.randomUUID().toString());
+        Map<String, String> meta = Collections.singletonMap(UUID.randomUUID().toString(), UUID.randomUUID().toString());
+        client.agentClient().register(8080, 20L, name, id, tags, meta);
+        Synchroniser.pause(Duration.ofMillis(100));
+
+        ConsulResponse<FullService> service = client.agentClient().getService(id, QueryOptions.BLANK);
+        ConsulResponse<FullService> other = client.agentClient().getService(id,
+                QueryOptions.blockSeconds(20, service.getResponse().getContentHash()).build());
+
+        assertEquals(service.getResponse(), other.getResponse());
+    }
+
+    @Test(expected = NotRegisteredException.class)
+    public void shouldGetServiceThrowErrorWhenServiceIsUnknown() throws NotRegisteredException {
+        client.agentClient().getService(UUID.randomUUID().toString(), QueryOptions.BLANK);
     }
 
     @Test
