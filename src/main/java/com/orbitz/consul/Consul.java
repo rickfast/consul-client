@@ -271,7 +271,7 @@ public class Consul {
         private HostnameVerifier hostnameVerifier;
         private Proxy proxy;
         private boolean ping = true;
-        private Interceptor basicAuthInterceptor;
+        private Interceptor authInterceptor;
         private Interceptor aclTokenInterceptor;
         private Interceptor headerInterceptor;
         private Interceptor consulBookendInterceptor;
@@ -333,11 +333,32 @@ public class Consul {
         public Builder withBasicAuth(String username, String password) {
             String credentials = username + ":" + password;
             final String basic = "Basic " + BaseEncoding.base64().encode(credentials.getBytes());
-            basicAuthInterceptor = chain -> {
+            authInterceptor = chain -> {
                 Request original = chain.request();
 
                 Request.Builder requestBuilder = original.newBuilder()
                         .header("Authorization", basic)
+                        .method(original.method(), original.body());
+
+                Request request = requestBuilder.build();
+                return chain.proceed(request);
+            };
+
+            return this;
+        }
+
+        /**
+         * Sets the token used for authentication
+         *
+         * @param token the token
+         * @return The builder.
+         */
+        public Builder withTokenAuth(String token) {
+            authInterceptor = chain -> {
+                Request original = chain.request();
+
+                Request.Builder requestBuilder = original.newBuilder()
+                        .header("X-Consul-Token", token)
                         .method(original.method(), original.body());
 
                 Request request = requestBuilder.build();
@@ -699,8 +720,8 @@ public class Consul {
 
             final OkHttpClient.Builder builder = new OkHttpClient.Builder();
 
-            if (basicAuthInterceptor != null) {
-                builder.addInterceptor(basicAuthInterceptor);
+            if (authInterceptor != null) {
+                builder.addInterceptor(authInterceptor);
             }
 
             if (aclTokenInterceptor != null) {
