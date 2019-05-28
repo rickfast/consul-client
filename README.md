@@ -17,7 +17,7 @@ In 0.11.X and 0.12.x, the Consul JAR is a shaded JAR, with most dependencies inc
 
 ```groovy
 dependencies {
-    compile 'com.orbitz.consul:consul-client:1.3.3'
+    compile 'com.orbitz.consul:consul-client:1.3.4'
 }
 ```
 
@@ -28,7 +28,7 @@ dependencies {
     <dependency>
         <groupId>com.orbitz.consul</groupId>
         <artifactId>consul-client</artifactId>
-        <version>1.3.3</version>
+        <version>1.3.4</version>
     </dependency>
 </dependencies>
 ```
@@ -178,7 +178,7 @@ to start the needed docker containers.
 
 Their instructions for eclipse a bit difficult to grok, but I was able to get eclipse to compile by following the second part of the instructions. Essentially, enable annotation processing, then extend the M2_REPO variable to include the immutables annotation processor. One thing is that documentation is out of date in that it tells you the wrong jar to include - it should be org/immutables/value/2.0.16/value-2.0.16.jar.
 
-![extending M2_REPO](http://cl.ly/image/3F3G2X1h3J3h/Image%202015-09-07%20at%2010%3A28%3A52.png)
+![extending M2_REPO](http://cl.ly/image/3F3G2X1.3.4h/Image%202015-09-07%20at%2010%3A28%3A52.png)
 
 ### IntelliJ-specific notes
 
