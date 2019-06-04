@@ -3,6 +3,9 @@ package com.orbitz.consul;
 import java.net.MalformedURLException;
 import java.net.Proxy;
 import java.net.URL;
+import java.security.KeyStore;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
 import java.util.Collection;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
@@ -10,9 +13,7 @@ import java.util.concurrent.SynchronousQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
-import javax.net.ssl.HostnameVerifier;
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.X509TrustManager;
+import javax.net.ssl.*;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.annotations.VisibleForTesting;
@@ -23,6 +24,7 @@ import com.orbitz.consul.cache.TimeoutInterceptor;
 import com.orbitz.consul.config.ClientConfig;
 import com.orbitz.consul.monitoring.ClientEventCallback;
 import com.orbitz.consul.util.Jackson;
+import com.orbitz.consul.util.TrustManagerUtils;
 import com.orbitz.consul.util.bookend.ConsulBookend;
 import com.orbitz.consul.util.bookend.ConsulBookendInterceptor;
 import com.orbitz.consul.util.failover.ConsulFailoverInterceptor;
@@ -743,7 +745,7 @@ public class Consul {
             if (sslContext != null && trustManager != null) {
                 builder.sslSocketFactory(sslContext.getSocketFactory(), trustManager);
             } else if (sslContext != null) {
-                builder.sslSocketFactory(sslContext.getSocketFactory());
+                builder.sslSocketFactory(sslContext.getSocketFactory(), TrustManagerUtils.getDefaultTrustManager());
             }
 
             if (hostnameVerifier != null) {
