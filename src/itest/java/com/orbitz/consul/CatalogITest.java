@@ -120,6 +120,7 @@ public class CatalogITest extends BaseIntegrationTest {
     public void shouldRegisterService() {
         String service = UUID.randomUUID().toString();
         String serviceId = UUID.randomUUID().toString();
+        String catalogId = UUID.randomUUID().toString();
 
         createAndCheckService(
                 ImmutableCatalogService.builder()
@@ -131,11 +132,14 @@ public class CatalogITest extends BaseIntegrationTest {
                         .serviceId(serviceId)
                         .serviceName(service)
                         .servicePort(8080)
-                        .serviceMeta(Collections.singletonMap("metakey", "metavalue"))
+                        .putServiceMeta("metakey", "metavalue")
+                        .putNodeMeta("a", "b")
                         .serviceEnableTagOverride(true)
                         .serviceWeights(ImmutableServiceWeights.builder().passing(42).warning(21).build())
                         .build(),
                 ImmutableCatalogRegistration.builder()
+                        .id(catalogId)
+                        .putNodeMeta("a", "b")
                         .address("localhost")
                         .datacenter("dc1")
                         .node("node")
@@ -157,6 +161,7 @@ public class CatalogITest extends BaseIntegrationTest {
     public void shouldRegisterServiceNoWeights() {
         String service = UUID.randomUUID().toString();
         String serviceId = UUID.randomUUID().toString();
+        String catalogId = UUID.randomUUID().toString();
 
         createAndCheckService(
                 ImmutableCatalogService.builder()
@@ -168,11 +173,14 @@ public class CatalogITest extends BaseIntegrationTest {
                         .serviceId(serviceId)
                         .serviceName(service)
                         .servicePort(8080)
-                        .serviceMeta(Collections.singletonMap("metakey", "metavalue"))
+                        .putServiceMeta("metakey", "metavalue")
+                        .putNodeMeta("a", "b")
                         .serviceEnableTagOverride(true)
                         .serviceWeights(ImmutableServiceWeights.builder().passing(1).warning(1).build())
                         .build(),
                 ImmutableCatalogRegistration.builder()
+                        .id(catalogId)
+                        .putNodeMeta("a", "b")
                         .address("localhost")
                         .datacenter("dc1")
                         .node("node")
@@ -196,8 +204,11 @@ public class CatalogITest extends BaseIntegrationTest {
 
         String service = UUID.randomUUID().toString();
         String serviceId = UUID.randomUUID().toString();
+        String catalogId = UUID.randomUUID().toString();
 
         CatalogRegistration registration = ImmutableCatalogRegistration.builder()
+                .id(catalogId)
+                .putNodeMeta("a", "b")
                 .address("localhost")
                 .datacenter("dc1")
                 .node("node")
@@ -274,8 +285,11 @@ public class CatalogITest extends BaseIntegrationTest {
         String nodeName = "node";
         String serviceName = UUID.randomUUID().toString();
         String serviceId = createAutoDeregisterServiceId();
+        String catalogId = UUID.randomUUID().toString();
 
         CatalogRegistration registration = ImmutableCatalogRegistration.builder()
+                .id(catalogId)
+                .putNodeMeta("a", "b")
                 .address("localhost")
                 .node(nodeName)
                 .service(ImmutableService.builder()

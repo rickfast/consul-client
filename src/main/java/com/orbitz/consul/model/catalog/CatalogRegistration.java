@@ -4,7 +4,11 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+
+import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
+
 import com.orbitz.consul.model.agent.Check;
 import com.orbitz.consul.model.health.Service;
 import org.immutables.value.Value;
@@ -15,6 +19,9 @@ import org.immutables.value.Value;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public abstract class CatalogRegistration {
 
+    @JsonProperty("ID")
+    public abstract Optional<String> id();
+
     @JsonProperty("Datacenter")
     public abstract Optional<String> datacenter();
 
@@ -23,6 +30,9 @@ public abstract class CatalogRegistration {
 
     @JsonProperty("Address")
     public abstract String address();
+
+    @JsonProperty("NodeMeta")
+    public abstract Map<String, String> nodeMeta();
 
     @JsonProperty("TaggedAddresses")
     public abstract Optional<TaggedAddresses> taggedAddresses();
@@ -35,4 +45,7 @@ public abstract class CatalogRegistration {
 
     @JsonProperty("WriteRequest")
     public abstract Optional<WriteRequest> writeRequest();
+
+    @JsonProperty("SkipNodeUpdate")
+    public abstract Optional<Boolean> skipNodeUpdate();
 }
