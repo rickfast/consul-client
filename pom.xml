@@ -4,7 +4,7 @@
     <groupId>com.orbitz.consul</groupId>
     <artifactId>consul-client</artifactId>
     <packaging>jar</packaging>
-    <version>1.3.5</version>
+    <version>1.3.6</version>
     <name>consul-client</name>
     <url>http://maven.apache.org</url>
     <description>Consul Client for Java</description>
