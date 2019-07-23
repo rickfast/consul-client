@@ -1,6 +1,5 @@
 package com.orbitz.consul;
 
-import com.google.common.collect.ImmutableMap;
 import com.orbitz.consul.async.ConsulResponseCallback;
 import com.orbitz.consul.async.EventResponseCallback;
 import com.orbitz.consul.config.ClientConfig;
@@ -18,7 +17,6 @@ import retrofit2.Call;
 import retrofit2.Retrofit;
 import retrofit2.http.*;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -108,7 +106,10 @@ public class EventClient extends BaseClient {
      *  a list of {@link com.orbitz.consul.model.event.Event} objects.
      */
     public EventResponse listEvents(String name, QueryOptions queryOptions) {
-        Map<String, String> query = StringUtils.isNotEmpty(name) ? ImmutableMap.of("name", name) : Collections.emptyMap();
+        final Map<String, Object> query = queryOptions.toQuery();
+        if (StringUtils.isNotEmpty(name)) {
+            query.put("name", name);
+        }
 
         ConsulResponse<List<Event>> response = http.extractConsulResponse(api.listEvents(query));
         return ImmutableEventResponse.of(response.getResponse(), response.getIndex());
@@ -162,7 +163,10 @@ public class EventClient extends BaseClient {
      * @param callback The callback to asynchronously process the result.
      */
     public void listEvents(String name, QueryOptions queryOptions, EventResponseCallback callback) {
-        Map<String, String> query = StringUtils.isNotEmpty(name) ? ImmutableMap.of("name", name) : Collections.emptyMap();
+        final Map<String, Object> query = queryOptions.toQuery();
+        if (StringUtils.isNotEmpty(name)) {
+            query.put("name", name);
+        }
 
         http.extractConsulResponse(api.listEvents(query), createConsulResponseCallbackWrapper(callback));
     }
@@ -218,6 +222,6 @@ public class EventClient extends BaseClient {
                               @QueryMap Map<String, Object> query);
 
         @GET("event/list")
-        Call<List<Event>> listEvents(@QueryMap Map<String, String> query);
+        Call<List<Event>> listEvents(@QueryMap Map<String, Object> query);
     }
 }
