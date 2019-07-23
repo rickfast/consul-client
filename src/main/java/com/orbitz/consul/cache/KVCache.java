@@ -9,6 +9,7 @@ import com.orbitz.consul.model.kv.Value;
 import com.orbitz.consul.monitoring.ClientEventHandler;
 import com.orbitz.consul.option.QueryOptions;
 
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.function.Function;
 
 public class KVCache extends ConsulCache<String, Value> {
@@ -17,8 +18,9 @@ public class KVCache extends ConsulCache<String, Value> {
                     ConsulCache.CallbackConsumer<Value> callbackConsumer,
                     CacheConfig cacheConfig,
                     ClientEventHandler eventHandler,
-                    CacheDescriptor cacheDescriptor) {
-        super(keyConversion, callbackConsumer, cacheConfig, eventHandler, cacheDescriptor);
+                    CacheDescriptor cacheDescriptor,
+                    ScheduledExecutorService callbackExecutorService) {
+        super(keyConversion, callbackConsumer, cacheConfig, eventHandler, cacheDescriptor, callbackExecutorService);
     }
 
     @VisibleForTesting
@@ -42,7 +44,8 @@ public class KVCache extends ConsulCache<String, Value> {
             final KeyValueClient kvClient,
             final String rootPath,
             final int watchSeconds,
-            final QueryOptions queryOptions) {
+            final QueryOptions queryOptions,
+            final ScheduledExecutorService callbackExecutorService) {
 
         final String keyPath = prepareRootPath(rootPath);
 
@@ -55,10 +58,19 @@ public class KVCache extends ConsulCache<String, Value> {
 
         CacheDescriptor cacheDescriptor = new CacheDescriptor("keyvalue", rootPath);
         return new KVCache(keyExtractor,
-                callbackConsumer,
-                kvClient.getConfig().getCacheConfig(),
-                kvClient.getEventHandler(),
-                cacheDescriptor);
+            callbackConsumer,
+            kvClient.getConfig().getCacheConfig(),
+            kvClient.getEventHandler(),
+            cacheDescriptor,
+            callbackExecutorService);
+    }
+
+    public static KVCache newCache(
+            final KeyValueClient kvClient,
+            final String rootPath,
+            final int watchSeconds,
+            final QueryOptions queryOptions) {
+        return newCache(kvClient, rootPath, watchSeconds, queryOptions, createDefault());
     }
 
     @VisibleForTesting

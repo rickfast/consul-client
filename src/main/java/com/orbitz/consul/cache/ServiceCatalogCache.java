@@ -10,6 +10,7 @@ import com.orbitz.consul.option.QueryOptions;
 
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.function.Function;
 
 public class ServiceCatalogCache extends ConsulCache<String, CatalogService> {
@@ -18,15 +19,17 @@ public class ServiceCatalogCache extends ConsulCache<String, CatalogService> {
                                 CallbackConsumer<CatalogService> callbackConsumer,
                                 CacheConfig cacheConfig,
                                 ClientEventHandler eventHandler,
-                                CacheDescriptor cacheDescriptor) {
-        super(keyConversion, callbackConsumer, cacheConfig, eventHandler, cacheDescriptor);
+                                CacheDescriptor cacheDescriptor,
+                                ScheduledExecutorService callbackExecutorService) {
+        super(keyConversion, callbackConsumer, cacheConfig, eventHandler, cacheDescriptor, callbackExecutorService);
     }
 
     public static ServiceCatalogCache newCache(
             final CatalogClient catalogClient,
             final String serviceName,
             final QueryOptions queryOptions,
-            final int watchSeconds) {
+            final int watchSeconds,
+            final ScheduledExecutorService callbackExecutorService) {
 
         final CallbackConsumer<CatalogService> callbackConsumer = (index, callback) ->
                 catalogClient.getService(serviceName, watchParams(index, watchSeconds, queryOptions), callback);
@@ -36,7 +39,17 @@ public class ServiceCatalogCache extends ConsulCache<String, CatalogService> {
                 callbackConsumer,
                 catalogClient.getConfig().getCacheConfig(),
                 catalogClient.getEventHandler(),
-                cacheDescriptor);
+                cacheDescriptor,
+                callbackExecutorService);
+    }
+
+    public static ServiceCatalogCache newCache(
+            final CatalogClient catalogClient,
+            final String serviceName,
+            final QueryOptions queryOptions,
+            final int watchSeconds) {
+
+        return newCache(catalogClient, serviceName, queryOptions, watchSeconds, createDefault());
     }
 
     public static ServiceCatalogCache newCache(final CatalogClient catalogClient, final String serviceName) {

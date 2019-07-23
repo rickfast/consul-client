@@ -7,6 +7,7 @@ import com.orbitz.consul.model.health.HealthCheck;
 import com.orbitz.consul.monitoring.ClientEventHandler;
 import com.orbitz.consul.option.QueryOptions;
 
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.function.Function;
 
 public class HealthCheckCache extends ConsulCache<String, HealthCheck> {
@@ -15,8 +16,9 @@ public class HealthCheckCache extends ConsulCache<String, HealthCheck> {
                              CallbackConsumer<HealthCheck> callbackConsumer,
                              CacheConfig cacheConfig,
                              ClientEventHandler eventHandler,
-                             CacheDescriptor cacheDescriptor) {
-        super(keyConversion, callbackConsumer, cacheConfig, eventHandler, cacheDescriptor);
+                             CacheDescriptor cacheDescriptor,
+                             ScheduledExecutorService callbackExecutorService) {
+        super(keyConversion, callbackConsumer, cacheConfig, eventHandler, cacheDescriptor, callbackExecutorService);
     }
 
     /**
@@ -33,7 +35,8 @@ public class HealthCheckCache extends ConsulCache<String, HealthCheck> {
             final com.orbitz.consul.model.State state,
             final int watchSeconds,
             final QueryOptions queryOptions,
-            Function<HealthCheck, String> keyExtractor) {
+            final Function<HealthCheck, String> keyExtractor,
+            final ScheduledExecutorService callbackExecutorService) {
 
         final CallbackConsumer<HealthCheck> callbackConsumer = (index, callback) -> {
             QueryOptions params = watchParams(index, watchSeconds, queryOptions);
@@ -45,9 +48,19 @@ public class HealthCheckCache extends ConsulCache<String, HealthCheck> {
                 callbackConsumer,
                 healthClient.getConfig().getCacheConfig(),
                 healthClient.getEventHandler(),
-                cacheDescriptor);
+                cacheDescriptor,
+                callbackExecutorService);
     }
 
+    public static HealthCheckCache newCache(
+            final HealthClient healthClient,
+            final com.orbitz.consul.model.State state,
+            final int watchSeconds,
+            final QueryOptions queryOptions,
+            final Function<HealthCheck, String> keyExtractor) {
+
+        return newCache(healthClient, state, watchSeconds, queryOptions, keyExtractor, createDefault());
+    }
     public static HealthCheckCache newCache(
             final HealthClient healthClient,
             final com.orbitz.consul.model.State state,
@@ -61,6 +74,7 @@ public class HealthCheckCache extends ConsulCache<String, HealthCheck> {
             final HealthClient healthClient,
             final com.orbitz.consul.model.State state,
             final int watchSeconds) {
+
         return newCache(healthClient, state, watchSeconds, QueryOptions.BLANK);
     }
 

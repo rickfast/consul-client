@@ -7,6 +7,7 @@ import com.orbitz.consul.model.health.Node;
 import com.orbitz.consul.monitoring.ClientEventHandler;
 import com.orbitz.consul.option.QueryOptions;
 
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.function.Function;
 
 public class NodesCatalogCache extends ConsulCache<String, Node> {
@@ -14,14 +15,16 @@ public class NodesCatalogCache extends ConsulCache<String, Node> {
     private NodesCatalogCache(Function<Node, String> keyConversion,
                               CallbackConsumer<Node> callbackConsumer,
                               CacheConfig cacheConfig,
-                              ClientEventHandler eventHandler) {
-        super(keyConversion, callbackConsumer, cacheConfig, eventHandler, new CacheDescriptor("catalog.nodes"));
+                              ClientEventHandler eventHandler,
+                              ScheduledExecutorService callbackExecutorService) {
+        super(keyConversion, callbackConsumer, cacheConfig, eventHandler, new CacheDescriptor("catalog.nodes"), callbackExecutorService);
     }
 
     public static NodesCatalogCache newCache(
             final CatalogClient catalogClient,
             final QueryOptions queryOptions,
-            final int watchSeconds) {
+            final int watchSeconds,
+            final ScheduledExecutorService callbackExecutorService) {
 
         final CallbackConsumer<Node> callbackConsumer = (index, callback) ->
                 catalogClient.getNodes(watchParams(index, watchSeconds, queryOptions), callback);
@@ -29,7 +32,15 @@ public class NodesCatalogCache extends ConsulCache<String, Node> {
         return new NodesCatalogCache(Node::getNode,
                 callbackConsumer,
                 catalogClient.getConfig().getCacheConfig(),
-                catalogClient.getEventHandler());
+                catalogClient.getEventHandler(),
+                callbackExecutorService);
+    }
+
+    public static NodesCatalogCache newCache(
+            final CatalogClient catalogClient,
+            final QueryOptions queryOptions,
+            final int watchSeconds) {
+            return newCache(catalogClient, queryOptions, watchSeconds, createDefault());
     }
 
     public static NodesCatalogCache newCache(final CatalogClient catalogClient) {

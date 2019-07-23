@@ -8,6 +8,7 @@ import com.orbitz.consul.model.health.ServiceHealth;
 import com.orbitz.consul.monitoring.ClientEventHandler;
 import com.orbitz.consul.option.QueryOptions;
 
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.function.Function;
 
 public class ServiceHealthCache extends ConsulCache<ServiceHealthKey, ServiceHealth> {
@@ -16,8 +17,9 @@ public class ServiceHealthCache extends ConsulCache<ServiceHealthKey, ServiceHea
                                CallbackConsumer<ServiceHealth> callbackConsumer,
                                CacheConfig cacheConfig,
                                ClientEventHandler eventHandler,
-                               CacheDescriptor cacheDescriptor) {
-        super(keyConversion, callbackConsumer, cacheConfig, eventHandler, cacheDescriptor);
+                               CacheDescriptor cacheDescriptor,
+                               ScheduledExecutorService callbackExecutorService) {
+        super(keyConversion, callbackConsumer, cacheConfig, eventHandler, cacheDescriptor, callbackExecutorService);
     }
 
     /**
@@ -36,7 +38,8 @@ public class ServiceHealthCache extends ConsulCache<ServiceHealthKey, ServiceHea
             final boolean passing,
             final int watchSeconds,
             final QueryOptions queryOptions,
-            final Function<ServiceHealth, ServiceHealthKey> keyExtractor) {
+            final Function<ServiceHealth, ServiceHealthKey> keyExtractor,
+            final ScheduledExecutorService callbackExecutorService) {
 
         final CallbackConsumer<ServiceHealth> callbackConsumer = (index, callback) -> {
             QueryOptions params = watchParams(index, watchSeconds, queryOptions);
@@ -52,7 +55,19 @@ public class ServiceHealthCache extends ConsulCache<ServiceHealthKey, ServiceHea
                 callbackConsumer,
                 healthClient.getConfig().getCacheConfig(),
                 healthClient.getEventHandler(),
-                cacheDescriptor);
+                cacheDescriptor,
+                callbackExecutorService);
+    }
+
+    public static ServiceHealthCache newCache(
+            final HealthClient healthClient,
+            final String serviceName,
+            final boolean passing,
+            final int watchSeconds,
+            final QueryOptions queryOptions,
+            final Function<ServiceHealth, ServiceHealthKey> keyExtractor) {
+
+        return newCache(healthClient, serviceName, passing, watchSeconds, queryOptions, keyExtractor, createDefault());
     }
 
     public static ServiceHealthCache newCache(
@@ -71,6 +86,7 @@ public class ServiceHealthCache extends ConsulCache<ServiceHealthKey, ServiceHea
             final boolean passing,
             final QueryOptions queryOptions,
             final int watchSeconds) {
+
         return newCache(healthClient, serviceName, passing, watchSeconds, queryOptions);
     }
 
