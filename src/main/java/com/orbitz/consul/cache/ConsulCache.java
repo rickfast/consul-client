@@ -54,11 +54,7 @@ public class ConsulCache<K, V> implements AutoCloseable {
     private final AtomicReference<ImmutableMap<K, V>> lastResponse = new AtomicReference<>(null);
     private final AtomicReference<State> state = new AtomicReference<>(State.latent);
     private final CountDownLatch initLatch = new CountDownLatch(1);
-    private final ScheduledExecutorService executorService = Executors.newSingleThreadScheduledExecutor(
-            new ThreadFactoryBuilder()
-                    .setNameFormat("consulCacheScheduledCallback-%d")
-                    .setDaemon(true)
-                    .build());
+    private final ScheduledExecutorService executorService;
     private final CopyOnWriteArrayList<Listener<K, V>> listeners = new CopyOnWriteArrayList<>();
     private final ReentrantLock listenersStartingLock = new ReentrantLock();
     private final Stopwatch stopWatch = Stopwatch.createUnstarted();
@@ -75,6 +71,17 @@ public class ConsulCache<K, V> implements AutoCloseable {
             CacheConfig cacheConfig,
             ClientEventHandler eventHandler,
             CacheDescriptor cacheDescriptor) {
+
+        this(keyConversion, callbackConsumer, cacheConfig, eventHandler, cacheDescriptor, createDefault());
+    }
+
+    protected ConsulCache(
+            Function<V, K> keyConversion,
+            CallbackConsumer<V> callbackConsumer,
+            CacheConfig cacheConfig,
+            ClientEventHandler eventHandler,
+            CacheDescriptor cacheDescriptor,
+            ScheduledExecutorService callbackScheduleExecutorService) {
         if (keyConversion == null) {
             Validate.notNull(keyConversion, "keyConversion must not be null");
         }
@@ -92,6 +99,7 @@ public class ConsulCache<K, V> implements AutoCloseable {
         this.callBackConsumer = callbackConsumer;
         this.eventHandler = eventHandler;
         this.cacheDescriptor = cacheDescriptor;
+        this.executorService = callbackScheduleExecutorService;
 
         this.responseCallback = new ConsulResponseCallback<List<V>>() {
             @Override
@@ -282,6 +290,14 @@ public class ConsulCache<K, V> implements AutoCloseable {
         } else {
             return QueryOptions.blockSeconds(blockSeconds, index).build();
         }
+    }
+
+    protected static ScheduledExecutorService createDefault() {
+        return Executors.newSingleThreadScheduledExecutor(
+            new ThreadFactoryBuilder()
+                .setNameFormat("consulCacheScheduledCallback-%d")
+                .setDaemon(true)
+                .build());
     }
 
     /**
