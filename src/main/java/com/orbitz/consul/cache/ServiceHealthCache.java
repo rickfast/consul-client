@@ -5,7 +5,6 @@ import com.google.common.primitives.Ints;
 import com.orbitz.consul.HealthClient;
 import com.orbitz.consul.config.CacheConfig;
 import com.orbitz.consul.model.health.ServiceHealth;
-import com.orbitz.consul.monitoring.ClientEventHandler;
 import com.orbitz.consul.option.QueryOptions;
 
 import java.util.concurrent.ScheduledExecutorService;
@@ -13,13 +12,26 @@ import java.util.function.Function;
 
 public class ServiceHealthCache extends ConsulCache<ServiceHealthKey, ServiceHealth> {
 
-    private ServiceHealthCache(Function<ServiceHealth, ServiceHealthKey> keyConversion,
-                               CallbackConsumer<ServiceHealth> callbackConsumer,
-                               CacheConfig cacheConfig,
-                               ClientEventHandler eventHandler,
-                               CacheDescriptor cacheDescriptor,
-                               ScheduledExecutorService callbackExecutorService) {
-        super(keyConversion, callbackConsumer, cacheConfig, eventHandler, cacheDescriptor, callbackExecutorService);
+    private ServiceHealthCache(HealthClient healthClient,
+                               String serviceName,
+                               boolean passing,
+                               int watchSeconds,
+                               QueryOptions queryOptions,
+                               Function<ServiceHealth, ServiceHealthKey> keyExtractor,
+                               Scheduler callbackScheduler) {
+        super(keyExtractor,
+              (index, callback) -> {
+                  QueryOptions params = watchParams(index, watchSeconds, queryOptions);
+                  if (passing) {
+                      healthClient.getHealthyServiceInstances(serviceName, params, callback);
+                  } else {
+                      healthClient.getAllServiceInstances(serviceName, params, callback);
+                  }
+              },
+              healthClient.getConfig().getCacheConfig(),
+              healthClient.getEventHandler(),
+              new CacheDescriptor("health.service", serviceName),
+              callbackScheduler);
     }
 
     /**
@@ -41,22 +53,8 @@ public class ServiceHealthCache extends ConsulCache<ServiceHealthKey, ServiceHea
             final Function<ServiceHealth, ServiceHealthKey> keyExtractor,
             final ScheduledExecutorService callbackExecutorService) {
 
-        final CallbackConsumer<ServiceHealth> callbackConsumer = (index, callback) -> {
-            QueryOptions params = watchParams(index, watchSeconds, queryOptions);
-            if (passing) {
-                healthClient.getHealthyServiceInstances(serviceName, params, callback);
-            } else {
-                healthClient.getAllServiceInstances(serviceName, params, callback);
-            }
-        };
-
-        CacheDescriptor cacheDescriptor = new CacheDescriptor("health.service", serviceName);
-        return new ServiceHealthCache(keyExtractor,
-                callbackConsumer,
-                healthClient.getConfig().getCacheConfig(),
-                healthClient.getEventHandler(),
-                cacheDescriptor,
-                callbackExecutorService);
+        Scheduler scheduler = new ExternalScheduler(callbackExecutorService);
+        return new ServiceHealthCache(healthClient, serviceName, passing, watchSeconds, queryOptions, keyExtractor, scheduler);
     }
 
     public static ServiceHealthCache newCache(
@@ -67,7 +65,7 @@ public class ServiceHealthCache extends ConsulCache<ServiceHealthKey, ServiceHea
             final QueryOptions queryOptions,
             final Function<ServiceHealth, ServiceHealthKey> keyExtractor) {
 
-        return newCache(healthClient, serviceName, passing, watchSeconds, queryOptions, keyExtractor, createDefault());
+        return new ServiceHealthCache(healthClient, serviceName, passing, watchSeconds, queryOptions, keyExtractor, createDefault());
     }
 
     public static ServiceHealthCache newCache(

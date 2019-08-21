@@ -4,24 +4,24 @@ import com.google.common.primitives.Ints;
 import com.orbitz.consul.CatalogClient;
 import com.orbitz.consul.config.CacheConfig;
 import com.orbitz.consul.model.catalog.CatalogService;
-import com.orbitz.consul.model.health.Node;
-import com.orbitz.consul.monitoring.ClientEventHandler;
 import com.orbitz.consul.option.QueryOptions;
-
-import java.util.List;
-import java.util.Map;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.function.Function;
 
 public class ServiceCatalogCache extends ConsulCache<String, CatalogService> {
 
-    private ServiceCatalogCache(Function<CatalogService, String> keyConversion,
-                                CallbackConsumer<CatalogService> callbackConsumer,
-                                CacheConfig cacheConfig,
-                                ClientEventHandler eventHandler,
-                                CacheDescriptor cacheDescriptor,
-                                ScheduledExecutorService callbackExecutorService) {
-        super(keyConversion, callbackConsumer, cacheConfig, eventHandler, cacheDescriptor, callbackExecutorService);
+    private ServiceCatalogCache(CatalogClient catalogClient,
+                                String serviceName,
+                                QueryOptions queryOptions,
+                                int watchSeconds,
+                                Scheduler callbackScheduler) {
+
+        super(CatalogService::getServiceId,
+            (index, callback) ->
+                catalogClient.getService(serviceName, watchParams(index, watchSeconds, queryOptions), callback),
+            catalogClient.getConfig().getCacheConfig(),
+            catalogClient.getEventHandler(),
+            new CacheDescriptor("catalog.service", serviceName),
+            callbackScheduler);
     }
 
     public static ServiceCatalogCache newCache(
@@ -31,16 +31,8 @@ public class ServiceCatalogCache extends ConsulCache<String, CatalogService> {
             final int watchSeconds,
             final ScheduledExecutorService callbackExecutorService) {
 
-        final CallbackConsumer<CatalogService> callbackConsumer = (index, callback) ->
-                catalogClient.getService(serviceName, watchParams(index, watchSeconds, queryOptions), callback);
-
-        CacheDescriptor cacheDescriptor = new CacheDescriptor("catalog.service", serviceName);
-        return new ServiceCatalogCache(CatalogService::getServiceId,
-                callbackConsumer,
-                catalogClient.getConfig().getCacheConfig(),
-                catalogClient.getEventHandler(),
-                cacheDescriptor,
-                callbackExecutorService);
+        Scheduler scheduler = new ExternalScheduler(callbackExecutorService);
+        return new ServiceCatalogCache(catalogClient, serviceName, queryOptions, watchSeconds, scheduler);
     }
 
     public static ServiceCatalogCache newCache(
@@ -49,7 +41,7 @@ public class ServiceCatalogCache extends ConsulCache<String, CatalogService> {
             final QueryOptions queryOptions,
             final int watchSeconds) {
 
-        return newCache(catalogClient, serviceName, queryOptions, watchSeconds, createDefault());
+        return new ServiceCatalogCache(catalogClient, serviceName, queryOptions, watchSeconds, createDefault());
     }
 
     public static ServiceCatalogCache newCache(final CatalogClient catalogClient, final String serviceName) {
