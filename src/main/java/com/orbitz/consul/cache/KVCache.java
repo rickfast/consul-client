@@ -6,7 +6,6 @@ import com.google.common.primitives.Ints;
 import com.orbitz.consul.KeyValueClient;
 import com.orbitz.consul.config.CacheConfig;
 import com.orbitz.consul.model.kv.Value;
-import com.orbitz.consul.monitoring.ClientEventHandler;
 import com.orbitz.consul.option.QueryOptions;
 
 import java.util.concurrent.ScheduledExecutorService;
@@ -14,13 +13,21 @@ import java.util.function.Function;
 
 public class KVCache extends ConsulCache<String, Value> {
 
-    private KVCache(Function<Value, String> keyConversion,
-                    ConsulCache.CallbackConsumer<Value> callbackConsumer,
-                    CacheConfig cacheConfig,
-                    ClientEventHandler eventHandler,
-                    CacheDescriptor cacheDescriptor,
-                    ScheduledExecutorService callbackExecutorService) {
-        super(keyConversion, callbackConsumer, cacheConfig, eventHandler, cacheDescriptor, callbackExecutorService);
+    private KVCache(KeyValueClient kvClient,
+                    String rootPath,
+                    String keyPath,
+                    int watchSeconds,
+                    QueryOptions queryOptions,
+                    Scheduler callbackScheduler) {
+        super(getKeyExtractorFunction(keyPath),
+            (index, callback) -> {
+                QueryOptions params = watchParams(index, watchSeconds, queryOptions);
+                kvClient.getValues(keyPath, params, callback);
+            },
+            kvClient.getConfig().getCacheConfig(),
+            kvClient.getEventHandler(),
+            new CacheDescriptor("keyvalue", rootPath),
+            callbackScheduler);
     }
 
     @VisibleForTesting
@@ -47,22 +54,8 @@ public class KVCache extends ConsulCache<String, Value> {
             final QueryOptions queryOptions,
             final ScheduledExecutorService callbackExecutorService) {
 
-        final String keyPath = prepareRootPath(rootPath);
-
-        final Function<Value, String> keyExtractor = getKeyExtractorFunction(keyPath);
-
-        final ConsulCache.CallbackConsumer<Value> callbackConsumer = (index, callback) -> {
-            QueryOptions params = watchParams(index, watchSeconds, queryOptions);
-            kvClient.getValues(keyPath, params, callback);
-        };
-
-        CacheDescriptor cacheDescriptor = new CacheDescriptor("keyvalue", rootPath);
-        return new KVCache(keyExtractor,
-            callbackConsumer,
-            kvClient.getConfig().getCacheConfig(),
-            kvClient.getEventHandler(),
-            cacheDescriptor,
-            callbackExecutorService);
+        Scheduler scheduler = createExternal(callbackExecutorService);
+        return new KVCache(kvClient, rootPath, prepareRootPath(rootPath), watchSeconds, queryOptions, scheduler);
     }
 
     public static KVCache newCache(
@@ -70,7 +63,7 @@ public class KVCache extends ConsulCache<String, Value> {
             final String rootPath,
             final int watchSeconds,
             final QueryOptions queryOptions) {
-        return newCache(kvClient, rootPath, watchSeconds, queryOptions, createDefault());
+        return new KVCache(kvClient, rootPath, prepareRootPath(rootPath), watchSeconds, queryOptions, createDefault());
     }
 
     @VisibleForTesting
