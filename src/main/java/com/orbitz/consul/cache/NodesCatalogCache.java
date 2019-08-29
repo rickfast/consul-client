@@ -4,20 +4,23 @@ import com.google.common.primitives.Ints;
 import com.orbitz.consul.CatalogClient;
 import com.orbitz.consul.config.CacheConfig;
 import com.orbitz.consul.model.health.Node;
-import com.orbitz.consul.monitoring.ClientEventHandler;
 import com.orbitz.consul.option.QueryOptions;
 
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.function.Function;
 
 public class NodesCatalogCache extends ConsulCache<String, Node> {
 
-    private NodesCatalogCache(Function<Node, String> keyConversion,
-                              CallbackConsumer<Node> callbackConsumer,
-                              CacheConfig cacheConfig,
-                              ClientEventHandler eventHandler,
-                              ScheduledExecutorService callbackExecutorService) {
-        super(keyConversion, callbackConsumer, cacheConfig, eventHandler, new CacheDescriptor("catalog.nodes"), callbackExecutorService);
+    private NodesCatalogCache(CatalogClient catalogClient,
+                              QueryOptions queryOptions,
+                              int watchSeconds,
+                              Scheduler callbackScheduler) {
+        super(Node::getNode,
+              (index, callback) ->
+                  catalogClient.getNodes(watchParams(index, watchSeconds, queryOptions), callback),
+              catalogClient.getConfig().getCacheConfig(),
+              catalogClient.getEventHandler(),
+              new CacheDescriptor("catalog.nodes"),
+              callbackScheduler);
     }
 
     public static NodesCatalogCache newCache(
@@ -26,21 +29,15 @@ public class NodesCatalogCache extends ConsulCache<String, Node> {
             final int watchSeconds,
             final ScheduledExecutorService callbackExecutorService) {
 
-        final CallbackConsumer<Node> callbackConsumer = (index, callback) ->
-                catalogClient.getNodes(watchParams(index, watchSeconds, queryOptions), callback);
-
-        return new NodesCatalogCache(Node::getNode,
-                callbackConsumer,
-                catalogClient.getConfig().getCacheConfig(),
-                catalogClient.getEventHandler(),
-                callbackExecutorService);
+        Scheduler scheduler = createExternal(callbackExecutorService);
+        return new NodesCatalogCache(catalogClient, queryOptions, watchSeconds, scheduler);
     }
 
     public static NodesCatalogCache newCache(
             final CatalogClient catalogClient,
             final QueryOptions queryOptions,
             final int watchSeconds) {
-            return newCache(catalogClient, queryOptions, watchSeconds, createDefault());
+        return new NodesCatalogCache(catalogClient, queryOptions, watchSeconds, createDefault());
     }
 
     public static NodesCatalogCache newCache(final CatalogClient catalogClient) {

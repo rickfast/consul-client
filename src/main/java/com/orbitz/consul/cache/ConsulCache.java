@@ -54,7 +54,7 @@ public class ConsulCache<K, V> implements AutoCloseable {
     private final AtomicReference<ImmutableMap<K, V>> lastResponse = new AtomicReference<>(null);
     private final AtomicReference<State> state = new AtomicReference<>(State.latent);
     private final CountDownLatch initLatch = new CountDownLatch(1);
-    private final ScheduledExecutorService executorService;
+    private final Scheduler scheduler;
     private final CopyOnWriteArrayList<Listener<K, V>> listeners = new CopyOnWriteArrayList<>();
     private final ReentrantLock listenersStartingLock = new ReentrantLock();
     private final Stopwatch stopWatch = Stopwatch.createUnstarted();
@@ -82,6 +82,17 @@ public class ConsulCache<K, V> implements AutoCloseable {
             ClientEventHandler eventHandler,
             CacheDescriptor cacheDescriptor,
             ScheduledExecutorService callbackScheduleExecutorService) {
+
+        this(keyConversion, callbackConsumer, cacheConfig, eventHandler, cacheDescriptor, new ExternalScheduler(callbackScheduleExecutorService));
+    }
+
+    protected ConsulCache(
+            Function<V, K> keyConversion,
+            CallbackConsumer<V> callbackConsumer,
+            CacheConfig cacheConfig,
+            ClientEventHandler eventHandler,
+            CacheDescriptor cacheDescriptor,
+            Scheduler callbackScheduler) {
         if (keyConversion == null) {
             Validate.notNull(keyConversion, "keyConversion must not be null");
         }
@@ -99,7 +110,7 @@ public class ConsulCache<K, V> implements AutoCloseable {
         this.callBackConsumer = callbackConsumer;
         this.eventHandler = eventHandler;
         this.cacheDescriptor = cacheDescriptor;
-        this.executorService = callbackScheduleExecutorService;
+        this.scheduler = callbackScheduler;
 
         this.responseCallback = new ConsulResponseCallback<List<V>>() {
             @Override
@@ -160,7 +171,7 @@ public class ConsulCache<K, V> implements AutoCloseable {
                     }
                     timeToWait = timeToWait.minus(elapsedTime);
 
-                    executorService.schedule(ConsulCache.this::runCallback,
+                    scheduler.schedule(ConsulCache.this::runCallback,
                             timeToWait.toMillis(), TimeUnit.MILLISECONDS);
 
                 } else {
@@ -180,7 +191,7 @@ public class ConsulCache<K, V> implements AutoCloseable {
 
                 cacheConfig.getRefreshErrorLoggingConsumer().accept(LOGGER, message, throwable);
 
-                executorService.schedule(ConsulCache.this::runCallback, delayMs, TimeUnit.MILLISECONDS);
+                scheduler.schedule(ConsulCache.this::runCallback, delayMs, TimeUnit.MILLISECONDS);
             }
         };
     }
@@ -208,7 +219,7 @@ public class ConsulCache<K, V> implements AutoCloseable {
             stopWatch.stop();
         }
         if (previous != State.stopped) {
-            executorService.shutdownNow();
+            scheduler.shutdownNow();
         }
     }
 
@@ -292,12 +303,12 @@ public class ConsulCache<K, V> implements AutoCloseable {
         }
     }
 
-    protected static ScheduledExecutorService createDefault() {
-        return Executors.newSingleThreadScheduledExecutor(
-            new ThreadFactoryBuilder()
-                .setNameFormat("consulCacheScheduledCallback-%d")
-                .setDaemon(true)
-                .build());
+    protected static Scheduler createDefault() {
+        return new DefaultScheduler();
+    }
+
+    protected static Scheduler createExternal(ScheduledExecutorService executor) {
+        return new ExternalScheduler(executor);
     }
 
     /**
@@ -355,5 +366,43 @@ public class ConsulCache<K, V> implements AutoCloseable {
     @VisibleForTesting
     protected State getState() {
         return state.get();
+    }
+
+    protected static class Scheduler {
+        public Scheduler(ScheduledExecutorService executor) {
+            this.executor = executor;
+        }
+
+        void schedule(Runnable r, long delay, TimeUnit unit) {
+            executor.schedule(r, delay, unit);
+        }
+
+        void shutdownNow() {
+            executor.shutdownNow();
+        }
+
+        private final ScheduledExecutorService executor;
+    }
+
+    private static class DefaultScheduler extends Scheduler {
+        public DefaultScheduler() {
+            super(Executors.newSingleThreadScheduledExecutor(
+                new ThreadFactoryBuilder()
+                    .setNameFormat("consulCacheScheduledCallback-%d")
+                    .setDaemon(true)
+                    .build()));
+        }
+    }
+
+    private static class ExternalScheduler extends Scheduler {
+
+        public ExternalScheduler(ScheduledExecutorService executor) {
+            super(executor);
+        }
+
+        @Override
+        public void shutdownNow() {
+            // do nothing, since executor was externally created
+        }
     }
 }
