@@ -46,7 +46,7 @@ public class BlacklistingConsulFailoverStrategy implements ConsulFailoverStrateg
 		if (blacklist.containsKey(initialTarget)) {
 
 			// Find the first entity that doesnt exist in the blacklist
-			HostAndPort next = targets.stream().filter(target -> {
+			Optional<HostAndPort> optionalNext = targets.stream().filter(target -> {
 
 				// If we have blacklisted this key
 				if (blacklist.containsKey(target)) {
@@ -64,7 +64,12 @@ public class BlacklistingConsulFailoverStrategy implements ConsulFailoverStrateg
 						return false;
 				} else
 					return true;
-			}).findAny().get();
+			}).findAny();
+
+			if (!optionalNext.isPresent()) {
+				return Optional.empty();
+			}
+			HostAndPort next = optionalNext.get();
 
 			// Construct the next URL using the old parameters (ensures we don't have to do
 			// a copy-on-write
