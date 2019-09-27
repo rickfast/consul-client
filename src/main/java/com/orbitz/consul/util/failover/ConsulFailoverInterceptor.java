@@ -8,8 +8,11 @@ import com.orbitz.consul.ConsulException;
 import com.orbitz.consul.util.failover.strategy.*;
 
 import okhttp3.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class ConsulFailoverInterceptor implements Interceptor {
+	private final static Logger LOGGER = LoggerFactory.getLogger(ConsulFailoverInterceptor.class);
 
 	// The consul failover strategy
 	private ConsulFailoverStrategy strategy;
@@ -59,6 +62,7 @@ public class ConsulFailoverInterceptor implements Interceptor {
 					// This is because a 400 series error is a valid code (Permission Denied/Key Not Found)
 					return chain.proceed(next);
 				} catch (Exception ex) {
+					LOGGER.debug("Failed to connect to {}", nextRequest.get().url(), ex);
 					strategy.markRequestFailed(nextRequest.get());
 				}
 			throw new ConsulException("Unable to successfully determine a viable host for communication.");
