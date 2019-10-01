@@ -3,9 +3,6 @@ package com.orbitz.consul;
 import java.net.MalformedURLException;
 import java.net.Proxy;
 import java.net.URL;
-import java.security.KeyStore;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
 import java.util.Collection;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
@@ -267,6 +264,7 @@ public class Consul {
     * Builder for {@link Consul} client objects.
     */
     public static class Builder {
+        private String scheme = "http";
         private URL url;
         private SSLContext sslContext;
         private X509TrustManager trustManager;
@@ -288,7 +286,7 @@ public class Consul {
 
         {
             try {
-                url = new URL("http", DEFAULT_HTTP_HOST, DEFAULT_HTTP_PORT, "");
+                url = new URL(scheme, DEFAULT_HTTP_HOST, DEFAULT_HTTP_PORT, "");
             } catch (MalformedURLException e) {
                 throw new RuntimeException(e);
             }
@@ -310,6 +308,31 @@ public class Consul {
         public Builder withUrl(URL url) {
             this.url = url;
 
+            return this;
+        }
+
+        /**
+         * Use HTTPS connections for all requests.
+         *
+         * @param withHttps Set to true to use https for all Consul requests.
+         * @return The builder.
+         */
+        public Builder withHttps(boolean withHttps){
+            if (withHttps) {
+                this.scheme = "https";
+            } else {
+                this.scheme = "http";
+            }
+
+            //if url was already generated from a call to withMultipleHostAndPort or withMultipleHostAndPort
+            //it might have the old scheme saved into url, so recreate it here if it has changed
+            if (!this.url.getProtocol().equals(this.scheme)) {
+                try {
+                    this.url = new URL(scheme, this.url.getHost(), this.url.getPort(), "");
+                } catch (MalformedURLException e) {
+                    throw new RuntimeException(e);
+                }
+            }
             return this;
         }
 
@@ -440,7 +463,7 @@ public class Consul {
         */
         public Builder withHostAndPort(HostAndPort hostAndPort) {
             try {
-                this.url = new URL("http", hostAndPort.getHost(), hostAndPort.getPort(), "");
+                this.url = new URL(scheme, hostAndPort.getHost(), hostAndPort.getPort(), "");
             } catch (MalformedURLException e) {
                 throw new RuntimeException(e);
             }
