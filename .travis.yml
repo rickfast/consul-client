@@ -4,5 +4,5 @@ before_install:
   - ./do setup-environment
 
 jdk:
-  - oraclejdk8
+  - openjdk8
 script: mvn clean test
