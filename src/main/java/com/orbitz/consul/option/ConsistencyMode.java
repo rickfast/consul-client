@@ -3,7 +3,7 @@ package com.orbitz.consul.option;
 import java.util.Optional;
 
 public enum ConsistencyMode {
-    DEFAULT(null), STALE("stale"), CONSISTENT("consistent");
+    DEFAULT(null), STALE("stale"), CONSISTENT("consistent"), CACHED("cached");
 
     private String param;
 
