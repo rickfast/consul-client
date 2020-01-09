@@ -1,6 +1,7 @@
 package com.orbitz.consul.util;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Optional;
 import com.google.common.collect.Sets;
 import com.orbitz.consul.ConsulException;
 import com.orbitz.consul.async.Callback;
@@ -121,7 +122,7 @@ public class Http {
         BigInteger index = indexHeaderValue == null ? BigInteger.ZERO : new BigInteger(indexHeaderValue);
         long lastContact = lastContactHeaderValue == null ? 0 : NumberUtils.toLong(lastContactHeaderValue);
         boolean knownLeader = knownLeaderHeaderValue == null ? false : Boolean.valueOf(knownLeaderHeaderValue);
-
-        return new ConsulResponse<>(response.body(), lastContact, knownLeader, index);
+        return new ConsulResponse<>(response.body(), lastContact, knownLeader, index,
+                                    headers.get("X-Cache"), headers.get("Age"));
     }
 }

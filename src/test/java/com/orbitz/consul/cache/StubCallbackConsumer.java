@@ -23,7 +23,7 @@ public class StubCallbackConsumer implements ConsulCache.CallbackConsumer<Value>
     @Override
     public void consume(BigInteger index, ConsulResponseCallback<List<Value>> callback) {
         callCount++;
-        callback.onComplete(new ConsulResponse<>(result, 0, true, BigInteger.ZERO));
+        callback.onComplete(new ConsulResponse<>(result, 0, true, BigInteger.ZERO, null, null));
     }
 
     public int getCallCount() {

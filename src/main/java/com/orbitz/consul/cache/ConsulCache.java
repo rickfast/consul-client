@@ -21,6 +21,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -51,6 +52,7 @@ public class ConsulCache<K, V> implements AutoCloseable {
     private final AtomicReference<BigInteger> latestIndex = new AtomicReference<>(null);
     private final AtomicLong lastContact = new AtomicLong();
     private final AtomicBoolean isKnownLeader = new AtomicBoolean();
+    private final AtomicReference<ConsulResponse.CacheResponseInfo> lastCacheInfo = new AtomicReference<>(null);
     private final AtomicReference<ImmutableMap<K, V>> lastResponse = new AtomicReference<>(null);
     private final AtomicReference<State> state = new AtomicReference<>(State.latent);
     private final CountDownLatch initLatch = new CountDownLatch(1);
@@ -248,7 +250,7 @@ public class ConsulCache<K, V> implements AutoCloseable {
     }
 
     public ConsulResponse<ImmutableMap<K,V>> getMapWithMetadata() {
-        return new ConsulResponse<>(lastResponse.get(), lastContact.get(), isKnownLeader.get(), latestIndex.get());
+        return new ConsulResponse<>(lastResponse.get(), lastContact.get(), isKnownLeader.get(), latestIndex.get(), Optional.ofNullable(lastCacheInfo.get()));
     }
 
     @VisibleForTesting

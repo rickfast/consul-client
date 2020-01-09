@@ -34,4 +34,12 @@ public abstract class TransactionOptions implements ParamAdder {
 
         return result;
     }
+
+    public Map<String, String> toHeaders() {
+        Map<String, String> result = new HashMap<>();
+
+        ConsistencyMode consistencyMode = getConsistencyMode();
+        result.putAll(consistencyMode.getAdditionalHeaders());
+        return result;
+    }
 }
