@@ -89,6 +89,15 @@ public class ConsistencyMode {
         return name;
     }
 
+    @Override
+    public final String toString() {
+        String s = name();
+        for (Map.Entry<String, String> en : getAdditionalHeaders().entrySet()) {
+            s += String.format("[%s=%s]", en.getKey(), en.getValue());
+        }
+        return s;
+    }
+
     public int ordinal(){
         return ordinal;
     }
