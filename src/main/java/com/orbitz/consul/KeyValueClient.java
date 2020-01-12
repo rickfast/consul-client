@@ -32,6 +32,7 @@ import retrofit2.Retrofit;
 import retrofit2.http.Body;
 import retrofit2.http.DELETE;
 import retrofit2.http.GET;
+import retrofit2.http.HeaderMap;
 import retrofit2.http.Headers;
 import retrofit2.http.PUT;
 import retrofit2.http.Path;
@@ -106,7 +107,9 @@ public class KeyValueClient extends BaseClient {
      */
     public Optional<Value> getValue(String key, QueryOptions queryOptions) {
         try {
-            return getSingleValue(http.extract(api.getValue(trimLeadingSlash(key), queryOptions.toQuery()), NOT_FOUND_404));
+            return getSingleValue(http.extract(api.getValue(trimLeadingSlash(key),
+                                               queryOptions.toQuery()),
+                                  NOT_FOUND_404));
         } catch (ConsulException ignored) {
             if(ignored.getCode() != NOT_FOUND_404) {
                 throw ignored;
@@ -134,7 +137,8 @@ public class KeyValueClient extends BaseClient {
             if (consulValue.isPresent()) {
                 ConsulResponse<Value> result =
                         new ConsulResponse<>(consulValue.get(), consulResponse.getLastContact(),
-                                                    consulResponse.isKnownLeader(), consulResponse.getIndex());
+                                                    consulResponse.isKnownLeader(), consulResponse.getIndex(),
+                                                    consulResponse.getCacheReponseInfo());
                 return Optional.of(result);
             }
         } catch (ConsulException ignored) {
@@ -163,7 +167,8 @@ public class KeyValueClient extends BaseClient {
                 callback.onComplete(
                         new ConsulResponse<>(getSingleValue(consulResponse.getResponse()),
                                 consulResponse.getLastContact(),
-                                consulResponse.isKnownLeader(), consulResponse.getIndex()));
+                                consulResponse.isKnownLeader(), consulResponse.getIndex(),
+                                consulResponse.getCacheReponseInfo()));
             }
 
             @Override

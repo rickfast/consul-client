@@ -12,6 +12,7 @@ import com.orbitz.consul.option.QueryOptions;
 import retrofit2.Call;
 import retrofit2.Retrofit;
 import retrofit2.http.GET;
+import retrofit2.http.HeaderMap;
 import retrofit2.http.Path;
 import retrofit2.http.Query;
 import retrofit2.http.QueryMap;
@@ -65,7 +66,7 @@ public class HealthClient extends BaseClient {
     public ConsulResponse<List<HealthCheck>> getNodeChecks(String node,
                                                            QueryOptions queryOptions) {
         return http.extractConsulResponse(api.getNodeChecks(node, queryOptions.toQuery(),
-                queryOptions.getTag(), queryOptions.getNodeMeta()));
+                queryOptions.getTag(), queryOptions.getNodeMeta(), queryOptions.toHeaders()));
     }
 
     /**
@@ -92,7 +93,7 @@ public class HealthClient extends BaseClient {
     public ConsulResponse<List<HealthCheck>> getServiceChecks(String service,
                                                               QueryOptions queryOptions) {
         return http.extractConsulResponse(api.getServiceChecks(service, queryOptions.toQuery(),
-                queryOptions.getTag(), queryOptions.getNodeMeta()));
+                queryOptions.getTag(), queryOptions.getNodeMeta(), queryOptions.toHeaders()));
     }
 
     /**
@@ -110,7 +111,7 @@ public class HealthClient extends BaseClient {
                                  QueryOptions queryOptions,
                                  ConsulResponseCallback<List<HealthCheck>> callback) {
         http.extractConsulResponse(api.getServiceChecks(service, queryOptions.toQuery(),
-                queryOptions.getTag(), queryOptions.getNodeMeta()), callback);
+                queryOptions.getTag(), queryOptions.getNodeMeta(), queryOptions.toHeaders()), callback);
     }
 
     /**
@@ -139,7 +140,7 @@ public class HealthClient extends BaseClient {
     public ConsulResponse<List<HealthCheck>> getChecksByState(State state,
                                                               QueryOptions queryOptions) {
         return http.extractConsulResponse(api.getChecksByState(state.getName(), queryOptions.toQuery(),
-                queryOptions.getTag(), queryOptions.getNodeMeta()));
+                queryOptions.getTag(), queryOptions.getNodeMeta(), queryOptions.toHeaders()));
     }
 
     /**
@@ -156,7 +157,7 @@ public class HealthClient extends BaseClient {
     public void getChecksByState(State state, QueryOptions queryOptions,
                                  ConsulResponseCallback<List<HealthCheck>> callback) {
         http.extractConsulResponse(api.getChecksByState(state.getName(), queryOptions.toQuery(),
-                queryOptions.getTag(), queryOptions.getNodeMeta()), callback);
+                queryOptions.getTag(), queryOptions.getNodeMeta(), queryOptions.toHeaders()), callback);
     }
 
     /**
@@ -187,7 +188,7 @@ public class HealthClient extends BaseClient {
                                                                           QueryOptions queryOptions) {
         return http.extractConsulResponse(api.getServiceInstances(service,
                 optionsFrom(ImmutableMap.of("passing", "true"), queryOptions.toQuery()),
-                queryOptions.getTag(), queryOptions.getNodeMeta()));
+                queryOptions.getTag(), queryOptions.getNodeMeta(), queryOptions.toHeaders()));
     }
 
 
@@ -207,7 +208,7 @@ public class HealthClient extends BaseClient {
                                            ConsulResponseCallback<List<ServiceHealth>> callback) {
         http.extractConsulResponse(api.getServiceInstances(service,
                 optionsFrom(ImmutableMap.of("passing", "true"), queryOptions.toQuery()),
-                queryOptions.getTag(), queryOptions.getNodeMeta()), callback);
+                queryOptions.getTag(), queryOptions.getNodeMeta(), queryOptions.toHeaders()), callback);
     }
 
     /**
@@ -236,7 +237,7 @@ public class HealthClient extends BaseClient {
      */
     public ConsulResponse<List<ServiceHealth>> getAllServiceInstances(String service, QueryOptions queryOptions) {
         return http.extractConsulResponse(api.getServiceInstances(service, queryOptions.toQuery(),
-                queryOptions.getTag(), queryOptions.getNodeMeta()));
+                queryOptions.getTag(), queryOptions.getNodeMeta(), queryOptions.toHeaders()));
     }
 
     /**
@@ -254,7 +255,7 @@ public class HealthClient extends BaseClient {
     public void getAllServiceInstances(String service, QueryOptions queryOptions,
                                        ConsulResponseCallback<List<ServiceHealth>> callback) {
         http.extractConsulResponse(api.getServiceInstances(service, queryOptions.toQuery(),
-                queryOptions.getTag(), queryOptions.getNodeMeta()), callback);
+                queryOptions.getTag(), queryOptions.getNodeMeta(), queryOptions.toHeaders()), callback);
     }
 
     private static Map<String, Object> optionsFrom(Map<String, ?>... options) {
@@ -276,24 +277,28 @@ public class HealthClient extends BaseClient {
         Call<List<HealthCheck>> getNodeChecks(@Path("node") String node,
                                               @QueryMap Map<String, Object> query,
                                               @Query("tag") List<String> tag,
-                                              @Query("node-meta") List<String> nodeMeta);
+                                              @Query("node-meta") List<String> nodeMeta,
+                                              @HeaderMap Map<String, String> headers);
 
         @GET("health/checks/{service}")
         Call<List<HealthCheck>> getServiceChecks(@Path("service") String service,
                                                  @QueryMap Map<String, Object> query,
                                                  @Query("tag") List<String> tag,
-                                                 @Query("node-meta") List<String> nodeMeta);
+                                                 @Query("node-meta") List<String> nodeMeta,
+                                                 @HeaderMap Map<String, String> headers);
 
         @GET("health/state/{state}")
         Call<List<HealthCheck>> getChecksByState(@Path("state") String state,
                                                  @QueryMap Map<String, Object> query,
                                                  @Query("tag") List<String> tag,
-                                                 @Query("node-meta") List<String> nodeMeta);
+                                                 @Query("node-meta") List<String> nodeMeta,
+                                                 @HeaderMap Map<String, String> headers);
 
         @GET("health/service/{service}")
         Call<List<ServiceHealth>> getServiceInstances(@Path("service") String service,
                                                       @QueryMap Map<String, Object> query,
                                                       @Query("tag") List<String> tag,
-                                                      @Query("node-meta") List<String> nodeMeta);
+                                                      @Query("node-meta") List<String> nodeMeta,
+                                                      @HeaderMap Map<String, String> headers);
     }
 }

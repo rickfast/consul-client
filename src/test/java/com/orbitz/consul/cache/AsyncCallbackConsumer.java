@@ -24,7 +24,7 @@ public class AsyncCallbackConsumer implements ConsulCache.CallbackConsumer<Value
     public void consume(BigInteger index, final ConsulResponseCallback<List<Value>> callback) {
         callCount++;
         thread = new Thread(() -> {
-            callback.onComplete(new ConsulResponse<List<Value>>(result, 0, true, BigInteger.ZERO));
+            callback.onComplete(new ConsulResponse<List<Value>>(result, 0, true, BigInteger.ZERO, null, null));
         });
         thread.setName("asyncCallbackConsumer");
 

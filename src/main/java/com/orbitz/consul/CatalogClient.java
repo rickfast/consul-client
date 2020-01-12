@@ -44,7 +44,16 @@ public class CatalogClient extends BaseClient {
      * @return A list of datacenter names.
      */
     public List<String> getDatacenters() {
-        return http.extract(api.getDatacenters());
+        return getDatacenters(QueryOptions.BLANK);
+    }
+
+    /**
+     * Get the list of datacenters with query options
+     * @param queryOptions
+     * @return
+     */
+    public List<String> getDatacenters(QueryOptions queryOptions) {
+        return http.extract(api.getDatacenters(queryOptions.toHeaders()));
     }
 
     /**
@@ -70,7 +79,8 @@ public class CatalogClient extends BaseClient {
      */
     public ConsulResponse<List<Node>> getNodes(QueryOptions queryOptions) {
         return http.extractConsulResponse(api.getNodes(queryOptions.toQuery(),
-                queryOptions.getTag(), queryOptions.getNodeMeta()));
+                queryOptions.getTag(), queryOptions.getNodeMeta(),
+                queryOptions.toHeaders()));
     }
 
     /**
@@ -84,7 +94,7 @@ public class CatalogClient extends BaseClient {
      */
     public void getNodes(QueryOptions queryOptions, ConsulResponseCallback<List<Node>> callback) {
         http.extractConsulResponse(api.getNodes(queryOptions.toQuery(), queryOptions.getTag(),
-                queryOptions.getNodeMeta()), callback);
+                queryOptions.getNodeMeta(), queryOptions.toHeaders()), callback);
     }
 
     /**
@@ -120,7 +130,7 @@ public class CatalogClient extends BaseClient {
      */
     public ConsulResponse<Map<String, List<String>>> getServices(QueryOptions queryOptions) {
         return http.extractConsulResponse(api.getServices(queryOptions.toQuery(),
-                queryOptions.getTag(), queryOptions.getNodeMeta()));
+                queryOptions.getTag(), queryOptions.getNodeMeta(), queryOptions.toHeaders()));
     }
 
     /**
@@ -134,7 +144,7 @@ public class CatalogClient extends BaseClient {
      */
     public void getServices(QueryOptions queryOptions, ConsulResponseCallback<Map<String, List<String>>> callback) {
         http.extractConsulResponse(api.getServices(queryOptions.toQuery(),
-                queryOptions.getTag(), queryOptions.getNodeMeta()), callback);
+                queryOptions.getTag(), queryOptions.getNodeMeta(), queryOptions.toHeaders()), callback);
     }
 
     /**
@@ -160,7 +170,7 @@ public class CatalogClient extends BaseClient {
      */
     public ConsulResponse<List<CatalogService>> getService(String service, QueryOptions queryOptions) {
         return http.extractConsulResponse(api.getService(service, queryOptions.toQuery(),
-                queryOptions.getTag(), queryOptions.getNodeMeta()));
+                queryOptions.getTag(), queryOptions.getNodeMeta(), queryOptions.toHeaders()));
     }
 
     /**
@@ -175,7 +185,7 @@ public class CatalogClient extends BaseClient {
      */
     public void getService(String service, QueryOptions queryOptions, ConsulResponseCallback<List<CatalogService>> callback) {
         http.extractConsulResponse(api.getService(service, queryOptions.toQuery(),
-                queryOptions.getTag(), queryOptions.getNodeMeta()), callback);
+                queryOptions.getTag(), queryOptions.getNodeMeta(), queryOptions.toHeaders()), callback);
     }
 
     /**
@@ -199,7 +209,7 @@ public class CatalogClient extends BaseClient {
      */
     public ConsulResponse<CatalogNode> getNode(String node, QueryOptions queryOptions) {
         return http.extractConsulResponse(api.getNode(node, queryOptions.toQuery(),
-                queryOptions.getTag(), queryOptions.getNodeMeta()));
+                queryOptions.getTag(), queryOptions.getNodeMeta(), queryOptions.toHeaders()));
     }
 
     /**
@@ -212,7 +222,7 @@ public class CatalogClient extends BaseClient {
      */
     public void getNode(String node, QueryOptions queryOptions, ConsulResponseCallback<CatalogNode> callback) {
         http.extractConsulResponse(api.getNode(node, queryOptions.toQuery(),
-                queryOptions.getTag(), queryOptions.getNodeMeta()), callback);
+                queryOptions.getTag(), queryOptions.getNodeMeta(), queryOptions.toHeaders()), callback);
     }
 
     /**
@@ -265,29 +275,33 @@ public class CatalogClient extends BaseClient {
     interface Api {
 
         @GET("catalog/datacenters")
-        Call<List<String>> getDatacenters();
+        Call<List<String>> getDatacenters(@HeaderMap Map<String, String> headers);
 
         @GET("catalog/nodes")
         Call<List<Node>> getNodes(@QueryMap Map<String, Object> query,
                                   @Query("tag") List<String> tag,
-                                  @Query("node-meta") List<String> nodeMeta);
+                                  @Query("node-meta") List<String> nodeMeta,
+                                  @HeaderMap Map<String, String> headers);
 
         @GET("catalog/node/{node}")
         Call<CatalogNode> getNode(@Path("node") String node,
                                   @QueryMap Map<String, Object> query,
                                   @Query("tag") List<String> tag,
-                                  @Query("node-meta") List<String> nodeMeta);
+                                  @Query("node-meta") List<String> nodeMeta,
+                                  @HeaderMap Map<String, String> headers);
 
         @GET("catalog/services")
         Call<Map<String, List<String>>> getServices(@QueryMap Map<String, Object> query,
                                                     @Query("tag") List<String> tag,
-                                                    @Query("node-meta") List<String> nodeMeta);
+                                                    @Query("node-meta") List<String> nodeMeta,
+                                                    @HeaderMap Map<String, String> headers);
 
         @GET("catalog/service/{service}")
         Call<List<CatalogService>> getService(@Path("service") String service,
                                               @QueryMap Map<String, Object> queryMeta,
                                               @Query("tag") List<String> tag,
-                                              @Query("node-meta") List<String> nodeMeta);
+                                              @Query("node-meta") List<String> nodeMeta,
+                                              @HeaderMap Map<String, String> headers);
 
         @PUT("catalog/register")
         Call<Void> register(@Body CatalogRegistration registration, @QueryMap Map<String, Object> options);

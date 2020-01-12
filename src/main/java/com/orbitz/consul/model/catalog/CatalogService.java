@@ -6,7 +6,6 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import java.util.Optional;
 
-import com.orbitz.consul.model.health.Service;
 import org.immutables.value.Value;
 
 import java.util.List;
