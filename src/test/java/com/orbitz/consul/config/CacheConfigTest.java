@@ -15,7 +15,6 @@ import org.slf4j.Logger;
 import java.math.BigInteger;
 import java.time.Duration;
 import java.time.LocalTime;
-import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -215,7 +214,7 @@ public class CacheConfigTest {
             CacheDescriptor cacheDescriptor = new CacheDescriptor("test", "test");
 
             final CallbackConsumer<Integer> callbackConsumer = (index, callback) -> {
-                callback.onComplete(new ConsulResponse<>(res.get(), 0, true, BigInteger.ZERO));
+                callback.onComplete(new ConsulResponse<>(res.get(), 0, true, BigInteger.ZERO, null, null));
             };
 
             return new TestCache((i) -> i,

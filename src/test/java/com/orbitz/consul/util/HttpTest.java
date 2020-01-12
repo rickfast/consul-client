@@ -288,7 +288,7 @@ public class HttpTest {
     @Test
     public void consulResponseShouldHaveResponseAndDefaultValuesIfNoHeader() {
         String responseMessage = "success";
-        ConsulResponse<String> expectedConsulResponse = new ConsulResponse<>(responseMessage, 0, false, BigInteger.ZERO);
+        ConsulResponse<String> expectedConsulResponse = new ConsulResponse<>(responseMessage, 0, false, BigInteger.ZERO, null, null);
 
         Response<String> response = Response.success(responseMessage);
         ConsulResponse<String> consulResponse = Http.consulResponse(response);

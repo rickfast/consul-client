@@ -4,7 +4,6 @@ import java.nio.charset.Charset;
 import java.util.Optional;
 
 import com.google.common.collect.ImmutableSet;
-import com.google.common.io.BaseEncoding;
 import com.orbitz.consul.async.ConsulResponseCallback;
 import com.orbitz.consul.model.ConsulResponse;
 import com.orbitz.consul.model.kv.ImmutableOperation;
@@ -13,7 +12,9 @@ import com.orbitz.consul.model.kv.TxResponse;
 import com.orbitz.consul.model.kv.Value;
 import com.orbitz.consul.model.session.ImmutableSession;
 import com.orbitz.consul.model.session.SessionCreatedResponse;
+import com.orbitz.consul.option.ConsistencyMode;
 import com.orbitz.consul.option.ImmutableDeleteOptions;
+import com.orbitz.consul.option.ImmutableQueryOptions;
 import com.orbitz.consul.option.ImmutableDeleteOptions.Builder;
 import com.orbitz.consul.option.PutOptions;
 import com.orbitz.consul.option.QueryOptions;
@@ -30,13 +31,13 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 public class KeyValueITest extends BaseIntegrationTest {
     private static final Charset TEST_CHARSET = Charset.forName("IBM297");
@@ -416,27 +417,47 @@ public class KeyValueITest extends BaseIntegrationTest {
         KeyValueClient keyValueClient = client.keyValueClient();
         String key = UUID.randomUUID().toString();
 
-
-        final CountDownLatch completed = new CountDownLatch(1);
-        final AtomicBoolean success = new AtomicBoolean(false);
+        final int numTests = 2;
+        final CountDownLatch completed = new CountDownLatch(numTests);
+        final AtomicInteger success = new AtomicInteger(0);
 
         keyValueClient.getValue(key, QueryOptions.BLANK, new ConsulResponseCallback<Optional<Value>>() {
 
             @Override
             public void onComplete(ConsulResponse<Optional<Value>> consulResponse) {
                 assertNotNull(consulResponse);
+                // No cache, no Cache info
+                assertFalse(consulResponse.getCacheReponseInfo().isPresent());
                 completed.countDown();
+                success.incrementAndGet();
             }
 
             @Override
             public void onFailure(Throwable throwable) {
-                fail("404 isn't a failure for KVs");
+                throw new AssertionError("KV should work without cache, 404 is not an error", throwable);
+            }
+        });
+        completed.await(3, TimeUnit.SECONDS);
+        QueryOptions queryOptions = ImmutableQueryOptions.builder()
+                                      .consistencyMode(ConsistencyMode.createCachedConsistencyWithMaxAgeAndStale(Optional.of(60L), Optional.of(180L))).build();
+        keyValueClient.getValue(key, queryOptions, new ConsulResponseCallback<Optional<Value>>() {
+
+            @Override
+            public void onComplete(ConsulResponse<Optional<Value>> consulResponse) {
+                assertNotNull(consulResponse);
+                completed.countDown();
+                success.incrementAndGet();
+            }
+
+            @Override
+            public void onFailure(Throwable throwable) {
+                throw new AssertionError("KV should work with cache even if cache does not support ?cached", throwable);
             }
         });
 
         completed.await(3, TimeUnit.SECONDS);
         keyValueClient.deleteKey(key);
-        assertFalse(success.get());
+        assertEquals("Should be all success", success.get(), numTests);
     }
 
     @Test

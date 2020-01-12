@@ -99,13 +99,9 @@ public abstract class QueryOptions implements ParamAdder {
     public Map<String, Object> toQuery() {
         Map<String, Object> result = new HashMap<>();
 
-        switch (getConsistencyMode()) {
-            case CONSISTENT:
-                result.put("consistent", "");
-                break;
-            case STALE:
-                result.put("stale", "");
-                break;
+        Optional<String> consistency = getConsistencyMode().toParam();
+        if (consistency.isPresent()) {
+            result.put(consistency.get(), "");
         }
 
         if (isBlocking()) {
@@ -119,5 +115,10 @@ public abstract class QueryOptions implements ParamAdder {
         optionallyAdd(result, "dc", getDatacenter());
 
         return result;
+    }
+
+    @Override
+    public Map<String, String> toHeaders() {
+        return getConsistencyMode().getAdditionalHeaders();
     }
 }
