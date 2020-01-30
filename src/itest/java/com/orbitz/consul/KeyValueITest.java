@@ -477,6 +477,17 @@ public class KeyValueITest extends BaseIntegrationTest {
     }
 
     @Test
+    public void testGetKeysWithSeparator() {
+        KeyValueClient kvClient = client.keyValueClient();
+        kvClient.putValue("nested/first", "first");
+        kvClient.putValue("nested/second", "second");
+
+        List<String> keys = kvClient.getKeys("nested", "/");
+        assertEquals(1, keys.size());
+        assertEquals("nested/", keys.get(0));
+    }
+
+    @Test
     public void testUnknownKeyGetValues() {
         List<String> shouldBeEmpty = client.keyValueClient().getValuesAsString("unknownKey");
         assertTrue(shouldBeEmpty.isEmpty());

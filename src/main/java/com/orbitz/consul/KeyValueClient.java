@@ -470,8 +470,39 @@ public class KeyValueClient extends BaseClient {
      * @return A list of zero to many keys.
      */
     public List<String> getKeys(String key, QueryOptions queryOptions) {
+        return getKeys(key, null, queryOptions);
+    }
+
+    /**
+     * Retrieves a list of matching keys for the given key, limiting the prefix of keys
+     * returned, only up to the given separator.
+     *
+     * GET /v1/kv/{key}?keys&separator={separator}
+     *
+     * @param key The key to retrieve.
+     * @param separator The separator used to limit the prefix of keys returned.
+     * @return A list of zero to many keys.
+     */
+    public List<String> getKeys(String key, String separator) {
+        return getKeys(key, separator, QueryOptions.BLANK);
+    }
+
+    /**
+     * Retrieves a list of matching keys for the given key.
+     *
+     * GET /v1/kv/{key}?keys&separator={separator}
+     *
+     * @param key The key to retrieve.
+     * @param separator The separator used to limit the prefix of keys returned.
+     * @param queryOptions The query options.
+     * @return A list of zero to many keys.
+     */
+    public List<String> getKeys(String key, String separator, QueryOptions queryOptions) {
         Map<String, Object> query = queryOptions.toQuery();
         query.put("keys", "true");
+        if (separator != null) {
+            query.put("separator", separator);
+        }
 
         List<String> result = http.extract(api.getKeys(trimLeadingSlash(key), query), NOT_FOUND_404);
         return result == null ? Collections.emptyList() : result;
