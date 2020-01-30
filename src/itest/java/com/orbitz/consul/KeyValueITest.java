@@ -477,8 +477,14 @@ public class KeyValueITest extends BaseIntegrationTest {
     }
 
     @Test
-    public void testUnknownKey() {
+    public void testUnknownKeyGetValues() {
         List<String> shouldBeEmpty = client.keyValueClient().getValuesAsString("unknownKey");
+        assertTrue(shouldBeEmpty.isEmpty());
+    }
+
+    @Test
+    public void testUnknownKeyGetKeys() {
+        List<String> shouldBeEmpty = client.keyValueClient().getKeys("unknownKey");
         assertTrue(shouldBeEmpty.isEmpty());
     }
 }

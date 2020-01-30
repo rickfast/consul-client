@@ -473,7 +473,8 @@ public class KeyValueClient extends BaseClient {
         Map<String, Object> query = queryOptions.toQuery();
         query.put("keys", "true");
 
-        return http.extract(api.getKeys(trimLeadingSlash(key), query));
+        List<String> result = http.extract(api.getKeys(trimLeadingSlash(key), query), NOT_FOUND_404);
+        return result == null ? Collections.emptyList() : result;
     }
 
     /**
