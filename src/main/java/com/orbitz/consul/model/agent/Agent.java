@@ -25,4 +25,6 @@ public abstract class Agent {
     @JsonProperty("Member")
     public abstract Member getMember();
 
+    @JsonProperty("Meta")
+    public abstract Map<String, String> getMeta();
 }
