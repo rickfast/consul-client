@@ -8,6 +8,8 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
 import java.util.Map;
 import java.util.Optional;
+
+import com.orbitz.consul.model.catalog.ServiceWeights;
 import org.immutables.value.Value;
 
 import java.util.List;
@@ -48,6 +50,9 @@ public abstract class Registration {
 
     @JsonProperty("EnableTagOverride")
     public abstract Optional<Boolean> getEnableTagOverride();
+
+    @JsonProperty("ServiceWeights")
+    public abstract Optional<ServiceWeights> getServiceWeights();
 
     @Value.Immutable
     @JsonSerialize(as = ImmutableRegCheck.class)
