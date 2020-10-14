@@ -1,6 +1,13 @@
 [![Build Status](https://travis-ci.org/rickfast/consul-client.svg?branch=master)](https://travis-ci.org/rickfast/consul-client)
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.orbitz.consul/consul-client/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.orbitz.consul/consul-client)
 
+HH
+-----------
+Добавил из-за необходимости новых параметров, пока не обновится в основной репе.
+Основная ветка master-hh
+Для сборки с тестами необходимо поднять консул на нескольких портах. 
+Деплоится как обычно в наш репо.
+
 Consul Client for Java
 ======================
 
