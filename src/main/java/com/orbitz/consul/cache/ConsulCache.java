@@ -130,7 +130,7 @@ public class ConsulCache<K, V> implements AutoCloseable {
                     ImmutableMap<K, V> full = convertToMap(consulResponse);
 
                     boolean changed = !full.equals(lastResponse.get());
-                    eventHandler.cachePollingSuccess(cacheDescriptor, changed, elapsedTime);
+                    eventHandler.cachePollingSuccess(cacheDescriptor, changed, Duration.ofMillis(elapsedTime));
 
                     if (changed) {
                         // changes
@@ -171,7 +171,7 @@ public class ConsulCache<K, V> implements AutoCloseable {
                             cacheConfig.getMinimumDurationDelayOnEmptyResult().compareTo(timeToWait) > 0) {
                         timeToWait = cacheConfig.getMinimumDurationDelayOnEmptyResult();
                     }
-                    timeToWait = timeToWait.minus(elapsedTime);
+                    timeToWait = timeToWait.minusMillis(elapsedTime);
 
                     scheduler.schedule(ConsulCache.this::runCallback,
                             timeToWait.toMillis(), TimeUnit.MILLISECONDS);
