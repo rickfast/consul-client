@@ -36,18 +36,19 @@ public class AgentITest extends BaseIntegrationTest {
     private static final Map<String, String> NO_META = Collections.emptyMap();
 
     @Test
-    public void shouldRetrieveAgentInformation() throws UnknownHostException {
+    public void shouldRetrieveAgentInformation() {
         Agent agent = client.agentClient().getAgent();
 
         org.junit.Assume.assumeTrue(agent.getDebugConfig() != null);
 
         assertNotNull(agent);
         assertNotNull(agent.getConfig());
-        assertNotNull(agent.getDebugConfig().getClientAddrs().get(0));
+        final List<?> clientAddrs = (List<?>) agent.getDebugConfig().get("ClientAddrs");
+        assertNotNull(clientAddrs.get(0));
 
         // maybe we should not make any assertion on the actual value of the client address
         // as like when we run consul in a docker container we would have "0.0.0.0"
-        assertThat(agent.getDebugConfig().getClientAddrs().get(0), anyOf(is("127.0.0.1"), is("0.0.0.0")));
+        assertThat(clientAddrs.get(0), anyOf(is("127.0.0.1"), is("0.0.0.0")));
     }
 
     @Test
