@@ -122,7 +122,7 @@ public class ConsulCache<K, V> implements AutoCloseable {
                     if (!isRunning()) {
                         return;
                     }
-                    long elapsedTime = stopWatch.elapsed(TimeUnit.MILLISECONDS);
+                    Duration elapsedTime = stopWatch.elapsed();
                     updateIndex(consulResponse);
                     LOGGER.debug("Consul cache updated for {} (index={}), request duration: {} ms",
                             cacheDescriptor, latestIndex, elapsedTime);

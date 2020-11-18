@@ -91,6 +91,12 @@ public abstract class Registration {
         @JsonProperty("Status")
         public abstract Optional<String> getStatus();
 
+        @JsonProperty("SuccessBeforePassing")
+        public abstract Optional<Integer> getSuccessBeforePassing();
+
+        @JsonProperty("FailuresBeforeCritical")
+        public abstract Optional<Integer> getFailuresBeforeCritical();
+
         public static RegCheck ttl(long ttl) {
             return ImmutableRegCheck
                     .builder()
