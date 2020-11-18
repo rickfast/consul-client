@@ -17,7 +17,7 @@ In 0.11.X and 0.12.x, the Consul JAR is a shaded JAR, with most dependencies inc
 
 ```groovy
 dependencies {
-    compile 'com.orbitz.consul:consul-client:1.4.0'
+    compile 'com.orbitz.consul:consul-client:1.5.0'
 }
 ```
 
@@ -28,7 +28,7 @@ dependencies {
     <dependency>
         <groupId>com.orbitz.consul</groupId>
         <artifactId>consul-client</artifactId>
-        <version>1.4.0</version>
+        <version>1.5.0</version>
     </dependency>
 </dependencies>
 ```
