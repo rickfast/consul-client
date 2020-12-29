@@ -75,7 +75,7 @@ public class Consul {
     * Private constructor.
     *
     */
-    private Consul(AgentClient agentClient, HealthClient healthClient,
+    protected Consul(AgentClient agentClient, HealthClient healthClient,
                 KeyValueClient keyValueClient, CatalogClient catalogClient,
                 StatusClient statusClient, SessionClient sessionClient,
                 EventClient eventClient, PreparedQueryClient preparedQueryClient,
