@@ -49,7 +49,7 @@ import static com.orbitz.consul.util.Strings.trimLeadingSlash;
 /**
  * HTTP Client for /v1/kv/ endpoints.
  */
-public class KeyValueClient extends BaseClient {
+public class KeyValueClient extends BaseCacheableClient {
 
     private static String CLIENT_NAME = "keyvalue";
     public static final int NOT_FOUND_404 = 404;
@@ -61,13 +61,13 @@ public class KeyValueClient extends BaseClient {
      *
      * @param retrofit The {@link Retrofit} to build a client from.
      */
-    KeyValueClient(Retrofit retrofit, ClientConfig config, ClientEventCallback eventCallback) {
-        super(CLIENT_NAME, config, eventCallback);
+    KeyValueClient(Retrofit retrofit, ClientConfig config, ClientEventCallback eventCallback, Consul.NetworkTimeoutConfig networkTimeoutConfig) {
+        super(CLIENT_NAME, config, eventCallback, networkTimeoutConfig);
         this.api = retrofit.create(Api.class);
     }
 
-    KeyValueClient(Api api, ClientConfig config, ClientEventCallback eventCallback) {
-        super(CLIENT_NAME, config, eventCallback);
+    KeyValueClient(Api api, ClientConfig config, ClientEventCallback eventCallback, Consul.NetworkTimeoutConfig networkTimeoutConfig) {
+        super(CLIENT_NAME, config, eventCallback, networkTimeoutConfig);
         this.api = api;
     }
 

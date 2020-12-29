@@ -407,4 +407,11 @@ public class ConsulCache<K, V> implements AutoCloseable {
             // do nothing, since executor was externally created
         }
     }
+
+    protected static void checkWatch(int networkReadMillis, int cacheWatchSeconds) {
+        if (networkReadMillis <= TimeUnit.SECONDS.toMillis(cacheWatchSeconds)) {
+            throw new IllegalArgumentException("Cache watchInterval="+ cacheWatchSeconds + "sec >= networkClientReadTimeout="
+                + networkReadMillis + "ms. It can cause issues");
+        }
+    }
 }

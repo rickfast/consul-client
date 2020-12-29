@@ -3,12 +3,17 @@ package com.orbitz.consul.cache;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.orbitz.consul.BaseIntegrationTest;
+import com.orbitz.consul.Consul;
 import com.orbitz.consul.KeyValueClient;
+import com.orbitz.consul.config.CacheConfig;
+import com.orbitz.consul.config.ClientConfig;
 import com.orbitz.consul.model.kv.Value;
 import com.orbitz.consul.Synchroniser;
 import junitparams.JUnitParamsRunner;
 import junitparams.Parameters;
 import junitparams.naming.TestCaseName;
+import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -26,10 +31,22 @@ import static org.junit.Assert.assertThat;
 @RunWith(JUnitParamsRunner.class)
 public class KVCacheITest extends BaseIntegrationTest {
 
+    Consul consulClient;
+    @Before
+    public void before() {
+        consulClient = Consul.builder()
+                .withHostAndPort(defaultClientHostAndPort)
+                .withClientConfiguration(new ClientConfig(CacheConfig.builder().withWatchDuration(Duration.ofSeconds(1)).build()))
+                .withReadTimeoutMillis(Duration.ofSeconds(11).toMillis())
+                .withConnectTimeoutMillis(Duration.ofMillis(500).toMillis())
+                .withWriteTimeoutMillis(Duration.ofMillis(500).toMillis())
+                .build();
+    }
+
     @Test
     public void nodeCacheKvTest() throws Exception {
 
-        KeyValueClient kvClient = client.keyValueClient();
+        KeyValueClient kvClient = consulClient.keyValueClient();
         String root = UUID.randomUUID().toString();
 
         for (int i = 0; i < 5; i++) {
@@ -73,7 +90,7 @@ public class KVCacheITest extends BaseIntegrationTest {
 
     @Test
     public void testListeners() throws Exception {
-        KeyValueClient kvClient = client.keyValueClient();
+        KeyValueClient kvClient = consulClient.keyValueClient();
         String root = UUID.randomUUID().toString();
         final List<Map<String, Value>> events = new ArrayList<>();
 
@@ -113,7 +130,7 @@ public class KVCacheITest extends BaseIntegrationTest {
 
     @Test
     public void testLateListenersGetValues() throws Exception {
-        KeyValueClient kvClient = client.keyValueClient();
+        KeyValueClient kvClient = consulClient.keyValueClient();
         String root = UUID.randomUUID().toString();
 
         KVCache nc = KVCache.newCache(
@@ -147,7 +164,7 @@ public class KVCacheITest extends BaseIntegrationTest {
 
     @Test
     public void testListenersNonExistingKeys() throws Exception {
-        KeyValueClient kvClient = client.keyValueClient();
+        KeyValueClient kvClient = consulClient.keyValueClient();
         String root = UUID.randomUUID().toString();
 
         KVCache nc = KVCache.newCache(kvClient, root, 10);
@@ -168,7 +185,7 @@ public class KVCacheITest extends BaseIntegrationTest {
 
     @Test(expected = IllegalStateException.class)
     public void testLifeCycleDoubleStart() throws Exception {
-        KeyValueClient kvClient = client.keyValueClient();
+        KeyValueClient kvClient = consulClient.keyValueClient();
         String root = UUID.randomUUID().toString();
 
         KVCache nc = KVCache.newCache(kvClient, root, 10);
@@ -186,7 +203,7 @@ public class KVCacheITest extends BaseIntegrationTest {
 
     @Test
     public void testLifeCycle() throws Exception {
-        KeyValueClient kvClient = client.keyValueClient();
+        KeyValueClient kvClient = consulClient.keyValueClient();
         String root = UUID.randomUUID().toString();
         final List<Map<String, Value>> events = new ArrayList<>();
 
@@ -226,7 +243,7 @@ public class KVCacheITest extends BaseIntegrationTest {
 
     @Test
     public void ensureCacheInitialization() throws InterruptedException {
-        KeyValueClient keyValueClient = client.keyValueClient();
+        KeyValueClient keyValueClient = consulClient.keyValueClient();
         String key = UUID.randomUUID().toString();
         String value = UUID.randomUUID().toString();
         keyValueClient.putValue(key, value);
@@ -259,7 +276,7 @@ public class KVCacheITest extends BaseIntegrationTest {
                 new ThreadFactoryBuilder().setDaemon(true).setNameFormat("kvcache-itest-%d").build()
         );
 
-        KeyValueClient keyValueClient = client.keyValueClient();
+        KeyValueClient keyValueClient = consulClient.keyValueClient();
         String key = UUID.randomUUID().toString();
         String value = UUID.randomUUID().toString();
         String newValue = UUID.randomUUID().toString();
