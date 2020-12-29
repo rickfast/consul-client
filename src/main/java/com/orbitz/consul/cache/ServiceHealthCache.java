@@ -21,6 +21,7 @@ public class ServiceHealthCache extends ConsulCache<ServiceHealthKey, ServiceHea
                                Scheduler callbackScheduler) {
         super(keyExtractor,
               (index, callback) -> {
+                  checkWatch(healthClient.getNetworkTimeoutConfig().getClientReadTimeoutMillis(), watchSeconds);
                   QueryOptions params = watchParams(index, watchSeconds, queryOptions);
                   if (passing) {
                       healthClient.getHealthyServiceInstances(serviceName, params, callback);
