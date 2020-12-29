@@ -12,14 +12,14 @@ import org.junit.Test;
 
 import java.util.UUID;
 
-public class PreparedQueryITest {
+public class PreparedQueryITest extends BaseIntegrationTest {
 
     @Test
     @Ignore
     public void shouldWork() {
         String service = UUID.randomUUID().toString();
         String query = UUID.randomUUID().toString();
-        Consul consul = Consul.builder().withHostAndPort(HostAndPort.fromParts("192.168.99.100", 8500)).build();
+        Consul consul = Consul.builder().withHostAndPort(HostAndPort.fromParts("192.168.99.100", consulContainer.getFirstMappedPort())).build();
         consul.agentClient().register(8080, 10000L, service, service + "1", Collections.emptyList(), Collections.emptyMap());
         PreparedQueryClient preparedQueryClient = consul.preparedQueryClient();
 
