@@ -32,8 +32,8 @@ public abstract class DebugConfig {
     @JsonProperty("DNSDomain")
     public abstract String getDnsDomain();
 
-    @JsonProperty("LogLevel")
-    public abstract String getLogLevel();
+    @JsonProperty("Logging")
+    public abstract Logging getLogging();
 
     @JsonProperty("NodeName")
     public abstract String getNodeName();
@@ -73,9 +73,6 @@ public abstract class DebugConfig {
 
     @JsonProperty("PidFile")
     public abstract String getPidFile();
-
-    @JsonProperty("EnableSyslog")
-    public abstract boolean getEnableSyslog();
 
     @JsonProperty("RejoinAfterLeave")
     public abstract boolean getRejoinAfterLeave();

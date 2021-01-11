@@ -10,12 +10,32 @@ import java.util.*;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.*;
+import org.testcontainers.containers.GenericContainer;
 
 public class AclTest {
 
+    public static GenericContainer<?> consulContainerAcl;
+    static {
+        consulContainerAcl = new GenericContainer<>("consul")
+                .withCommand("agent", "-dev", "-client", "0.0.0.0", "--enable-script-checks=true")
+                .withExposedPorts(8500)
+                .withEnv("CONSUL_LOCAL_CONFIG",
+                        "{\n" +
+                                "  \"acl\": {\n" +
+                                "    \"enabled\": true,\n" +
+                                "    \"default_policy\": \"deny\",\n" +
+                                "    \"tokens\": {\n" +
+                                "      \"master\": \"aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee\"\n" +
+                                "    }\n" +
+                                "  }\n" +
+                                "}"
+                );
+        consulContainerAcl.start();
+    }
+
     protected static Consul client;
 
-    protected static HostAndPort aclClientHostAndPort = HostAndPort.fromParts("localhost", 8501);
+    protected static HostAndPort aclClientHostAndPort = HostAndPort.fromParts("localhost", consulContainerAcl.getFirstMappedPort());
 
     @BeforeClass
     public static void beforeClass() {

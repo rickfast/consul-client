@@ -21,6 +21,7 @@ public class KVCache extends ConsulCache<String, Value> {
                     Scheduler callbackScheduler) {
         super(getKeyExtractorFunction(keyPath),
             (index, callback) -> {
+                checkWatch(kvClient.getNetworkTimeoutConfig().getClientReadTimeoutMillis(), watchSeconds);
                 QueryOptions params = watchParams(index, watchSeconds, queryOptions);
                 kvClient.getValues(keyPath, params, callback);
             },
