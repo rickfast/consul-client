@@ -9,9 +9,8 @@
     <url>http://maven.apache.org</url>
     <description>Consul Client for Java</description>
     <scm>
-        <url>scm:git@github.com:OrbitzWorldwide/consul-client.git</url>
-        <connection>scm:git@github.com:OrbitzWorldwide/consul-client.git</connection>
-        <developerConnection>scm:git@github.com:OrbitzWorldwide/consul-client.git</developerConnection>
+        <connection>scm:git:git@github.com:hhru/consul-java-client.git</connection>
+        <developerConnection>scm:git:git@github.com:hhru/consul-java-client.git</developerConnection>
     </scm>
     <licenses>
         <license>
