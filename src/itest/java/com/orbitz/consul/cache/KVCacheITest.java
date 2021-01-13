@@ -38,6 +38,8 @@ public class KVCacheITest extends BaseIntegrationTest {
                 .withHostAndPort(defaultClientHostAndPort)
                 .withClientConfiguration(new ClientConfig(CacheConfig.builder().withWatchDuration(Duration.ofSeconds(1)).build()))
                 .withReadTimeoutMillis(Duration.ofSeconds(11).toMillis())
+                .withConnectTimeoutMillis(Duration.ofMillis(500).toMillis())
+                .withWriteTimeoutMillis(Duration.ofMillis(500).toMillis())
                 .build();
     }
 

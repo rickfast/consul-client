@@ -52,6 +52,7 @@ public abstract class BaseIntegrationTest {
                 .withHostAndPort(defaultClientHostAndPort)
                 .withClientConfiguration(new ClientConfig(CacheConfig.builder().withWatchDuration(Duration.ofSeconds(1)).build()))
                 .withReadTimeoutMillis(Duration.ofSeconds(2).toMillis())
+                .withWriteTimeoutMillis(Duration.ofMillis(500).toMillis())
                 .build();
     }
 
