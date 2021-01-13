@@ -864,7 +864,7 @@ public class Consul {
             }
 
             public NetworkTimeoutConfig.Builder withWriteTimeout(int millis) {
-                return withReadTimeout(() -> millis);
+                return withWriteTimeout(() -> millis);
             }
 
             public NetworkTimeoutConfig.Builder withConnectTimeout(IntSupplier timeoutSupplier) {
@@ -873,7 +873,7 @@ public class Consul {
             }
 
             public NetworkTimeoutConfig.Builder withConnectTimeout(int millis) {
-                return withReadTimeout(() -> millis);
+                return withConnectTimeout(() -> millis);
             }
 
             public NetworkTimeoutConfig build() {
