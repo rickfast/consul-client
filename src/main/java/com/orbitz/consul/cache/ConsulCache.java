@@ -126,6 +126,7 @@ public class ConsulCache<K, V> implements AutoCloseable {
                     updateIndex(consulResponse);
                     LOGGER.debug("Consul cache updated for {} (index={}), request duration: {} ms",
                             cacheDescriptor, latestIndex, elapsedTime);
+                    LOGGER.debug("Consul response {}", consulResponse);
 
                     ImmutableMap<K, V> full = convertToMap(consulResponse);
 
