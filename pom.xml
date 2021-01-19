@@ -3,7 +3,7 @@
     <groupId>com.orbitz.consul</groupId>
     <artifactId>consul-client</artifactId>
     <packaging>jar</packaging>
-    <version>1.4.0-hh-1.6</version>
+    <version>1.4.0-hh-1.7-SNAPSHOT</version>
     <name>consul-client</name>
     <url>http://maven.apache.org</url>
     <description>Consul Client for Java</description>
