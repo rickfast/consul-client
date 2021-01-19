@@ -9,6 +9,8 @@ import com.orbitz.consul.model.health.HealthCheck;
 import com.orbitz.consul.model.health.ServiceHealth;
 import com.orbitz.consul.monitoring.ClientEventCallback;
 import com.orbitz.consul.option.QueryOptions;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import retrofit2.Call;
 import retrofit2.Retrofit;
 import retrofit2.http.GET;
@@ -25,6 +27,8 @@ import java.util.Map;
  * HTTP Client for /v1/health/ endpoints.
  */
 public class HealthClient extends BaseCacheableClient {
+
+    private final static Logger LOGGER = LoggerFactory.getLogger(HealthClient.class);
 
     private static String CLIENT_NAME = "health";
 
@@ -206,6 +210,7 @@ public class HealthClient extends BaseCacheableClient {
      */
     public void getHealthyServiceInstances(String service, QueryOptions queryOptions,
                                            ConsulResponseCallback<List<ServiceHealth>> callback) {
+        LOGGER.debug("Query options for healthy service instances with passing: {}", queryOptions);
         http.extractConsulResponse(api.getServiceInstances(service,
                 optionsFrom(ImmutableMap.of("passing", "true"), queryOptions.toQuery()),
                 queryOptions.getTag(), queryOptions.getNodeMeta(), queryOptions.toHeaders()), callback);
