@@ -51,7 +51,7 @@ public abstract class Registration {
     @JsonProperty("EnableTagOverride")
     public abstract Optional<Boolean> getEnableTagOverride();
 
-    @JsonProperty("ServiceWeights")
+    @JsonProperty("Weights")
     public abstract Optional<ServiceWeights> getServiceWeights();
 
     @Value.Immutable
