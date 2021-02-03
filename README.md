@@ -8,20 +8,6 @@ Consul Client for Java
 
 Simple client for the Consul HTTP API.  For more information about the Consul HTTP API, go [here](http://www.consul.io/docs/agent/http.html).
 
-### Maven:
-
-```xml
-<dependencies>
-    <dependency>
-        <groupId>ru.hh.consul</groupId>
-        <artifactId>consul-client</artifactId>
-        <version>1.0.0</version>
-        <!-- <classifier>shaded</classifier> if you need version with shaded depedencies -->
-    </dependency>
-</dependencies>
-```
-
-
 Basic Usage
 -----------
 

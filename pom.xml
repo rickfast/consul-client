@@ -18,6 +18,11 @@
             <distribution>repo</distribution>
         </license>
     </licenses>
+    <scm>
+        <connection>scm:git:git@github.com:hhru/consul-java-client.git</connection>
+        <developerConnection>scm:git:git@github.com:hhru/consul-java-client.git</developerConnection>
+        <tag>HEAD</tag>
+    </scm>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <java.version>11</java.version>
