@@ -1,8 +1,15 @@
 language: java
-services: docker
-before_install:
-  - ./do setup-environment
-
 jdk:
-  - openjdk8
-script: mvn clean test
+  - openjdk11
+script: "mvn -P codecoverage,!sonar clean test sonar:sonar"
+after_success:
+  - bash <(curl -s https://codecov.io/bash)
+
+addons:
+  sonarcloud:
+    organization: "hhru"
+
+cache:
+  directories:
+    - '$HOME/.m2/repository'
+    - '$HOME/.sonar/cache'
