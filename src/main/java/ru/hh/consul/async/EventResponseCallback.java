@@ -11,9 +11,9 @@ public interface EventResponseCallback {
     /**
      * Callback for a successful {@link EventResponse}.
      *
-     * @param EventResponse The Consul event response.
+     * @param eventResponse The Consul event response.
      */
-    void onComplete(EventResponse EventResponse);
+    void onComplete(EventResponse eventResponse);
 
     /**
      * Callback for an unsuccessful request.

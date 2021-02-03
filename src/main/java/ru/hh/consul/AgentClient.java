@@ -2,18 +2,21 @@ package ru.hh.consul;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.net.HostAndPort;
+import retrofit2.http.Body;
+import retrofit2.http.GET;
+import retrofit2.http.PUT;
+import retrofit2.http.Path;
+import retrofit2.http.QueryMap;
 import ru.hh.consul.async.ConsulResponseCallback;
 import ru.hh.consul.config.ClientConfig;
 import ru.hh.consul.model.ConsulResponse;
 import ru.hh.consul.model.State;
-import com.orbitz.consul.model.agent.*;
 import ru.hh.consul.model.health.HealthCheck;
 import ru.hh.consul.model.health.Service;
 import ru.hh.consul.monitoring.ClientEventCallback;
 import ru.hh.consul.option.QueryOptions;
 import retrofit2.Call;
 import retrofit2.Retrofit;
-import retrofit2.http.*;
 
 import java.net.URL;
 import java.util.Collections;

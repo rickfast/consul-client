@@ -1,5 +1,11 @@
 package ru.hh.consul;
 
+import retrofit2.http.Body;
+import retrofit2.http.GET;
+import retrofit2.http.Headers;
+import retrofit2.http.PUT;
+import retrofit2.http.QueryMap;
+import retrofit2.http.Streaming;
 import ru.hh.consul.async.Callback;
 import ru.hh.consul.async.ConsulResponseCallback;
 import ru.hh.consul.config.ClientConfig;
@@ -11,7 +17,6 @@ import okhttp3.RequestBody;
 import okhttp3.ResponseBody;
 import retrofit2.Call;
 import retrofit2.Retrofit;
-import retrofit2.http.*;
 
 import java.io.File;
 import java.io.IOException;

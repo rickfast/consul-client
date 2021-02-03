@@ -14,7 +14,7 @@ import java.util.concurrent.TimeUnit;
 
 public class TimeoutInterceptor implements Interceptor {
 
-    private final static Logger LOGGER = LoggerFactory.getLogger(TimeoutInterceptor.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(TimeoutInterceptor.class);
 
     private CacheConfig config;
 
@@ -61,9 +61,9 @@ public class TimeoutInterceptor implements Interceptor {
         Duration wait = null;
         try {
             if (query.contains("m")) {
-                wait = Duration.ofMinutes(Integer.valueOf(query.replace("m","")));
+                wait = Duration.ofMinutes(Integer.parseInt(query.replace("m", "")));
             } else if (query.contains("s")) {
-                wait = Duration.ofSeconds(Integer.valueOf(query.replace("s","")));
+                wait = Duration.ofSeconds(Integer.parseInt(query.replace("s", "")));
             }
         } catch (Exception e) {
             LOGGER.warn(String.format("Error while extracting wait duration from query parameters: %s", query));

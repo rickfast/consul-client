@@ -29,5 +29,5 @@ public abstract class Node {
     public abstract Optional<TaggedAddresses> getTaggedAddresses();
 
     @JsonProperty("Meta")
-    public abstract Optional<Map<String,String>> getNodeMeta();
+    public abstract Optional<Map<String, String>> getNodeMeta();
 }

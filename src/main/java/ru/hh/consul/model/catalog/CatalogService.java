@@ -45,11 +45,11 @@ public abstract class CatalogService {
     public abstract List<String> getServiceTags();
 
     @JsonProperty("ServiceMeta")
-    public abstract Map<String,String> getServiceMeta();
+    public abstract Map<String, String> getServiceMeta();
 
     @JsonProperty("ServiceWeights")
     public abstract Optional<ServiceWeights> getServiceWeights();
 
     @JsonProperty("NodeMeta")
-    public abstract Map<String,String> getNodeMeta();
+    public abstract Map<String, String> getNodeMeta();
 }

@@ -1,11 +1,14 @@
 package ru.hh.consul;
 
+import retrofit2.http.Body;
+import retrofit2.http.DELETE;
+import retrofit2.http.GET;
+import retrofit2.http.PUT;
+import retrofit2.http.Path;
 import ru.hh.consul.config.ClientConfig;
-import com.orbitz.consul.model.acl.*;
 import ru.hh.consul.monitoring.ClientEventCallback;
 import retrofit2.Call;
 import retrofit2.Retrofit;
-import retrofit2.http.*;
 
 import java.util.List;
 import ru.hh.consul.model.acl.AclResponse;

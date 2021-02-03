@@ -1,6 +1,11 @@
 package ru.hh.consul;
 
 import com.google.common.collect.ImmutableMap;
+import retrofit2.http.Body;
+import retrofit2.http.GET;
+import retrofit2.http.POST;
+import retrofit2.http.Path;
+import retrofit2.http.QueryMap;
 import ru.hh.consul.async.Callback;
 import ru.hh.consul.config.ClientConfig;
 import ru.hh.consul.model.query.PreparedQuery;
@@ -11,7 +16,6 @@ import ru.hh.consul.monitoring.ClientEventCallback;
 import ru.hh.consul.option.QueryOptions;
 import retrofit2.Call;
 import retrofit2.Retrofit;
-import retrofit2.http.*;
 
 import java.util.Collections;
 import java.util.List;
@@ -138,7 +142,7 @@ public class PreparedQueryClient extends BaseClient {
      * Retrofit API interface.
      */
     interface Api {
-	
+
         @GET("query")
         Call<List<StoredQuery>> getPreparedQueries(@QueryMap Map<String, String> queryMap);
 

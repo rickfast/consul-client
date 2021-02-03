@@ -438,7 +438,9 @@ public class KeyValueITest extends BaseIntegrationTest {
         });
         completed.await(3, TimeUnit.SECONDS);
         QueryOptions queryOptions = ImmutableQueryOptions.builder()
-                                      .consistencyMode(ConsistencyMode.createCachedConsistencyWithMaxAgeAndStale(Optional.of(60L), Optional.of(180L))).build();
+                                      .consistencyMode(ConsistencyMode.createCachedConsistencyWithMaxAgeAndStale(
+                                        Optional.of(60L), Optional.of(180L)
+                                      )).build();
         keyValueClient.getValue(key, queryOptions, new ConsulResponseCallback<Optional<Value>>() {
 
             @Override

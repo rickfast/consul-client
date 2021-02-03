@@ -9,7 +9,7 @@ import java.io.IOException;
 import static org.junit.Assert.assertEquals;
 
 public class DebugConfigTest {
-    private final String JSON = "{\n" +
+    private final String json = "{\n" +
             "    \"ACLMasterToken\": \"hidden\",\n" +
             "    \"GRPCAddrs\": [\n" +
             "        \"tcp://0.0.0.0:8502\"\n" +
@@ -239,7 +239,7 @@ public class DebugConfigTest {
     @Test
     public void testDeserialization() throws IOException {
        ObjectMapper mapper = Jackson.MAPPER;
-       final DebugConfig dbgConfig = mapper.readerFor(DebugConfig.class).readValue(JSON);
+       final DebugConfig dbgConfig = mapper.readerFor(DebugConfig.class).readValue(json);
        assertEquals("DebugConfig contains 167 items", 167, dbgConfig.size());
     }
 }

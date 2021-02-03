@@ -2,6 +2,15 @@ package ru.hh.consul.cache;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.UUID;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 import ru.hh.consul.BaseIntegrationTest;
 import ru.hh.consul.Consul;
 import ru.hh.consul.KeyValueClient;
@@ -17,15 +26,14 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import java.time.Duration;
-import java.util.*;
-import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.hamcrest.CoreMatchers.anyOf;
 import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.*;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 @RunWith(JUnitParamsRunner.class)
 public class KVCacheITest extends BaseIntegrationTest {

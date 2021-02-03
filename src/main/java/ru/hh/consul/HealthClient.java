@@ -28,7 +28,7 @@ import java.util.Map;
  */
 public class HealthClient extends BaseCacheableClient {
 
-    private final static Logger LOGGER = LoggerFactory.getLogger(HealthClient.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(HealthClient.class);
 
     private static String CLIENT_NAME = "health";
 

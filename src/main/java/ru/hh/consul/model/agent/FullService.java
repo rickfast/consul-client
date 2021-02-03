@@ -32,7 +32,7 @@ public abstract class FullService {
     public abstract List<String> getTags();
 
     @JsonProperty("Meta")
-    public abstract Map<String,String> getMeta();
+    public abstract Map<String, String> getMeta();
 
     @JsonProperty("Port")
     public abstract int getPort();

@@ -35,7 +35,7 @@ public abstract class Service {
     public abstract String getAddress();
 
     @JsonProperty("Meta")
-    public abstract Map<String,String> getMeta();
+    public abstract Map<String, String> getMeta();
 
     @JsonProperty("Port")
     public abstract int getPort();

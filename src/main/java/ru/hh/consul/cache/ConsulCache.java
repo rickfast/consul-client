@@ -47,7 +47,7 @@ import static com.google.common.base.Preconditions.checkState;
 public class ConsulCache<K, V> implements AutoCloseable {
     enum State {latent, starting, started, stopped }
 
-    private final static Logger LOGGER = LoggerFactory.getLogger(ConsulCache.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(ConsulCache.class);
 
     private final AtomicReference<BigInteger> latestIndex = new AtomicReference<>(null);
     private final AtomicLong lastContact = new AtomicLong();
@@ -205,7 +205,7 @@ public class ConsulCache<K, V> implements AutoCloseable {
     }
 
     public void start() {
-        checkState(state.compareAndSet(State.latent, State.starting),"Cannot transition from state %s to %s", state.get(), State.starting);
+        checkState(state.compareAndSet(State.latent, State.starting), "Cannot transition from state %s to %s", state.get(), State.starting);
         eventHandler.cacheStart(cacheDescriptor);
         runCallback();
     }
@@ -250,8 +250,10 @@ public class ConsulCache<K, V> implements AutoCloseable {
         return lastResponse.get();
     }
 
-    public ConsulResponse<ImmutableMap<K,V>> getMapWithMetadata() {
-        return new ConsulResponse<>(lastResponse.get(), lastContact.get(), isKnownLeader.get(), latestIndex.get(), Optional.ofNullable(lastCacheInfo.get()));
+    public ConsulResponse<ImmutableMap<K, V>> getMapWithMetadata() {
+        return new ConsulResponse<>(lastResponse.get(), lastContact.get(), isKnownLeader.get(),
+          latestIndex.get(), Optional.ofNullable(lastCacheInfo.get())
+        );
     }
 
     @VisibleForTesting

@@ -62,7 +62,8 @@ public class ConsulResponse<T> {
         return cacheInfo;
     }
 
-    public ConsulResponse(T response, long lastContact, boolean knownLeader, BigInteger index, String headerHitMiss, String headerAge) throws NumberFormatException {
+    public ConsulResponse(T response, long lastContact, boolean knownLeader, BigInteger index, String headerHitMiss, String headerAge)
+      throws NumberFormatException {
         this(response, lastContact, knownLeader, index, Optional.ofNullable(buildCacheReponseInfo(headerHitMiss, headerAge)));
     }
 
@@ -110,8 +111,12 @@ public class ConsulResponse<T> {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o) {
+          return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+          return false;
+        }
 
         ConsulResponse that = (ConsulResponse) o;
 

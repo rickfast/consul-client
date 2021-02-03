@@ -1,15 +1,16 @@
 package ru.hh.consul;
 
 import com.google.common.net.HostAndPort;
-import com.orbitz.consul.model.acl.*;
+import java.util.Objects;
+import java.util.UUID;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.time.Duration;
-import java.util.*;
 
 import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.*;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertTrue;
 import org.testcontainers.containers.GenericContainer;
 import ru.hh.consul.model.acl.ImmutablePolicy;
 import ru.hh.consul.model.acl.ImmutablePolicyLink;
@@ -106,7 +107,8 @@ public class AclTest {
 
         String tokenDescription = UUID.randomUUID().toString();
         TokenResponse createdToken = aclClient.createToken(
-          ImmutableToken.builder().description(tokenDescription).local(false).addPolicies(ImmutablePolicyLink.builder().id(createdPolicy.id()).build()).build());
+          ImmutableToken.builder().description(tokenDescription).local(false)
+            .addPolicies(ImmutablePolicyLink.builder().id(createdPolicy.id()).build()).build());
 
         TokenResponse readToken = aclClient.readToken(createdToken.accessorId());
 
@@ -129,7 +131,8 @@ public class AclTest {
         String policyName = UUID.randomUUID().toString();
         PolicyResponse createdPolicy = aclClient.createPolicy(ImmutablePolicy.builder().name(policyName).build());
 
-        TokenResponse createdToken = aclClient.createToken(ImmutableToken.builder().description("none").local(false).addPolicies(ImmutablePolicyLink.builder().id(createdPolicy.id()).build()).build());
+        TokenResponse createdToken = aclClient.createToken(ImmutableToken.builder().description("none").local(false)
+          .addPolicies(ImmutablePolicyLink.builder().id(createdPolicy.id()).build()).build());
         String newDescription = UUID.randomUUID().toString();
         aclClient.updateToken(createdToken.accessorId(), ImmutableToken.builder().local(false).description(newDescription).build());
 
@@ -151,7 +154,8 @@ public class AclTest {
 
         String policyName = UUID.randomUUID().toString();
         PolicyResponse createdPolicy = aclClient.createPolicy(ImmutablePolicy.builder().name(policyName).build());
-        TokenResponse createdToken = aclClient.createToken(ImmutableToken.builder().description(UUID.randomUUID().toString()).local(false).addPolicies(ImmutablePolicyLink.builder().id(createdPolicy.id()).build()).build());
+        TokenResponse createdToken = aclClient.createToken(ImmutableToken.builder().description(UUID.randomUUID().toString())
+          .local(false).addPolicies(ImmutablePolicyLink.builder().id(createdPolicy.id()).build()).build());
 
         int oldTokenCount = aclClient.listTokens().size();
         aclClient.deleteToken(createdToken.accessorId());

@@ -2,7 +2,6 @@ package ru.hh.consul;
 
 import ru.hh.consul.async.ConsulResponseCallback;
 import ru.hh.consul.model.ConsulResponse;
-import com.orbitz.consul.model.catalog.*;
 import ru.hh.consul.model.catalog.CatalogDeregistration;
 import ru.hh.consul.model.catalog.CatalogNode;
 import ru.hh.consul.model.catalog.CatalogRegistration;
@@ -31,8 +30,10 @@ import ru.hh.consul.model.catalog.ImmutableCatalogDeregistration;
 import ru.hh.consul.model.catalog.ImmutableCatalogRegistration;
 import ru.hh.consul.model.catalog.ImmutableCatalogService;
 import ru.hh.consul.model.catalog.ImmutableServiceWeights;
-
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 public class CatalogITest extends BaseIntegrationTest {
 

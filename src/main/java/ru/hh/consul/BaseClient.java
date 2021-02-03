@@ -21,5 +21,7 @@ abstract class BaseClient {
         return config;
     }
 
-    public ClientEventHandler getEventHandler() { return eventHandler; }
+    public ClientEventHandler getEventHandler() {
+      return eventHandler;
+    }
 }

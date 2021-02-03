@@ -148,7 +148,8 @@ public class CacheConfig {
 
         /**
          * Sets a random delay between the {@code minDelay} and {@code maxDelay} (inclusive) to occur between retries.
-         * @throws IllegalArgumentException if {@code minDelay} or {@code maxDelay} is negative, or if {@code minDelay} is superior to {@code maxDelay}.
+         * @throws IllegalArgumentException if {@code minDelay} or {@code maxDelay} is negative, or
+         * if {@code minDelay} is superior to {@code maxDelay}.
          */
         public Builder withBackOffDelay(Duration minDelay, Duration maxDelay) {
             this.minBackOffDelay = Preconditions.checkNotNull(minDelay, "Minimum delay cannot be null");

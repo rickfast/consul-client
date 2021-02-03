@@ -46,7 +46,7 @@ public abstract class Registration {
     public abstract List<String> getTags();
 
     @JsonProperty("Meta")
-    public abstract Map<String,String> getMeta();
+    public abstract Map<String, String> getMeta();
 
     @JsonProperty("EnableTagOverride")
     public abstract Optional<Boolean> getEnableTagOverride();

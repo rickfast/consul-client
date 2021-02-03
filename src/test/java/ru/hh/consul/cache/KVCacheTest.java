@@ -1,6 +1,7 @@
 package ru.hh.consul.cache;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import java.util.Optional;
 import ru.hh.consul.Consul;
 import ru.hh.consul.KeyValueClient;
 import ru.hh.consul.KeyValueClientFactory;
@@ -23,7 +24,6 @@ import retrofit2.mock.MockRetrofit;
 import retrofit2.mock.NetworkBehavior;
 
 import java.time.Duration;
-import java.util.*;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;

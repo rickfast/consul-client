@@ -11,13 +11,14 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.function.IntSupplier;
 
-import javax.net.ssl.*;
-
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.io.BaseEncoding;
 import com.google.common.net.HostAndPort;
+import javax.net.ssl.HostnameVerifier;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.X509TrustManager;
 import ru.hh.consul.cache.TimeoutInterceptor;
 import ru.hh.consul.config.ClientConfig;
 import ru.hh.consul.monitoring.ClientEventCallback;
@@ -495,10 +496,10 @@ public class Consul {
          * @return The builder.
          */
         public Builder withFailoverInterceptor(ConsulFailoverStrategy strategy) {
-        	Preconditions.checkArgument(strategy != null, "Must not provide a null strategy");
-        	
-        	consulFailoverInterceptor = new ConsulFailoverInterceptor(strategy);
-        	return this;
+          Preconditions.checkArgument(strategy != null, "Must not provide a null strategy");
+
+          consulFailoverInterceptor = new ConsulFailoverInterceptor(strategy);
+          return this;
         }
 
         /**
@@ -608,7 +609,8 @@ public class Consul {
         * It can only be shutdown by the {@link Consul#destroy()} method.
         *
         * When an application needs to be able to customize the ExecutorService parameters, and/or manage its lifecycle,
-        * it can provide an instance of ExecutorService to the Builder. In that case, this ExecutorService will be used instead of creating one internally.
+        * it can provide an instance of ExecutorService to the Builder. In that case,
+        * this ExecutorService will be used instead of creating one internally.
         *
         * @param executorService The ExecutorService to be injected in the internal tasks dispatcher.
         * @return
@@ -628,7 +630,8 @@ public class Consul {
         * It can only be shutdown by the {@link Consul#destroy()} method.
         *
         * When an application needs to be able to customize the ConnectionPool parameters, and/or manage its lifecycle,
-        * it can provide an instance of ConnectionPool to the Builder. In that case, this ConnectionPool will be used instead of creating one internally.
+        * it can provide an instance of ConnectionPool to the Builder. In that case,
+        * this ConnectionPool will be used instead of creating one internally.
         *
         * @param connectionPool The ConnetcionPool to be injected in the internal  OkHttpClient
         * @return
@@ -744,7 +747,8 @@ public class Consul {
         }
 
         private OkHttpClient createOkHttpClient(SSLContext sslContext, X509TrustManager trustManager, HostnameVerifier hostnameVerifier,
-                                                Proxy proxy, ExecutorService executorService, ConnectionPool connectionPool, ClientConfig clientConfig) {
+                                                Proxy proxy, ExecutorService executorService, ConnectionPool connectionPool,
+                                                ClientConfig clientConfig) {
 
             final OkHttpClient.Builder builder = new OkHttpClient.Builder();
 

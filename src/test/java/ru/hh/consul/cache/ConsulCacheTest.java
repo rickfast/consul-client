@@ -51,7 +51,9 @@ public class ConsulCacheTest {
 
         final StubCallbackConsumer callbackConsumer = new StubCallbackConsumer(Collections.emptyList());
 
-        final ConsulCache<String, Value> consulCache = new ConsulCache<>(keyExtractor, callbackConsumer, cacheConfig, eventHandler, new CacheDescriptor(""));
+        final ConsulCache<String, Value> consulCache = new ConsulCache<>(keyExtractor, callbackConsumer, cacheConfig, eventHandler,
+          new CacheDescriptor("")
+        );
         final ConsulResponse<List<Value>> consulResponse = new ConsulResponse<>(response, 0, false, BigInteger.ONE, null, null);
         final ImmutableMap<String, Value> map = consulCache.convertToMap(consulResponse);
         assertNotNull(map);

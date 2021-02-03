@@ -29,7 +29,7 @@ public abstract class ServiceProxy {
     public abstract int getLocalServicePort();
 
     @JsonProperty("Config")
-    public abstract Map<String,String> getConfig();
+    public abstract Map<String, String> getConfig();
 
     @JsonProperty("Upstreams")
     @JsonDeserialize(as = ImmutableList.class, contentAs = ServiceProxyUpstream.class)

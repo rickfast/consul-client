@@ -50,7 +50,7 @@ public class SecondsSerDeTest {
     }
 
     @Test
-    public void shouldDeserializeSeconds_noS() throws IOException {
+    public void shouldDeserializeSecondsNoS() throws IOException {
         Long seconds = new Random().nextLong();
         Item item = objectMapper.readValue(String.format("{\"seconds\": \"%d\"}", seconds), Item.class);
 
