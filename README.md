@@ -1,7 +1,6 @@
 [![Build Status](https://travis-ci.org/hhru/consul-client.svg?branch=master)](https://travis-ci.org/hhru/consul-client)
-[![Maven Central](https://maven-badges.herokuapp.com/maven-central/ru.hh.consul/consul-client/badge.svg)](https://maven-badges.herokuapp.com/maven-central/ru.hh.consul/consul-client)
 
-Originally developed by https://github.com/rickfast
+> Originally developed by https://github.com/rickfast
 
 
 Consul Client for Java
