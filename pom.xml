@@ -3,14 +3,14 @@
     <groupId>com.orbitz.consul</groupId>
     <artifactId>consul-client</artifactId>
     <packaging>jar</packaging>
-    <version>1.4.0-hh-1.7</version>
+    <version>1.4.0-hh-1.8-SNAPSHOT</version>
     <name>consul-client</name>
     <url>http://maven.apache.org</url>
     <description>Consul Client for Java</description>
     <scm>
         <connection>scm:git:git@github.com:hhru/consul-java-client.git</connection>
         <developerConnection>scm:git:git@github.com:hhru/consul-java-client.git</developerConnection>
-      <tag>consul-client-1.4.0-hh-1.7</tag>
+      <tag>consul-client-1.4.0-hh-1.6</tag>
   </scm>
     <licenses>
         <license>
