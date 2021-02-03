@@ -329,10 +329,6 @@
                                     <shadedPattern>com.orbitz.apache</shadedPattern>
                                 </relocation>
                                 <relocation>
-                                    <pattern>com.fasterxml</pattern>
-                                    <shadedPattern>com.orbitz.fasterxml</shadedPattern>
-                                </relocation>
-                                <relocation>
                                     <pattern>com.google</pattern>
                                     <shadedPattern>com.orbitz.google</shadedPattern>
                                 </relocation>
