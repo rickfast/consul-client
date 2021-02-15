@@ -1,16 +1,16 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    <groupId>ru.hh.consul</groupId>
-    <artifactId>consul-client</artifactId>
-    <version>1.0.1-SNAPSHOT</version>
-    <packaging>jar</packaging>
-    <url>http://maven.apache.org</url>
-    <description>Consul Client for Java</description>
     <parent>
         <groupId>ru.hh.public-pom</groupId>
         <artifactId>public-pom</artifactId>
         <version>1.47</version>
     </parent>
+
+    <groupId>ru.hh.consul</groupId>
+    <artifactId>consul-client</artifactId>
+    <version>1.0.1-SNAPSHOT</version>
+    <packaging>jar</packaging>
+    <description>Consul Client for Java</description>
     <licenses>
         <license>
             <name>The Apache Software License, Version 2.0</name>
@@ -259,7 +259,6 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-javadoc-plugin</artifactId>
-                <version>3.2.0</version>
                 <executions>
                     <execution>
                         <id>attach-javadocs</id>
@@ -275,7 +274,6 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.8.1</version>
                 <configuration>
                     <release>${java.version}</release>
                 </configuration>
@@ -302,32 +300,44 @@
                                 <excludes>
                                     <exclude>org.slf4j:slf4j-api</exclude>
                                     <exclude>org.immutables:values</exclude>
+<!--                                    we need to exclude everything but jackson-datatype-guava, so it gets relocated collection types-->
+                                    <exclude>com.fasterxml.jackson.core:*</exclude>
+                                    <exclude>com.fasterxml.jackson.datatype:jackson-datatype-joda</exclude>
+                                    <exclude>com.fasterxml.jackson.datatype:jackson-datatype-collections</exclude>
+                                    <exclude>com.fasterxml.jackson.datatype:jackson-datatype-jsr310</exclude>
+                                    <exclude>com.fasterxml.jackson.datatype:jackson-datatype-jdk8</exclude>
+                                    <exclude>com.fasterxml.jackson.datatype:jackson-datatype-hibernate5</exclude>
+                                    <exclude>com.fasterxml.jackson.datatype:jackson-datatype-hibernate-parent</exclude>
                                 </excludes>
                             </artifactSet>
                             <relocations>
                                 <relocation>
                                     <pattern>retrofit2</pattern>
-                                    <shadedPattern>com.orbitz.retrofit</shadedPattern>
+                                    <shadedPattern>ru.hh.consul.retrofit</shadedPattern>
                                 </relocation>
                                 <relocation>
                                     <pattern>com.squareup</pattern>
-                                    <shadedPattern>com.orbitz.squareup</shadedPattern>
+                                    <shadedPattern>ru.hh.consul.squareup</shadedPattern>
                                 </relocation>
                                 <relocation>
                                     <pattern>okio</pattern>
-                                    <shadedPattern>com.orbitz.okio</shadedPattern>
+                                    <shadedPattern>ru.hh.consul.okio</shadedPattern>
                                 </relocation>
                                 <relocation>
                                     <pattern>okhttp3</pattern>
-                                    <shadedPattern>com.orbitz.okhttp3</shadedPattern>
+                                    <shadedPattern>ru.hh.consul.okhttp3</shadedPattern>
                                 </relocation>
                                 <relocation>
                                     <pattern>org.apache</pattern>
-                                    <shadedPattern>com.orbitz.apache</shadedPattern>
+                                    <shadedPattern>ru.hh.consul.apache</shadedPattern>
                                 </relocation>
                                 <relocation>
                                     <pattern>com.google</pattern>
-                                    <shadedPattern>com.orbitz.google</shadedPattern>
+                                    <shadedPattern>ru.hh.consul.google</shadedPattern>
+                                </relocation>
+                                <relocation>
+                                    <pattern>com.fasterxml.jackson.datatype.guava</pattern>
+                                    <shadedPattern>ru.hh.consul.com.fasterxml.jackson.datatype.guava</shadedPattern>
                                 </relocation>
                             </relocations>
                         </configuration>
