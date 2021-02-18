@@ -22,6 +22,8 @@ import retrofit2.http.QueryMap;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 /**
  * HTTP Client for /v1/health/ endpoints.
@@ -193,6 +195,27 @@ public class HealthClient extends BaseCacheableClient {
         return http.extractConsulResponse(api.getServiceInstances(service,
                 optionsFrom(ImmutableMap.of("passing", "true"), queryOptions.toQuery()),
                 queryOptions.getTag(), queryOptions.getNodeMeta(), queryOptions.toHeaders()));
+    }
+
+    /**
+     * Retrieves the healthchecks for all healthy service instances in a given datacenter with
+     * {@link QueryOptions}.
+     * <p/>
+     * GET /v1/health/service/{service}?dc={datacenter}&amp;passing
+     *
+     * @param service      The service to query.
+     * @param queryOptions The Query Options to use.
+     * @param timeoutMillis custom timeout in millis
+     * @return A {@link ConsulResponse} containing a list of
+     * {@link HealthCheck} objects.
+     */
+    public ConsulResponse<List<ServiceHealth>> getHealthyServiceInstances(String service,
+                                                                          QueryOptions queryOptions,
+                                                                          int timeoutMillis) {
+        return http.extractConsulResponse(api.getServiceInstances(
+            service,
+            optionsFrom(Map.of("passing", "true"), queryOptions.toQuery()),
+            queryOptions.getTag(), queryOptions.getNodeMeta(), queryOptions.toHeaders()), Set.of(), timeoutMillis, TimeUnit.MILLISECONDS);
     }
 
 

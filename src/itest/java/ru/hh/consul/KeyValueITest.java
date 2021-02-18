@@ -1,12 +1,21 @@
 package ru.hh.consul;
 
+import java.io.IOException;
+import java.io.InterruptedIOException;
+import java.net.InetSocketAddress;
 import java.nio.charset.Charset;
 import java.util.Optional;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.net.HostAndPort;
+import com.sun.net.httpserver.HttpServer;
+import static org.junit.Assert.assertThrows;
 import ru.hh.consul.async.ConsulResponseCallback;
 import ru.hh.consul.model.ConsulResponse;
 import ru.hh.consul.model.kv.ImmutableOperation;
+import ru.hh.consul.model.kv.ImmutableValue;
 import ru.hh.consul.model.kv.Operation;
 import ru.hh.consul.model.kv.TxResponse;
 import ru.hh.consul.model.kv.Value;
@@ -40,6 +49,46 @@ import static org.junit.Assert.assertTrue;
 
 public class KeyValueITest extends BaseIntegrationTest {
     private static final Charset TEST_CHARSET = Charset.forName("IBM297");
+
+    @Test
+    public void testCustomTimeout() throws IOException {
+        Value value = ImmutableValue.builder().createIndex(1).modifyIndex(2).lockIndex(2).flags(0)
+                .key("key").value(java.util.Base64.getEncoder().encodeToString("value".getBytes())).build();
+        int mockPort = runKvConsulMock(value, 500);
+        Consul consulClient = Consul.builder()
+            .withHostAndPort(HostAndPort.fromParts("localhost", mockPort))
+            .withReadTimeoutMillis(2000)
+            .build();
+        KeyValueClient keyValueClient = consulClient.keyValueClient();
+        ConsulException wrapper = assertThrows(ConsulException.class, () -> keyValueClient.getValue("key", QueryOptions.BLANK, 300));
+        assertEquals(InterruptedIOException.class, wrapper.getCause().getClass());
+        assertEquals("timeout", wrapper.getCause().getMessage());
+
+        Optional<Value> node = keyValueClient.getValue("key", QueryOptions.BLANK, -1);
+        assertEquals("value", node.get().getValueAsString().get());
+        node = keyValueClient.getValue("key", QueryOptions.BLANK);
+        assertEquals("value", node.get().getValueAsString().get());
+    }
+    private static int runKvConsulMock(Value value, int sleepMillis) throws IOException {
+        var writer = new ObjectMapper().registerModule(new Jdk8Module());
+
+        HttpServer server = HttpServer.create(new InetSocketAddress(0), 1);
+        server.createContext("/v1/agent/self", exchange -> exchange.sendResponseHeaders(200, 0));
+        server.createContext("/v1/kv/key", exchange -> {
+            try {
+                Thread.sleep(sleepMillis);
+            } catch (InterruptedException ignored) {
+            }
+            String serialized = writer.writeValueAsString(List.of(value));
+            exchange.sendResponseHeaders(200, serialized.length());
+            exchange.getResponseBody().write(serialized.getBytes());
+            exchange.getResponseBody().flush();
+            exchange.getResponseBody().close();
+        });
+        server.setExecutor(null);
+        server.start();
+        return server.getAddress().getPort();
+    }
 
     @Test
     public void shouldPutAndReceiveString() throws UnknownHostException {

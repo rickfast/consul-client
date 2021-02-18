@@ -41,6 +41,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.TimeUnit;
+
 import ru.hh.consul.util.Strings;
 
 import static com.google.common.base.Preconditions.checkArgument;
@@ -112,6 +115,33 @@ public class KeyValueClient extends BaseCacheableClient {
         } catch (ConsulException ignored) {
             if(ignored.getCode() != NOT_FOUND_404) {
                 throw ignored;
+            }
+        }
+
+        return Optional.empty();
+    }
+
+    /**
+     * Retrieves a {@link Value} for a specific key
+     * from the key/value store.
+     *
+     * GET /v1/kv/{key}
+     *
+     * @param key The key to retrieve.
+     * @param timeoutMillis custom timeout in millis
+     * @param queryOptions The query options.
+     * @return An {@link Optional} containing the value or {@link Optional#empty()()}
+     */
+    public Optional<Value> getValue(String key, QueryOptions queryOptions, int timeoutMillis) {
+        try {
+            return getSingleValue(http.extract(
+                api.getValue(Strings.trimLeadingSlash(key), queryOptions.toQuery()),
+                Set.of(NOT_FOUND_404),
+                timeoutMillis, TimeUnit.MILLISECONDS
+            ));
+        } catch (ConsulException e) {
+            if(e.getCode() != NOT_FOUND_404) {
+                throw e;
             }
         }
 
@@ -231,6 +261,31 @@ public class KeyValueClient extends BaseCacheableClient {
     }
 
     /**
+     * Retrieves a list of {@link Value} objects for a specific key
+     * from the key/value store.
+     *
+     * GET /v1/kv/{key}?recurse
+     *
+     * @param key The key to retrieve.
+     * @param queryOptions The query options.
+     * @param timeoutMillis custom timeout in millis
+     * @return A list of zero to many {@link Value} objects.
+     */
+    public List<Value> getValues(String key, QueryOptions queryOptions, int timeoutMillis) {
+        Map<String, Object> query = queryOptions.toQuery();
+
+        query.put("recurse", "true");
+
+        List<Value> result = http.extract(
+            api.getValue(Strings.trimLeadingSlash(key), query),
+            Set.of(NOT_FOUND_404),
+            timeoutMillis, TimeUnit.MILLISECONDS
+        );
+
+        return result == null ? Collections.emptyList() : result;
+    }
+
+    /**
      * Retrieves a {@link ConsulResponse} with a list of {@link Value} objects along with
      * consul response headers for a specific key from the key/value store.
      *
@@ -286,12 +341,42 @@ public class KeyValueClient extends BaseCacheableClient {
      * GET /v1/kv/{key}
      *
      * @param key The key to retrieve.
+     * @param timeoutMillis custom timeout in millis
+     * @return An {@link Optional} containing the value as a string or
+     * {@link Optional#empty()}
+     */
+    public Optional<String> getValueAsString(String key, int timeoutMillis) {
+        return getValueAsString(key, Charset.defaultCharset(), timeoutMillis);
+    }
+
+    /**
+     * Retrieves a string value for a specific key from the key/value store.
+     *
+     * GET /v1/kv/{key}
+     *
+     * @param key The key to retrieve.
      * @param charset The charset of the value
      * @return An {@link Optional} containing the value as a string or
      * {@link Optional#empty()}
      */
     public Optional<String> getValueAsString(String key, Charset charset) {
         return getValue(key).flatMap(v -> v.getValueAsString(charset));
+    }
+
+
+    /**
+     * Retrieves a string value for a specific key from the key/value store.
+     *
+     * GET /v1/kv/{key}
+     *
+     * @param key The key to retrieve.
+     * @param charset The charset of the value
+     * @param timeoutMillis custom timeout in millis
+     * @return An {@link Optional} containing the value as a string or
+     * {@link Optional#empty()}
+     */
+    public Optional<String> getValueAsString(String key, Charset charset, int timeoutMillis) {
+        return getValue(key, QueryOptions.BLANK, timeoutMillis).flatMap(v -> v.getValueAsString(charset));
     }
 
     /**
