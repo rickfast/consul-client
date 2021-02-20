@@ -8,7 +8,7 @@
 
     <groupId>ru.hh.consul</groupId>
     <artifactId>consul-client</artifactId>
-    <version>1.0.2-SNAPSHOT</version>
+    <version>1.0.2</version>
     <packaging>jar</packaging>
     <description>Consul Client for Java</description>
     <licenses>
@@ -21,7 +21,7 @@
     <scm>
         <connection>scm:git:git@github.com:hhru/consul-java-client.git</connection>
         <developerConnection>scm:git:git@github.com:hhru/consul-java-client.git</developerConnection>
-        <tag>HEAD</tag>
+        <tag>consul-client-1.0.2</tag>
     </scm>
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
