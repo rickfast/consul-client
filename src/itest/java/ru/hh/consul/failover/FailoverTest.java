@@ -28,7 +28,7 @@ public class FailoverTest extends BaseIntegrationTest {
     // Create a set of targets
     final Collection<HostAndPort> targets = new ArrayList<>();
     targets.add(HostAndPort.fromParts("1.2.3.4", consulContainer.getFirstMappedPort()));
-    targets.add(HostAndPort.fromParts("localhost", consulContainer.getFirstMappedPort()));
+    targets.add(HostAndPort.fromParts(consulContainer.getHost(), consulContainer.getFirstMappedPort()));
 
     // Create our consul instance
     Builder c = Consul.builder();

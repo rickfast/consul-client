@@ -47,7 +47,7 @@ public abstract class BaseIntegrationTest {
 
     @BeforeClass
     public static void beforeClass() {
-        defaultClientHostAndPort = HostAndPort.fromParts("localhost", consulContainer.getFirstMappedPort());
+        defaultClientHostAndPort = HostAndPort.fromParts(consulContainer.getHost(), consulContainer.getFirstMappedPort());
         client = Consul.builder()
                 .withHostAndPort(defaultClientHostAndPort)
                 .withClientConfiguration(new ClientConfig(CacheConfig.builder().withWatchDuration(Duration.ofSeconds(1)).build()))
