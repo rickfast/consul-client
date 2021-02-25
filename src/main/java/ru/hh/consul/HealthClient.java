@@ -28,7 +28,7 @@ import java.util.concurrent.TimeUnit;
 /**
  * HTTP Client for /v1/health/ endpoints.
  */
-public class HealthClient extends BaseCacheableClient {
+public class HealthClient extends BaseClient {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(HealthClient.class);
 
@@ -41,8 +41,8 @@ public class HealthClient extends BaseCacheableClient {
      *
      * @param retrofit The {@link Retrofit} to build a client from.
      */
-    HealthClient(Retrofit retrofit, ClientConfig config, ClientEventCallback eventCallback, Consul.NetworkTimeoutConfig networkTimeoutConfig) {
-        super(CLIENT_NAME, config, eventCallback, networkTimeoutConfig);
+    HealthClient(Retrofit retrofit, ClientConfig config, ClientEventCallback eventCallback) {
+        super(CLIENT_NAME, config, eventCallback);
         this.api = retrofit.create(Api.class);
     }
 
@@ -157,7 +157,6 @@ public class HealthClient extends BaseCacheableClient {
      * @param state        The state to query.
      * @param queryOptions The Query Options to use.
      * @param callback     Callback implemented by callee to handle results.
-     * @return A {@link ConsulResponse} containing a list of
      * {@link HealthCheck} objects.
      */
     public void getChecksByState(State state, QueryOptions queryOptions,

@@ -51,7 +51,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 /**
  * HTTP Client for /v1/kv/ endpoints.
  */
-public class KeyValueClient extends BaseCacheableClient {
+public class KeyValueClient extends BaseClient {
 
     private static String CLIENT_NAME = "keyvalue";
     public static final int NOT_FOUND_404 = 404;
@@ -63,13 +63,13 @@ public class KeyValueClient extends BaseCacheableClient {
      *
      * @param retrofit The {@link Retrofit} to build a client from.
      */
-    KeyValueClient(Retrofit retrofit, ClientConfig config, ClientEventCallback eventCallback, Consul.NetworkTimeoutConfig networkTimeoutConfig) {
-        super(CLIENT_NAME, config, eventCallback, networkTimeoutConfig);
+    KeyValueClient(Retrofit retrofit, ClientConfig config, ClientEventCallback eventCallback) {
+        super(CLIENT_NAME, config, eventCallback);
         this.api = retrofit.create(Api.class);
     }
 
-    KeyValueClient(Api api, ClientConfig config, ClientEventCallback eventCallback, Consul.NetworkTimeoutConfig networkTimeoutConfig) {
-        super(CLIENT_NAME, config, eventCallback, networkTimeoutConfig);
+    KeyValueClient(Api api, ClientConfig config, ClientEventCallback eventCallback) {
+        super(CLIENT_NAME, config, eventCallback);
         this.api = api;
     }
 
