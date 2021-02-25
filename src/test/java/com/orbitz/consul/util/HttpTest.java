@@ -257,7 +257,7 @@ public class HttpTest {
         when(call.request()).thenReturn(request);
         Callback<String> callCallback = http.createCallback(call, callback);
 
-        Response<String> response = Response.error(400, ResponseBody.create(MediaType.parse(""), "failure"));
+        Response<String> response = Response.error(400, ResponseBody.create("failure", MediaType.parse("")));
         callCallback.onResponse(call, response);
         latch.await(1, TimeUnit.SECONDS);
 

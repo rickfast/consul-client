@@ -10,8 +10,7 @@ public class KeyValueClientFactory {
     private KeyValueClientFactory() {
     }
 
-    public static KeyValueClient create(KeyValueClient.Api api, ClientConfig config, ClientEventCallback eventCallback,
-                                        Consul.NetworkTimeoutConfig networkTimeoutConfig) {
-        return new KeyValueClient(api, config, eventCallback, networkTimeoutConfig);
+    public static KeyValueClient create(KeyValueClient.Api api, ClientConfig config, ClientEventCallback eventCallback) {
+        return new KeyValueClient(api, config, eventCallback);
     }
 }

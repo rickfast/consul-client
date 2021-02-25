@@ -1,7 +1,6 @@
 package com.orbitz.consul.cache;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
-import com.orbitz.consul.Consul;
 import com.orbitz.consul.KeyValueClient;
 import com.orbitz.consul.KeyValueClientFactory;
 import com.orbitz.consul.MockApiService;
@@ -97,7 +96,7 @@ public class KVCacheTest {
 
         final KeyValueClient kvClient = KeyValueClientFactory.create(mockApiService, new ClientConfig(cacheConfig),
                 new ClientEventCallback() {
-        }, new Consul.NetworkTimeoutConfig.Builder().withReadTimeout(10500).build());
+        });
 
 
         try (final KVCache kvCache = KVCache.newCache(kvClient, "")) {

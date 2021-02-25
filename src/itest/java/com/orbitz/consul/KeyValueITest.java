@@ -4,6 +4,7 @@ import java.nio.charset.Charset;
 import java.util.Optional;
 
 import com.google.common.collect.ImmutableSet;
+import com.google.common.net.HostAndPort;
 import com.orbitz.consul.async.ConsulResponseCallback;
 import com.orbitz.consul.model.ConsulResponse;
 import com.orbitz.consul.model.kv.ImmutableOperation;
@@ -38,9 +39,37 @@ import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 public class KeyValueITest extends BaseIntegrationTest {
     private static final Charset TEST_CHARSET = Charset.forName("IBM297");
+
+    @Test
+    public void shouldApplyCustomTimeoutForBlockingRequest() throws InterruptedException {
+        KeyValueClient keyValueClient = Consul.builder()
+                .withHostAndPort(HostAndPort.fromParts(consulContainer.getHost(), consulContainer.getFirstMappedPort()))
+                .withReadTimeoutMillis(500)
+                .build().keyValueClient();
+        String key = UUID.randomUUID().toString();
+        String valueContent = UUID.randomUUID().toString();
+
+        assertTrue(keyValueClient.putValue(key, valueContent));
+        CountDownLatch latch = new CountDownLatch(1);
+        keyValueClient.getValue(key, QueryOptions.BLANK, new ConsulResponseCallback<Optional<Value>>() {
+            @Override
+            public void onComplete(ConsulResponse<Optional<Value>> consulResponse) {
+                Optional<Value> v = keyValueClient.getValue(key, QueryOptions.blockSeconds(10, consulResponse.getIndex()).build());
+                assertEquals(valueContent, v.get().getValueAsString().get());
+                latch.countDown();
+            }
+
+            @Override
+            public void onFailure(Throwable throwable) {
+                fail();
+            }
+        });
+        latch.await();
+    }
 
     @Test
     public void shouldPutAndReceiveString() throws UnknownHostException {
@@ -472,7 +501,7 @@ public class KeyValueITest extends BaseIntegrationTest {
 
         ConsulResponse<TxResponse> response = keyValueClient.performTransaction(operation);
 
-        assertEquals(value, keyValueClient.getValueAsString(key).get());
+        assertEquals(response.getIndex(), keyValueClient.getValue(key).get().getModifyIndex());
         assertEquals(response.getIndex(), keyValueClient.getValue(key).get().getModifyIndex());
     }
 
