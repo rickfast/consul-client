@@ -41,7 +41,7 @@ public class AclTest {
 
     protected static Consul client;
 
-    protected static HostAndPort aclClientHostAndPort = HostAndPort.fromParts("localhost", consulContainerAcl.getFirstMappedPort());
+    protected static HostAndPort aclClientHostAndPort = HostAndPort.fromParts(consulContainerAcl.getHost(), consulContainerAcl.getFirstMappedPort());
 
     @BeforeClass
     public static void beforeClass() {

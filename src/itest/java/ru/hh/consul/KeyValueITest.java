@@ -12,6 +12,7 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.net.HostAndPort;
 import com.sun.net.httpserver.HttpServer;
 import static org.junit.Assert.assertThrows;
+import static org.junit.Assert.fail;
 import ru.hh.consul.async.ConsulResponseCallback;
 import ru.hh.consul.model.ConsulResponse;
 import ru.hh.consul.model.kv.ImmutableOperation;
@@ -88,6 +89,33 @@ public class KeyValueITest extends BaseIntegrationTest {
         server.setExecutor(null);
         server.start();
         return server.getAddress().getPort();
+    }
+
+    @Test
+    public void shouldApplyCustomTimeoutForBlockingRequest() throws InterruptedException {
+        KeyValueClient keyValueClient = Consul.builder()
+                .withHostAndPort(HostAndPort.fromParts(consulContainer.getHost(), consulContainer.getFirstMappedPort()))
+                .withReadTimeoutMillis(500)
+                .build().keyValueClient();
+        String key = UUID.randomUUID().toString();
+        String valueContent = UUID.randomUUID().toString();
+
+        assertTrue(keyValueClient.putValue(key, valueContent));
+        CountDownLatch latch = new CountDownLatch(1);
+        keyValueClient.getValue(key, QueryOptions.BLANK, new ConsulResponseCallback<>() {
+            @Override
+            public void onComplete(ConsulResponse<Optional<Value>> consulResponse) {
+                Optional<Value> v = keyValueClient.getValue(key, QueryOptions.blockSeconds(10, consulResponse.getIndex()).build());
+                assertEquals(valueContent, v.get().getValueAsString().get());
+                latch.countDown();
+            }
+
+            @Override
+            public void onFailure(Throwable throwable) {
+                fail();
+            }
+        });
+        latch.await();
     }
 
     @Test
