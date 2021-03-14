@@ -171,7 +171,7 @@ public class ConsulCache<K, V> implements AutoCloseable {
                             cacheConfig.getMinimumDurationDelayOnEmptyResult().compareTo(timeToWait) > 0) {
                         timeToWait = cacheConfig.getMinimumDurationDelayOnEmptyResult();
                     }
-                    timeToWait = timeToWait.minusMillis(elapsedTime.toMillis());
+                    timeToWait = timeToWait.minusMillis(elapsedTime);
 
                     scheduler.schedule(ConsulCache.this::runCallback,
                             timeToWait.toMillis(), TimeUnit.MILLISECONDS);

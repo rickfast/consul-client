@@ -5,8 +5,11 @@ import com.orbitz.consul.cache.CacheDescriptor;
 import okhttp3.Request;
 
 import java.time.Duration;
+import java.time.temporal.ChronoUnit;
+import java.time.temporal.TemporalUnit;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 public class ClientEventHandler {
 
@@ -49,6 +52,10 @@ public class ClientEventHandler {
 
     public void cachePollingSuccess(CacheDescriptor cacheDescriptor, boolean withNotification, Duration duration) {
         EVENT_EXECUTOR.submit(() -> callback.onCachePollingSuccess(clientName, cacheDescriptor, withNotification, duration));
+    }
+
+    public void cachePollingSuccess(CacheDescriptor cacheDescriptor, boolean withNotification, long duration) {
+        EVENT_EXECUTOR.submit(() -> callback.onCachePollingSuccess(clientName, cacheDescriptor, withNotification, Duration.of(duration, ChronoUnit.MILLIS)));
     }
 
     public void stop() {
