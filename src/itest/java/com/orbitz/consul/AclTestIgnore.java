@@ -12,7 +12,7 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.*;
 import org.testcontainers.containers.GenericContainer;
 
-public class AclTest {
+public class AclTestIgnore {
 
     public static GenericContainer<?> consulContainerAcl;
     static {
