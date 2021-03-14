@@ -19,6 +19,7 @@ public class HealthCheckCache extends ConsulCache<String, HealthCheck> {
                              Scheduler callbackScheduler) {
         super(keyExtractor,
             (index, callback) -> {
+                checkWatch(healthClient.getNetworkTimeoutConfig().getClientReadTimeoutMillis(), watchSeconds);
                 QueryOptions params = watchParams(index, watchSeconds, queryOptions);
                 healthClient.getChecksByState(state, params, callback);
             },

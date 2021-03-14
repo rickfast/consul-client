@@ -20,7 +20,7 @@ import java.util.Map;
 /**
  * HTTP Client for /v1/catalog/ endpoints.
  */
-public class CatalogClient extends BaseClient {
+public class CatalogClient extends BaseCacheableClient {
 
     private static String CLIENT_NAME = "catalog";
 
@@ -31,8 +31,8 @@ public class CatalogClient extends BaseClient {
      *
      * @param retrofit The {@link Retrofit} to build a client from.
      */
-    CatalogClient(Retrofit retrofit, ClientConfig config, ClientEventCallback eventCallback) {
-        super(CLIENT_NAME, config, eventCallback);
+    CatalogClient(Retrofit retrofit, ClientConfig config, ClientEventCallback eventCallback, Consul.NetworkTimeoutConfig networkTimeoutConfig) {
+        super(CLIENT_NAME, config, eventCallback, networkTimeoutConfig);
         this.api = retrofit.create(Api.class);
     }
 
