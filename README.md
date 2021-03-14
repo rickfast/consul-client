@@ -153,26 +153,7 @@ Official instructions are [here](http://immutables.github.io/apt.html), although
 
 ### Integration Tests
 
-Integrations Tests rely on the assumption that a Consul server is running on localhost's default port 8500 and another one with enabled ACLs on port 8501.
-
-A shell skript that sets up the integration test environment is available, to execute all tests run:
-```
-./do test
-```
-
-you can clean up any leftover Docker containers with
-
-```
-./do clean-environment
-```
-
-for local development setup you can use
-
-```
-./do setup-environment
-```
-
-to start the needed docker containers.
+Runs consul with [Testcontainers](https://www.testcontainers.org/)
 
 ### Eclipse-specific notes
 

@@ -1,5 +1,6 @@
 package com.orbitz.consul.failover;
 
+import com.orbitz.consul.BaseIntegrationTest;
 import static org.junit.Assert.assertNotNull;
 
 import java.util.ArrayList;
@@ -17,7 +18,7 @@ import junitparams.JUnitParamsRunner;
 import junitparams.naming.TestCaseName;
 
 @RunWith(JUnitParamsRunner.class)
-public class FailoverTest {
+public class FailoverTest extends BaseIntegrationTest {
 
 	
 	@Test
@@ -26,8 +27,8 @@ public class FailoverTest {
 
 		// Create a set of targets
 		final Collection<HostAndPort> targets = new ArrayList<>();
-		targets.add(HostAndPort.fromParts("1.2.3.4", 8500));
-		targets.add(HostAndPort.fromParts("localhost", 8500));
+		targets.add(HostAndPort.fromParts("1.2.3.4", consulContainer.getFirstMappedPort()));
+		targets.add(HostAndPort.fromParts("localhost", consulContainer.getFirstMappedPort()));
 		
 		// Create our consul instance
 		Builder c = Consul.builder();

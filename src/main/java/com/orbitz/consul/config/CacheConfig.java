@@ -23,6 +23,7 @@ public class CacheConfig {
     @VisibleForTesting
     static final RefreshErrorLogConsumer DEFAULT_REFRESH_ERROR_LOG_CONSUMER = Logger::error;
 
+    private final Duration watchDuration;
     private final Duration minBackOffDelay;
     private final Duration maxBackOffDelay;
     private final Duration minDelayBetweenRequests;
@@ -31,9 +32,10 @@ public class CacheConfig {
     private final boolean timeoutAutoAdjustmentEnabled;
     private final RefreshErrorLogConsumer refreshErrorLogConsumer;
 
-    private CacheConfig(Duration minBackOffDelay, Duration maxBackOffDelay, Duration minDelayBetweenRequests,
+    private CacheConfig(Duration watchDuration, Duration minBackOffDelay, Duration maxBackOffDelay, Duration minDelayBetweenRequests,
                         Duration minDelayOnEmptyResult, boolean timeoutAutoAdjustmentEnabled,
                         Duration timeoutAutoAdjustmentMargin, RefreshErrorLogConsumer refreshErrorLogConsumer) {
+        this.watchDuration = watchDuration;
         this.minBackOffDelay = minBackOffDelay;
         this.maxBackOffDelay = maxBackOffDelay;
         this.minDelayBetweenRequests = minDelayBetweenRequests;
@@ -47,7 +49,7 @@ public class CacheConfig {
      * Gets the default watch duration for caches.
      */
     public Duration getWatchDuration() {
-        return DEFAULT_WATCH_DURATION;
+        return watchDuration;
     }
 
     /**
@@ -110,6 +112,7 @@ public class CacheConfig {
     }
 
     public static class Builder {
+        private Duration watchDuration = DEFAULT_WATCH_DURATION;
         private Duration minBackOffDelay = DEFAULT_BACKOFF_DELAY;
         private Duration maxBackOffDelay = DEFAULT_BACKOFF_DELAY;
         private Duration minDelayBetweenRequests = DEFAULT_MIN_DELAY_BETWEEN_REQUESTS;
@@ -120,6 +123,16 @@ public class CacheConfig {
 
         private Builder() {
 
+        }
+
+        /**
+         * Sets the back-off delay used in caches.
+         * @throws IllegalArgumentException if {@code delay} is negative.
+         */
+        public Builder withWatchDuration(Duration delay) {
+            this.watchDuration = Preconditions.checkNotNull(delay, "Delay cannot be null");
+            Preconditions.checkArgument(!delay.isNegative(), "Delay must be positive");
+            return this;
         }
 
         /**
@@ -203,7 +216,7 @@ public class CacheConfig {
         }
 
         public CacheConfig build() {
-            return new CacheConfig(minBackOffDelay, maxBackOffDelay, minDelayBetweenRequests, minDelayOnEmptyResult,
+            return new CacheConfig(watchDuration, minBackOffDelay, maxBackOffDelay, minDelayBetweenRequests, minDelayOnEmptyResult,
                     timeoutAutoAdjustmentEnabled, timeoutAutoAdjustmentMargin,
                     refreshErrorLogConsumer);
         }
