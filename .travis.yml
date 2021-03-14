@@ -1,8 +1,0 @@
-language: java
-services: docker
-before_install:
-  - ./do setup-environment
-
-jdk:
-  - openjdk8
-script: mvn clean test
