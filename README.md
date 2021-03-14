@@ -6,6 +6,11 @@ Consul Client for Java
 
 Simple client for the Consul HTTP API.  For more information about the Consul HTTP API, go [here](http://www.consul.io/docs/agent/http.html).
 
+Notes from the maintainer
+-------------------------
+
+Although this is pretty obvious to those following this repo, I am no longer actively enhancing or fixing issues for this library. I will continue to merge PRs and cut releases. I am in the process of moving off of Travis to Actions, and will set up automatic releases for any merge to master.
+
 Installation
 -----------
 
