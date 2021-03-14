@@ -1,4 +1,4 @@
-[![Build Status]](https://github.com/rickfast/consul-client/actions/workflows/maven.yml/badge.svg)
+![Build Status](https://github.com/rickfast/consul-client/actions/workflows/maven.yml/badge.svg)
 [![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.orbitz.consul/consul-client/badge.svg)](https://maven-badges.herokuapp.com/maven-central/com.orbitz.consul/consul-client)
 
 Consul Client for Java
