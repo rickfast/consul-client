@@ -1,5 +1,6 @@
 package ru.hh.consul.config;
 
+import static org.mockito.ArgumentMatchers.nullable;
 import ru.hh.consul.cache.CacheDescriptor;
 import ru.hh.consul.cache.ConsulCache;
 import ru.hh.consul.model.ConsulResponse;
@@ -23,8 +24,6 @@ import java.util.function.Supplier;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 
@@ -47,7 +46,7 @@ public class CacheConfigTest {
         doAnswer(vars -> {
             loggedAsWarn.set(true);
             return null;
-        }).when(logger).error(anyString(), any(Throwable.class));
+        }).when(logger).error(nullable(String.class), nullable(Throwable.class));
         config.getRefreshErrorLoggingConsumer().accept(logger, null, null);
         assertTrue("Should have logged as warning", loggedAsWarn.get());
     }
@@ -108,12 +107,12 @@ public class CacheConfigTest {
             loggedAsWarn.set(true);
             logged.set(true);
             return null;
-        }).when(logger).warn(anyString(), any(Throwable.class));
+        }).when(logger).warn(nullable(String.class), nullable(Throwable.class));
         doAnswer(vars -> {
             loggedAsWarn.set(false);
             logged.set(true);
             return null;
-        }).when(logger).error(anyString(), any(Throwable.class));
+        }).when(logger).error(nullable(String.class), nullable(Throwable.class));
 
         config.getRefreshErrorLoggingConsumer().accept(logger, null, null);
         assertTrue(logged.get());
@@ -127,7 +126,7 @@ public class CacheConfigTest {
         doAnswer(vars -> {
             loggedAsDebug.set(true);
             return null;
-        }).when(logger).debug(anyString(), any(Throwable.class));
+        }).when(logger).debug(nullable(String.class), nullable(Throwable.class));
 
         CacheConfig config = CacheConfig.builder().withRefreshErrorLoggedAs(Logger::debug).build();
         config.getRefreshErrorLoggingConsumer().accept(logger, null, null);
