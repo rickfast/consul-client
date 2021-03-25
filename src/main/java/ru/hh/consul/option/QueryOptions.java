@@ -29,6 +29,7 @@ public abstract class QueryOptions implements ParamAdder {
     public abstract Optional<String> getDatacenter();
     public abstract List<String> getNodeMeta();
     public abstract List<String> getTag();
+    public abstract Optional<String> getCaller();
 
     @Value.Default
     public ConsistencyMode getConsistencyMode() {
@@ -113,6 +114,7 @@ public abstract class QueryOptions implements ParamAdder {
         optionallyAdd(result, "token", getToken());
         optionallyAdd(result, "near", getNear());
         optionallyAdd(result, "dc", getDatacenter());
+        optionallyAdd(result, "caller", getCaller());
 
         return result;
     }
