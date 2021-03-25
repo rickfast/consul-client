@@ -35,7 +35,8 @@
         <jackson.version>2.12.0</jackson.version>
         <junit.version>4.13.1</junit.version>
         <junitparams.version>1.1.1</junitparams.version>
-        <mockito.version>1.10.19</mockito.version>
+        <mockito.version>3.8.0</mockito.version>
+        <hamcrest.version>2.2</hamcrest.version>
         <retrofit.version>2.9.0</retrofit.version>
         <okhttp.version>4.9.0</okhttp.version>
         <slf4j.version>1.7.30</slf4j.version>
@@ -125,8 +126,14 @@
         </dependency>
         <dependency>
             <groupId>org.mockito</groupId>
-            <artifactId>mockito-all</artifactId>
+            <artifactId>mockito-core</artifactId>
             <version>${mockito.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.hamcrest</groupId>
+            <artifactId>hamcrest</artifactId>
+            <version>${hamcrest.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>

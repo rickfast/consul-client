@@ -1,5 +1,6 @@
 package ru.hh.consul.util;
 
+import static org.mockito.ArgumentMatchers.nullable;
 import ru.hh.consul.ConsulException;
 import ru.hh.consul.async.ConsulResponseCallback;
 import ru.hh.consul.model.ConsulResponse;
@@ -158,7 +159,7 @@ public class HttpTest {
 
         httpCall.apply(call);
 
-        verify(clientEventHandler, only()).httpRequestSuccess(any(Request.class));
+        verify(clientEventHandler, only()).httpRequestSuccess(nullable(Request.class));
     }
 
     @Test
@@ -186,7 +187,7 @@ public class HttpTest {
             //ignore
         }
 
-        verify(clientEventHandler, only()).httpRequestFailure(any(Request.class), any(Throwable.class));
+        verify(clientEventHandler, only()).httpRequestFailure(nullable(Request.class), nullable(Throwable.class));
     }
 
     @Test
@@ -215,7 +216,7 @@ public class HttpTest {
             //ignore
         }
 
-        verify(clientEventHandler, only()).httpRequestInvalid(any(Request.class), any(Throwable.class));
+        verify(clientEventHandler, only()).httpRequestInvalid(nullable(Request.class), nullable(Throwable.class));
     }
 
     @Test
@@ -288,7 +289,7 @@ public class HttpTest {
         callCallback.onFailure(call, new RuntimeException("the request failed"));
 
         latch.await(1, TimeUnit.SECONDS);
-        verify(clientEventHandler, only()).httpRequestFailure(any(Request.class), any(Throwable.class));
+        verify(clientEventHandler, only()).httpRequestFailure(nullable(Request.class), nullable(Throwable.class));
     }
 
     @Test

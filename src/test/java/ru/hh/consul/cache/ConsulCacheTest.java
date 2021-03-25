@@ -1,6 +1,8 @@
 package ru.hh.consul.cache;
 
 import com.google.common.collect.ImmutableMap;
+import static org.hamcrest.MatcherAssert.assertThat;
+import org.hamcrest.Matchers;
 import ru.hh.consul.config.CacheConfig;
 import ru.hh.consul.model.ConsulResponse;
 import ru.hh.consul.model.kv.ImmutableValue;
@@ -13,11 +15,8 @@ import junitparams.JUnitParamsRunner;
 import junitparams.Parameters;
 import junitparams.naming.TestCaseName;
 import org.apache.commons.lang3.time.StopWatch;
-import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.internal.matchers.GreaterOrEqual;
-import org.mockito.internal.matchers.LessOrEqual;
 
 import java.math.BigInteger;
 import java.time.Duration;
@@ -80,6 +79,7 @@ public class ConsulCacheTest {
                 .addTag("someTag")
                 .token("186596")
                 .near("156892")
+                .caller("caller")
                 .build();
 
         QueryOptions expectedOptions = ImmutableQueryOptions.builder()
@@ -89,6 +89,7 @@ public class ConsulCacheTest {
                 .addTag("someTag")
                 .token("186596")
                 .near("156892")
+                .caller("caller")
                 .build();
 
         QueryOptions actualOptions = ConsulCache.watchParams(index, 10, additionalOptions);
@@ -112,10 +113,11 @@ public class ConsulCacheTest {
         CacheConfig cacheConfig = CacheConfig.builder().withBackOffDelay(minDelay, maxDelay).build();
         for (int i=0; i < 1000; i++) {
             long retryDurationMs = ConsulCache.computeBackOffDelayMs(cacheConfig);
-            Assert.assertThat(
-                    String.format("Retry duration expected between %s and %s but got %d ms", minDelay, maxDelay, retryDurationMs),
-                    retryDurationMs,
-                    is(allOf(new GreaterOrEqual<>(minDelay.toMillis()), new LessOrEqual<>(maxDelay.toMillis()))));
+            assertThat(
+                String.format("Retry duration expected between %s and %s but got %d ms", minDelay, maxDelay, retryDurationMs),
+                retryDurationMs,
+                is(allOf(Matchers.greaterThanOrEqualTo(minDelay.toMillis()), Matchers.lessThanOrEqualTo(maxDelay.toMillis())))
+            );
         }
     }
 
