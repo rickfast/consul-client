@@ -1,6 +1,6 @@
 package ru.hh.consul.util;
 
-import com.google.common.io.BaseEncoding;
+import java.util.Base64;
 import ru.hh.consul.model.event.Event;
 import ru.hh.consul.model.event.ImmutableEvent;
 import org.apache.commons.lang3.RandomStringUtils;
@@ -20,7 +20,7 @@ public class Base64EncodingDeserializerTest {
                 .lTime(1L)
                 .name("name")
                 .version(1)
-                .payload(BaseEncoding.base64().encode(value.getBytes()))
+                .payload(Base64.getEncoder().encodeToString(value.getBytes()))
                 .build();
 
         String serializedEvent = Jackson.MAPPER.writeValueAsString(event);

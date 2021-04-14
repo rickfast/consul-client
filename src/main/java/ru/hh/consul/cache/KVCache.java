@@ -1,8 +1,6 @@
 package ru.hh.consul.cache;
 
-import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.Preconditions;
-import com.google.common.primitives.Ints;
+import java.util.Objects;
 import ru.hh.consul.KeyValueClient;
 import ru.hh.consul.config.CacheConfig;
 import ru.hh.consul.model.kv.Value;
@@ -30,11 +28,10 @@ public class KVCache extends ConsulCache<String, Value> {
             callbackScheduler);
     }
 
-    @VisibleForTesting
     static Function<Value, String> getKeyExtractorFunction(final String rootPath) {
         return input -> {
-            Preconditions.checkNotNull(input, "Input to key extractor is null");
-            Preconditions.checkNotNull(input.getKey(), "Input to key extractor has no key");
+            Objects.requireNonNull(input, "Input to key extractor is null");
+            Objects.requireNonNull(input.getKey(), "Input to key extractor has no key");
 
             if (rootPath.equals(input.getKey())) {
                 return "";
@@ -66,7 +63,6 @@ public class KVCache extends ConsulCache<String, Value> {
         return new KVCache(kvClient, rootPath, prepareRootPath(rootPath), watchSeconds, queryOptions, createDefault());
     }
 
-    @VisibleForTesting
     static String prepareRootPath(String rootPath) {
         return rootPath.startsWith("/") ? rootPath.substring(1) : rootPath;
     }
@@ -98,7 +94,7 @@ public class KVCache extends ConsulCache<String, Value> {
      */
     public static KVCache newCache(final KeyValueClient kvClient, final String rootPath) {
         CacheConfig cacheConfig = kvClient.getConfig().getCacheConfig();
-        int watchSeconds = Ints.checkedCast(cacheConfig.getWatchDuration().getSeconds());
+        int watchSeconds = Math.toIntExact(cacheConfig.getWatchDuration().getSeconds());
         return newCache(kvClient, rootPath, watchSeconds);
     }
 }

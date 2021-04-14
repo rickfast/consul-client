@@ -1,6 +1,5 @@
 package ru.hh.consul.util.failover.strategy;
 
-import com.google.common.net.HostAndPort;
 import okhttp3.Request;
 import okhttp3.Response;
 import org.junit.Before;
@@ -9,6 +8,7 @@ import org.junit.Test;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Optional;
+import ru.hh.consul.util.Address;
 
 import static org.junit.Assert.assertEquals;
 
@@ -18,9 +18,9 @@ public class BlacklistingConsulFailoverStrategyTest {
     @Before
     public void setup() {
         // Create a set of targets
-        final Collection<HostAndPort> targets = new ArrayList<>();
-        targets.add(HostAndPort.fromParts("1.2.3.4", 8501));
-        targets.add(HostAndPort.fromParts("localhost", 8501));
+        final Collection<Address> targets = new ArrayList<>();
+        targets.add(new Address("1.2.3.4", 8501));
+        targets.add(new Address("localhost", 8501));
 
         blacklistingConsulFailoverStrategy = new BlacklistingConsulFailoverStrategy(targets, 100000);
     }

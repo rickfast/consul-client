@@ -1,7 +1,5 @@
 package ru.hh.consul.cache;
 
-import com.google.common.collect.ImmutableMap;
-import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -10,7 +8,10 @@ import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
+import org.jetbrains.annotations.NotNull;
 import ru.hh.consul.BaseIntegrationTest;
 import ru.hh.consul.Consul;
 import ru.hh.consul.KeyValueClient;
@@ -42,7 +43,7 @@ public class KVCacheITest extends BaseIntegrationTest {
     @Before
     public void before() {
         consulClient = Consul.builder()
-                .withHostAndPort(defaultClientHostAndPort)
+                .withAddress(defaultClientAddress)
                 .withClientConfiguration(new ClientConfig(CacheConfig.builder().withWatchDuration(Duration.ofSeconds(1)).build()))
                 .withReadTimeoutMillis(Duration.ofSeconds(11).toMillis())
                 .withConnectTimeoutMillis(Duration.ofMillis(500).toMillis())
@@ -69,7 +70,7 @@ public class KVCacheITest extends BaseIntegrationTest {
             fail("cache initialization failed");
         }
 
-        ImmutableMap<String, Value> map = nc.getMap();
+        Map<String, Value> map = nc.getMap();
         for (int i = 0; i < 5; i++) {
             String keyStr = String.format("%s/%s", root, i);
             String valStr = String.valueOf(i);
@@ -279,9 +280,15 @@ public class KVCacheITest extends BaseIntegrationTest {
     @Parameters(method = "getBlockingQueriesDuration")
     @TestCaseName("queries of {0} seconds")
     public void checkUpdateNotifications(int queryDurationSec) throws InterruptedException {
-        ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor(
-                new ThreadFactoryBuilder().setDaemon(true).setNameFormat("kvcache-itest-%d").build()
-        );
+        ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor(new ThreadFactory() {
+          AtomicInteger counter = new AtomicInteger();
+          @Override
+          public Thread newThread(@NotNull Runnable r) {
+            Thread thread = new Thread(r, "kvcache-itest-" + counter.getAndIncrement());
+            thread.setDaemon(true);
+            return thread;
+          }
+        });
 
         KeyValueClient keyValueClient = consulClient.keyValueClient();
         String key = UUID.randomUUID().toString();

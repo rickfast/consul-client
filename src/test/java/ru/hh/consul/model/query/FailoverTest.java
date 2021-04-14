@@ -1,6 +1,6 @@
 package ru.hh.consul.model.query;
 
-import com.google.common.collect.Lists;
+import java.util.List;
 import org.junit.Test;
 
 public class FailoverTest {
@@ -8,7 +8,7 @@ public class FailoverTest {
     @Test
     public void creatingFailoverWithDatacentersIsValid() {
         ImmutableFailover.builder()
-                .datacenters(Lists.newArrayList("dc1", "dc2"))
+                .datacenters(List.of("dc1", "dc2"))
                 .build();
     }
 
@@ -22,7 +22,7 @@ public class FailoverTest {
     @Test
     public void creatingFailoverWithNearestAndDatacentersIsValid() {
         ImmutableFailover.builder()
-                .datacenters(Lists.newArrayList("dc1", "dc2"))
+                .datacenters(List.of("dc1", "dc2"))
                 .nearestN(2)
                 .build();
     }

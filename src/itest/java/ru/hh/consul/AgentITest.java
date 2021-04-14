@@ -1,6 +1,6 @@
 package ru.hh.consul;
 
-import com.google.common.collect.ImmutableList;
+
 import ru.hh.consul.model.ConsulResponse;
 import ru.hh.consul.model.agent.Agent;
 import ru.hh.consul.model.agent.FullService;
@@ -135,9 +135,10 @@ public class AgentITest extends BaseIntegrationTest {
         String serviceName = UUID.randomUUID().toString();
         String serviceId = UUID.randomUUID().toString();
 
-        List<Registration.RegCheck> regChecks = ImmutableList.of(
-                Registration.RegCheck.args(Collections.singletonList("/usr/bin/echo \"sup\""), 10, 1, "Custom description."),
-                Registration.RegCheck.http("http://localhost:8080/health", 10, 1, "Custom description."));
+        List<Registration.RegCheck> regChecks = List.of(
+            Registration.RegCheck.args(Collections.singletonList("/usr/bin/echo \"sup\""), 10, 1, "Custom description."),
+            Registration.RegCheck.http("http://localhost:8080/health", 10, 1, "Custom description.")
+        );
 
         client.agentClient().register(8080, regChecks, serviceName, serviceId, NO_TAGS, NO_META);
 
@@ -166,7 +167,7 @@ public class AgentITest extends BaseIntegrationTest {
 
         Registration.RegCheck single= Registration.RegCheck.args(Collections.singletonList("/usr/bin/echo \"sup\""), 10);
 
-        List<Registration.RegCheck> regChecks = ImmutableList.of(
+        List<Registration.RegCheck> regChecks = List.of(
                 Registration.RegCheck.http("http://localhost:8080/health", 10));
 
         Registration reg = ImmutableRegistration.builder()

@@ -1,7 +1,9 @@
 package ru.hh.consul.cache;
 
-import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import java.util.Optional;
+import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.atomic.AtomicInteger;
+import org.jetbrains.annotations.NotNull;
 import ru.hh.consul.KeyValueClient;
 import ru.hh.consul.KeyValueClientFactory;
 import ru.hh.consul.MockApiService;
@@ -80,10 +82,14 @@ public class KVCacheTest {
         networkBehavior.setFailurePercent(0);
         final MockRetrofit mockRetrofit = new MockRetrofit.Builder(retrofit)
                 .networkBehavior(networkBehavior)
-                .backgroundExecutor(Executors.newFixedThreadPool(1,
-                        new ThreadFactoryBuilder()
-                                .setNameFormat("mockRetrofitBackground-%d")
-                                .build()))
+                .backgroundExecutor(Executors.newFixedThreadPool(1, new ThreadFactory() {
+                    final AtomicInteger counter = new AtomicInteger();
+                    @Override
+                    public Thread newThread(@NotNull Runnable r) {
+                      Thread thread = new Thread(r, "mockRetrofitBackground-" + counter.getAndIncrement());
+                      return thread;
+                    }
+                  }))
                 .build();
 
         final BehaviorDelegate<KeyValueClient.Api> delegate = mockRetrofit.create(KeyValueClient.Api.class);

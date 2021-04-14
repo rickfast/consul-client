@@ -2,7 +2,6 @@ package ru.hh.consul.util.failover;
 
 import java.io.IOException;
 
-import com.google.common.net.HostAndPort;
 import java.util.Collection;
 import java.util.Optional;
 import okhttp3.Interceptor;
@@ -12,6 +11,7 @@ import ru.hh.consul.ConsulException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import ru.hh.consul.util.Address;
 import ru.hh.consul.util.failover.strategy.BlacklistingConsulFailoverStrategy;
 import ru.hh.consul.util.failover.strategy.ConsulFailoverStrategy;
 
@@ -25,7 +25,7 @@ public class ConsulFailoverInterceptor implements Interceptor {
    * Default constructor for a set of hosts and ports
    * @param targets
    */
-  public ConsulFailoverInterceptor(Collection<HostAndPort> targets, long timeout) {
+  public ConsulFailoverInterceptor(Collection<Address> targets, long timeout) {
     this(new BlacklistingConsulFailoverStrategy(targets, timeout));
   }
 

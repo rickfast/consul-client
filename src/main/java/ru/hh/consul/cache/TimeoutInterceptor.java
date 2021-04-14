@@ -1,6 +1,5 @@
 package ru.hh.consul.cache;
 
-import com.google.common.base.Strings;
 import ru.hh.consul.config.CacheConfig;
 import okhttp3.Interceptor;
 import okhttp3.Request;
@@ -54,7 +53,7 @@ public class TimeoutInterceptor implements Interceptor {
     }
 
     private Duration parseWaitQuery(String query) {
-        if (Strings.isNullOrEmpty(query)) {
+        if (query == null || query.isEmpty()) {
             return null;
         }
 

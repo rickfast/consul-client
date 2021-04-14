@@ -8,11 +8,10 @@ import java.util.Optional;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.net.HostAndPort;
 import com.sun.net.httpserver.HttpServer;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.fail;
+import java.util.Set;
 import ru.hh.consul.async.ConsulResponseCallback;
 import ru.hh.consul.model.ConsulResponse;
 import ru.hh.consul.model.kv.ImmutableOperation;
@@ -41,6 +40,7 @@ import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+import ru.hh.consul.util.Address;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertArrayEquals;
@@ -57,7 +57,7 @@ public class KeyValueITest extends BaseIntegrationTest {
                 .key("key").value(java.util.Base64.getEncoder().encodeToString("value".getBytes())).build();
         int mockPort = runKvConsulMock(value, 500);
         Consul consulClient = Consul.builder()
-            .withHostAndPort(HostAndPort.fromParts("localhost", mockPort))
+            .withAddress(new Address("localhost", mockPort))
             .withReadTimeoutMillis(2000)
             .build();
         KeyValueClient keyValueClient = consulClient.keyValueClient();
@@ -94,7 +94,7 @@ public class KeyValueITest extends BaseIntegrationTest {
     @Test
     public void shouldApplyCustomTimeoutForBlockingRequest() throws InterruptedException {
         KeyValueClient keyValueClient = Consul.builder()
-                .withHostAndPort(HostAndPort.fromParts(consulContainer.getHost(), consulContainer.getFirstMappedPort()))
+                .withAddress(new Address(consulContainer.getHost(), consulContainer.getFirstMappedPort()))
                 .withReadTimeoutMillis(500)
                 .build().keyValueClient();
         String key = UUID.randomUUID().toString();
@@ -239,7 +239,7 @@ public class KeyValueITest extends BaseIntegrationTest {
 
         assertTrue(keyValueClient.putValue(key, value));
         assertTrue(keyValueClient.putValue(key2, value2));
-        assertEquals(ImmutableSet.of(value, value2), new HashSet<>(keyValueClient.getValuesAsString(key)));
+        assertEquals(Set.of(value, value2), new HashSet<>(keyValueClient.getValuesAsString(key)));
     }
 
     @Test
@@ -252,7 +252,7 @@ public class KeyValueITest extends BaseIntegrationTest {
 
         assertTrue(keyValueClient.putValue(key, value, TEST_CHARSET));
         assertTrue(keyValueClient.putValue(key2, value2, TEST_CHARSET));
-        assertEquals(ImmutableSet.of(value, value2), new HashSet<>(keyValueClient.getValuesAsString(key, TEST_CHARSET)));
+        assertEquals(Set.of(value, value2), new HashSet<>(keyValueClient.getValuesAsString(key, TEST_CHARSET)));
     }
 
     @Test

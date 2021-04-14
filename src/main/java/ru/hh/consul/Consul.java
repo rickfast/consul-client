@@ -3,6 +3,7 @@ package ru.hh.consul;
 import java.net.MalformedURLException;
 import java.net.Proxy;
 import java.net.URL;
+import java.util.Base64;
 import java.util.Collection;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
@@ -11,16 +12,13 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.Preconditions;
-import com.google.common.io.BaseEncoding;
-import com.google.common.net.HostAndPort;
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.X509TrustManager;
 import ru.hh.consul.cache.TimeoutInterceptor;
 import ru.hh.consul.config.ClientConfig;
 import ru.hh.consul.monitoring.ClientEventCallback;
+import ru.hh.consul.util.Address;
 import ru.hh.consul.util.Jackson;
 import ru.hh.consul.util.TrustManagerUtils;
 import ru.hh.consul.util.bookend.ConsulBookend;
@@ -37,6 +35,7 @@ import okhttp3.Request;
 import okhttp3.internal.Util;
 import retrofit2.Retrofit;
 import retrofit2.converter.jackson.JacksonConverterFactory;
+import static ru.hh.consul.util.Checks.checkArgument;
 
 /**
 * Client for interacting with the Consul HTTP API.
@@ -256,7 +255,6 @@ public class Consul {
     *
     * @return A default {@link Consul} client.
     */
-    @VisibleForTesting
     public static Consul newClient() {
         return builder().build();
     }
@@ -325,7 +323,7 @@ public class Consul {
                 this.scheme = "http";
             }
 
-            //if url was already generated from a call to withMultipleHostAndPort or withMultipleHostAndPort
+            //if url was already generated from a call to withMultipleAddress or withMultipleAddress
             //it might have the old scheme saved into url, so recreate it here if it has changed
             if (!this.url.getProtocol().equals(this.scheme)) {
                 try {
@@ -357,14 +355,14 @@ public class Consul {
         * @return The builder.
         */
         public Builder withBasicAuth(String username, String password) {
-            String credentials = username + ":" + password;
-            final String basic = "Basic " + BaseEncoding.base64().encode(credentials.getBytes());
+            String credentials = username + ':' + password;
+            final String basic = "Basic " + Base64.getEncoder().encodeToString(credentials.getBytes());
             authInterceptor = chain -> {
                 Request original = chain.request();
 
                 Request.Builder requestBuilder = original.newBuilder()
-                        .header("Authorization", basic)
-                        .method(original.method(), original.body());
+                    .header("Authorization", basic)
+                    .method(original.method(), original.body());
 
                 Request request = requestBuilder.build();
                 return chain.proceed(request);
@@ -457,14 +455,14 @@ public class Consul {
         }
 
         /**
-        * Sets the URL from a {@link HostAndPort} object.
+        * Sets the URL from a {@link Address} object.
         *
-        * @param hostAndPort The Consul agent host and port.
+        * @param address The Consul agent host and port.
         * @return The builder.
         */
-        public Builder withHostAndPort(HostAndPort hostAndPort) {
+        public Builder withAddress(Address address) {
             try {
-                this.url = new URL(scheme, hostAndPort.getHost(), hostAndPort.getPort(), "");
+                this.url = new URL(scheme, address.getHost(), address.getPort(), "");
             } catch (MalformedURLException e) {
                 throw new RuntimeException(e);
             }
@@ -474,19 +472,19 @@ public class Consul {
         
         /**
         * Sets the list of hosts to contact if the current request target is
-        * unavailable. When the call to a particular URL fails for any reason, the next {@link HostAndPort} specified
+        * unavailable. When the call to a particular URL fails for any reason, the next {@link Address} specified
         * is used to retry the request. This will continue until all urls are exhuasted.
         * 
-        * @param hostAndPort A collection of {@link HostAndPort} that define the list of Consul agent addresses to use.
-        * @param blacklistTimeInMillis The timeout (in milliseconds) to blacklist a particular {@link HostAndPort} before trying to use it again.
+        * @param address A collection of {@link Address} that define the list of Consul agent addresses to use.
+        * @param blacklistTimeInMillis The timeout (in milliseconds) to blacklist a particular {@link Address} before trying to use it again.
         * @return The builder.
         */
-        public Builder withMultipleHostAndPort(Collection<HostAndPort> hostAndPort, long blacklistTimeInMillis) {
-            Preconditions.checkArgument(blacklistTimeInMillis >= 0, "Negative Value");
-            Preconditions.checkArgument(hostAndPort.size() >= 2, "Minimum of 2 addresses are required");
+        public Builder withMultipleAddress(Collection<Address> address, long blacklistTimeInMillis) {
+            checkArgument(blacklistTimeInMillis >= 0, "Negative Value");
+            checkArgument(address.size() >= 2, "Minimum of 2 addresses are required");
 
-            consulFailoverInterceptor = new ConsulFailoverInterceptor(hostAndPort, blacklistTimeInMillis);
-            withHostAndPort(hostAndPort.stream().findFirst().get());
+            consulFailoverInterceptor = new ConsulFailoverInterceptor(address, blacklistTimeInMillis);
+            withAddress(address.stream().findFirst().get());
             
             return this;
         }
@@ -497,7 +495,7 @@ public class Consul {
          * @return The builder.
          */
         public Builder withFailoverInterceptor(ConsulFailoverStrategy strategy) {
-          Preconditions.checkArgument(strategy != null, "Must not provide a null strategy");
+          checkArgument(strategy != null, "Must not provide a null strategy");
 
           consulFailoverInterceptor = new ConsulFailoverInterceptor(strategy);
           return this;
@@ -573,7 +571,7 @@ public class Consul {
         * @return The builder
         */
         public Builder withConnectTimeoutMillis(long timeoutMillis) {
-            Preconditions.checkArgument(timeoutMillis >= 0, "Negative value");
+            checkArgument(timeoutMillis >= 0, "Negative value");
             this.connectTimeoutMillis = timeoutMillis;
             return this;
         }
@@ -584,7 +582,7 @@ public class Consul {
         * @return The builder
         */
         public Builder withReadTimeoutMillis(long timeoutMillis) {
-            Preconditions.checkArgument(timeoutMillis >= 0, "Negative value");
+            checkArgument(timeoutMillis >= 0, "Negative value");
             this.readTimeoutMillis = timeoutMillis;
 
             return this;
@@ -596,7 +594,7 @@ public class Consul {
         * @return The builder
         */
         public Builder withWriteTimeoutMillis(long timeoutMillis) {
-            Preconditions.checkArgument(timeoutMillis >= 0, "Negative value");
+            checkArgument(timeoutMillis >= 0, "Negative value");
             this.writeTimeoutMillis = timeoutMillis;
 
             return this;

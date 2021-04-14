@@ -15,7 +15,7 @@ public class CustomBuilderITest extends BaseIntegrationTest{
     @Test
     public void shouldConnectWithCustomTimeouts() throws UnknownHostException {
         Consul client = Consul.builder()
-                .withHostAndPort(defaultClientHostAndPort)
+                .withAddress(defaultClientAddress)
                 .withProxy(Proxy.NO_PROXY)
                 .withConnectTimeoutMillis(10000)
                 .withReadTimeoutMillis(3600000)

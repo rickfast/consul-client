@@ -4,8 +4,6 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.Optional;
 
-import com.google.common.collect.ImmutableMap;
-
 public class ConsistencyMode {
     public final static ConsistencyMode DEFAULT = new ConsistencyMode("DEFAULT", 0, null);
     public final static ConsistencyMode STALE = new ConsistencyMode("STALE", 1, "stale");
@@ -75,7 +73,7 @@ public class ConsistencyMode {
         if (maxAge.isEmpty()) {
             headers = Collections.emptyMap();
         } else {
-            headers = ImmutableMap.of("Cache-Control", maxAge);
+            headers = Map.of("Cache-Control", maxAge);
         }
         return new ConsistencyMode("CACHED", 3, "cached", headers);
     }

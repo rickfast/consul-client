@@ -1,6 +1,5 @@
 package ru.hh.consul.cache;
 
-import com.google.common.collect.ImmutableMap;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -76,7 +75,7 @@ public class ServiceHealthCacheITest extends BaseIntegrationTest {
             ServiceHealthKey serviceKey2 = getServiceHealthKeyFromCache(svHealth, serviceId2, 8080)
                     .orElseThrow(() -> new RuntimeException("Cannot find service key 2 from serviceHealthCache"));
 
-            ImmutableMap<ServiceHealthKey, ServiceHealth> healthMap = svHealth.getMap();
+            Map<ServiceHealthKey, ServiceHealth> healthMap = svHealth.getMap();
             assertEquals(healthMap.size(), 2);
             ServiceHealth health =healthMap.get(serviceKey1);
             ServiceHealth health2 = healthMap.get(serviceKey2);

@@ -1,6 +1,5 @@
 package ru.hh.consul.cache;
 
-import com.google.common.primitives.Ints;
 import ru.hh.consul.HealthClient;
 import ru.hh.consul.config.CacheConfig;
 import ru.hh.consul.model.health.HealthCheck;
@@ -77,7 +76,7 @@ public class HealthCheckCache extends ConsulCache<String, HealthCheck> {
 
     public static HealthCheckCache newCache(final HealthClient healthClient, final ru.hh.consul.model.State state) {
         CacheConfig cacheConfig = healthClient.getConfig().getCacheConfig();
-        int watchSeconds = Ints.checkedCast(cacheConfig.getWatchDuration().getSeconds());
+        int watchSeconds = Math.toIntExact(cacheConfig.getWatchDuration().getSeconds());
         return newCache(healthClient, state, watchSeconds);
     }
 

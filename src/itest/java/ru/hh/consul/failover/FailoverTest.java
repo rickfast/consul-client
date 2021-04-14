@@ -8,16 +8,13 @@ import java.util.Collection;
 import java.util.List;
 
 import org.junit.Test;
-import org.junit.runner.RunWith;
 
-import com.google.common.net.HostAndPort;
 import ru.hh.consul.Consul;
 import ru.hh.consul.Consul.Builder;
 
-import junitparams.JUnitParamsRunner;
 import junitparams.naming.TestCaseName;
+import ru.hh.consul.util.Address;
 
-@RunWith(JUnitParamsRunner.class)
 public class FailoverTest extends BaseIntegrationTest {
 
 
@@ -26,13 +23,13 @@ public class FailoverTest extends BaseIntegrationTest {
   public void testFailover() throws InterruptedException {
 
     // Create a set of targets
-    final Collection<HostAndPort> targets = new ArrayList<>();
-    targets.add(HostAndPort.fromParts("1.2.3.4", consulContainer.getFirstMappedPort()));
-    targets.add(HostAndPort.fromParts(consulContainer.getHost(), consulContainer.getFirstMappedPort()));
+    final Collection<Address> targets = new ArrayList<>();
+    targets.add(new Address("1.2.3.4", consulContainer.getFirstMappedPort()));
+    targets.add(new Address(consulContainer.getHost(), consulContainer.getFirstMappedPort()));
 
     // Create our consul instance
     Builder c = Consul.builder();
-    c.withMultipleHostAndPort(targets, 5000);
+    c.withMultipleAddress(targets, 5000);
     c.withConnectTimeoutMillis(500);
 
     // Create the client

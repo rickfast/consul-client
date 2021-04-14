@@ -1,6 +1,5 @@
 package ru.hh.consul;
 
-import com.google.common.collect.ImmutableMap;
 import ru.hh.consul.async.ConsulResponseCallback;
 import ru.hh.consul.config.ClientConfig;
 import ru.hh.consul.model.ConsulResponse;
@@ -192,7 +191,7 @@ public class HealthClient extends BaseClient {
     public ConsulResponse<List<ServiceHealth>> getHealthyServiceInstances(String service,
                                                                           QueryOptions queryOptions) {
         return http.extractConsulResponse(api.getServiceInstances(service,
-                optionsFrom(ImmutableMap.of("passing", "true"), queryOptions.toQuery()),
+                optionsFrom(Map.of("passing", "true"), queryOptions.toQuery()),
                 queryOptions.getTag(), queryOptions.getNodeMeta(), queryOptions.toHeaders()));
     }
 
@@ -234,7 +233,7 @@ public class HealthClient extends BaseClient {
                                            ConsulResponseCallback<List<ServiceHealth>> callback) {
         LOGGER.debug("Query options for healthy service instances with passing: {}", queryOptions);
         http.extractConsulResponse(api.getServiceInstances(service,
-                optionsFrom(ImmutableMap.of("passing", "true"), queryOptions.toQuery()),
+                optionsFrom(Map.of("passing", "true"), queryOptions.toQuery()),
                 queryOptions.getTag(), queryOptions.getNodeMeta(), queryOptions.toHeaders()), callback);
     }
 

@@ -1,6 +1,5 @@
 package ru.hh.consul;
 
-import com.google.common.collect.ImmutableMap;
 import ru.hh.consul.config.ClientConfig;
 import ru.hh.consul.model.operator.RaftConfiguration;
 import ru.hh.consul.monitoring.ClientEventCallback;
@@ -25,31 +24,31 @@ public class OperatorClient extends BaseClient {
     }
 
     public RaftConfiguration getRaftConfiguration() {
-        return http.extract(api.getConfiguration(ImmutableMap.of()));
+        return http.extract(api.getConfiguration(Map.of()));
     }
 
     public RaftConfiguration getRaftConfiguration(String datacenter) {
-        return http.extract(api.getConfiguration(ImmutableMap.of("dc", datacenter)));
+        return http.extract(api.getConfiguration(Map.of("dc", datacenter)));
     }
 
     public RaftConfiguration getStaleRaftConfiguration(String datacenter) {
-        return http.extract(api.getConfiguration(ImmutableMap.of(
+        return http.extract(api.getConfiguration(Map.of(
             "dc", datacenter, "stale", "true"
         )));
     }
 
     public RaftConfiguration getStaleRaftConfiguration() {
-        return http.extract(api.getConfiguration(ImmutableMap.of(
+        return http.extract(api.getConfiguration(Map.of(
                 "stale", "true"
         )));
     }
 
     public void deletePeer(String address) {
-        http.handle(api.deletePeer(address, ImmutableMap.of()));
+        http.handle(api.deletePeer(address, Map.of()));
     }
 
     public void deletePeer(String address, String datacenter) {
-        http.handle(api.deletePeer(address, ImmutableMap.of("dc", datacenter)));
+        http.handle(api.deletePeer(address, Map.of("dc", datacenter)));
     }
 
     interface Api {

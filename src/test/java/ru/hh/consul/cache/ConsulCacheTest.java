@@ -1,6 +1,5 @@
 package ru.hh.consul.cache;
 
-import com.google.common.collect.ImmutableMap;
 import static org.hamcrest.MatcherAssert.assertThat;
 import org.hamcrest.Matchers;
 import ru.hh.consul.config.CacheConfig;
@@ -54,7 +53,7 @@ public class ConsulCacheTest {
           new CacheDescriptor("")
         );
         final ConsulResponse<List<Value>> consulResponse = new ConsulResponse<>(response, 0, false, BigInteger.ONE, null, null);
-        final ImmutableMap<String, Value> map = consulCache.convertToMap(consulResponse);
+        final Map<String, Value> map = consulCache.convertToMap(consulResponse);
         assertNotNull(map);
         // Second copy has been weeded out
         assertEquals(1, map.size());

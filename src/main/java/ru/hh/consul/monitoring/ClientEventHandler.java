@@ -1,6 +1,8 @@
 package ru.hh.consul.monitoring;
 
-import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.atomic.AtomicInteger;
+import org.jetbrains.annotations.NotNull;
 import ru.hh.consul.cache.CacheDescriptor;
 import okhttp3.Request;
 
@@ -11,7 +13,15 @@ import java.util.concurrent.ScheduledExecutorService;
 public class ClientEventHandler {
 
     private static final ScheduledExecutorService EVENT_EXECUTOR = Executors.newSingleThreadScheduledExecutor(
-            new ThreadFactoryBuilder().setNameFormat("event-executor-%s").setDaemon(true).build());
+      new ThreadFactory() {
+        final AtomicInteger counter = new AtomicInteger();
+        @Override
+        public Thread newThread(@NotNull Runnable r) {
+          Thread thread = new Thread(r, "event-executor-" + counter.getAndIncrement());
+          thread.setDaemon(true);
+          return thread;
+        }
+      });
 
     private final String clientName;
     private final ClientEventCallback callback;

@@ -1,6 +1,5 @@
 package ru.hh.consul;
 
-import com.google.common.net.HostAndPort;
 import java.util.Objects;
 import java.util.UUID;
 import org.junit.BeforeClass;
@@ -17,6 +16,7 @@ import ru.hh.consul.model.acl.ImmutablePolicyLink;
 import ru.hh.consul.model.acl.ImmutableToken;
 import ru.hh.consul.model.acl.PolicyResponse;
 import ru.hh.consul.model.acl.TokenResponse;
+import ru.hh.consul.util.Address;
 
 public class AclTest {
 
@@ -41,12 +41,12 @@ public class AclTest {
 
     protected static Consul client;
 
-    protected static HostAndPort aclClientHostAndPort = HostAndPort.fromParts(consulContainerAcl.getHost(), consulContainerAcl.getFirstMappedPort());
+    protected static Address aclClientAddress = new Address(consulContainerAcl.getHost(), consulContainerAcl.getFirstMappedPort());
 
     @BeforeClass
     public static void beforeClass() {
         client = Consul.builder()
-                .withHostAndPort(aclClientHostAndPort)
+                .withAddress(aclClientAddress)
                 .withAclToken("aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee")
                 .withReadTimeoutMillis(Duration.ofSeconds(2).toMillis())
                 .build();
