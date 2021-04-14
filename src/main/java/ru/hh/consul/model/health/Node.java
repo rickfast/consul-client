@@ -11,6 +11,7 @@ import org.immutables.value.Value;
 import java.util.Map;
 
 @Value.Immutable
+@Value.Style(jdkOnly = true)
 @JsonSerialize(as = ImmutableNode.class)
 @JsonDeserialize(as = ImmutableNode.class)
 @JsonIgnoreProperties(ignoreUnknown = true)

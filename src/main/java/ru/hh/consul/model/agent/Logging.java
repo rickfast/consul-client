@@ -8,6 +8,7 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import org.immutables.value.Value;
 
 @Value.Immutable
+@Value.Style(jdkOnly = true)
 @JsonSerialize(as = ImmutableLogging.class)
 @JsonDeserialize(as = ImmutableLogging.class)
 @JsonIgnoreProperties(ignoreUnknown = true)

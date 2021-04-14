@@ -12,6 +12,7 @@ import static ru.hh.consul.option.Options.optionallyAdd;
  * Container for common transaction options used by the Consul API.
  */
 @Value.Immutable
+@Value.Style(jdkOnly = true)
 public abstract class TransactionOptions implements ParamAdder {
 
     public static final TransactionOptions BLANK = ImmutableTransactionOptions.builder().build();

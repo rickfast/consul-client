@@ -9,6 +9,7 @@ import java.util.Map;
 import static ru.hh.consul.option.Options.optionallyAdd;
 
 @Value.Immutable
+@Value.Style(jdkOnly = true)
 public abstract class PutOptions implements ParamAdder {
     
     public static final PutOptions BLANK = ImmutablePutOptions.builder().build();

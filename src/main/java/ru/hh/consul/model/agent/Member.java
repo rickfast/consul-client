@@ -4,12 +4,12 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import com.google.common.collect.ImmutableMap;
 import org.immutables.value.Value;
 
 import java.util.Map;
 
 @Value.Immutable
+@Value.Style(jdkOnly = true)
 @JsonSerialize(as = ImmutableMember.class)
 @JsonDeserialize(as = ImmutableMember.class)
 @JsonIgnoreProperties(ignoreUnknown = true)
@@ -25,7 +25,7 @@ public abstract class Member {
     public abstract int getPort();
 
     @JsonProperty("Tags")
-    @JsonDeserialize(as = ImmutableMap.class, keyAs = String.class, contentAs = String.class)
+    @JsonDeserialize(as = Map.class, keyAs = String.class, contentAs = String.class)
     public abstract Map<String, String> getTags();
 
     @JsonProperty("Status")

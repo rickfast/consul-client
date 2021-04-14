@@ -11,6 +11,7 @@ import java.math.BigInteger;
 
 
 @Value.Immutable
+@Value.Style(jdkOnly = true)
 @JsonSerialize(as = ImmutableAclResponse.class)
 @JsonDeserialize(as = ImmutableAclResponse.class)
 @JsonIgnoreProperties(ignoreUnknown = true)

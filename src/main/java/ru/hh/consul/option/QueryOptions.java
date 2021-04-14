@@ -1,6 +1,6 @@
 package ru.hh.consul.option;
 
-import com.google.common.collect.ImmutableList;
+
 import org.immutables.value.Value;
 
 import java.math.BigInteger;
@@ -10,13 +10,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-import static com.google.common.base.Preconditions.checkArgument;
 import static ru.hh.consul.option.Options.optionallyAdd;
+import static ru.hh.consul.util.Checks.checkArgument;
 
 /**
  * Container for common query options used by the Consul API.
  */
 @Value.Immutable
+@Value.Style(jdkOnly = true)
 public abstract class QueryOptions implements ParamAdder {
 
     public static final QueryOptions BLANK = ImmutableQueryOptions.builder().build();
@@ -50,14 +51,14 @@ public abstract class QueryOptions implements ParamAdder {
     public List<String> getNodeMetaQuery() {
         return getNodeMeta() == null
                 ? Collections.emptyList()
-                : ImmutableList.copyOf(getNodeMeta());
+                : List.copyOf(getNodeMeta());
     }
 
     @Value.Derived
     public List<String> getTagsQuery() {
         return getTag() == null
                 ? Collections.emptyList()
-                : ImmutableList.copyOf(getTag());
+                : List.copyOf(getTag());
     }
 
     @Value.Check

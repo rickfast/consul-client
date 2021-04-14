@@ -5,7 +5,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import java.util.Optional;
-import com.google.common.collect.ImmutableList;
+
 import ru.hh.consul.model.health.HealthCheck;
 import ru.hh.consul.model.health.Node;
 import ru.hh.consul.model.health.Service;
@@ -14,6 +14,7 @@ import org.immutables.value.Value;
 import java.util.List;
 
 @Value.Immutable
+@Value.Style(jdkOnly = true)
 @JsonSerialize(as = ImmutableQueryResult.class)
 @JsonDeserialize(as = ImmutableQueryResult.class)
 @JsonIgnoreProperties(ignoreUnknown = true)
@@ -26,7 +27,7 @@ public abstract class QueryResult {
     public abstract Service getService();
 
     @JsonProperty("Checks")
-    @JsonDeserialize(as = ImmutableList.class, contentAs = HealthCheck.class)
+    @JsonDeserialize(as = List.class, contentAs = HealthCheck.class)
     public abstract List<HealthCheck> getChecks();
     @JsonProperty("DNS")
     public abstract Optional<DnsQuery> getDns();

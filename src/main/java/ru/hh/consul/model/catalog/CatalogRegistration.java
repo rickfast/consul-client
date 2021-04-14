@@ -13,6 +13,7 @@ import ru.hh.consul.model.health.Service;
 import org.immutables.value.Value;
 
 @Value.Immutable
+@Value.Style(jdkOnly = true)
 @JsonSerialize(as = ImmutableCatalogRegistration.class)
 @JsonDeserialize(as = ImmutableCatalogRegistration.class)
 @JsonIgnoreProperties(ignoreUnknown = true)

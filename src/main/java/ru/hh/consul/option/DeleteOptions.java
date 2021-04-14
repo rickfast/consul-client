@@ -9,6 +9,7 @@ import java.util.Map;
 import static ru.hh.consul.option.Options.optionallyAdd;
 
 @Value.Immutable
+@Value.Style(jdkOnly = true)
 public abstract class DeleteOptions implements ParamAdder {
 
   public static final DeleteOptions BLANK = ImmutableDeleteOptions.builder().build();

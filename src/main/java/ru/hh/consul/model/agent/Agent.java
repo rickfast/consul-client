@@ -11,6 +11,7 @@ import java.util.Map;
 import javax.annotation.Nullable;
 
 @Value.Immutable
+@Value.Style(jdkOnly = true)
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonSerialize(as = ImmutableAgent.class)
 @JsonDeserialize(as = ImmutableAgent.class)

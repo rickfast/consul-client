@@ -8,6 +8,7 @@ import java.util.Optional;
 import org.immutables.value.Value;
 
 @Value.Immutable
+@Value.Style(jdkOnly = true)
 @JsonSerialize(as = ImmutableCatalogDeregistration.class)
 @JsonDeserialize(as = ImmutableCatalogDeregistration.class)
 @JsonIgnoreProperties(ignoreUnknown = true)

@@ -13,11 +13,10 @@ import ru.hh.consul.model.catalog.ServiceWeights;
 import org.immutables.value.Value;
 
 import java.util.List;
-
-import static com.google.common.base.Preconditions.checkState;
-
+import static ru.hh.consul.util.Checks.checkState;
 
 @Value.Immutable
+@Value.Style(jdkOnly = true)
 @JsonSerialize(as = ImmutableRegistration.class)
 @JsonDeserialize(as = ImmutableRegistration.class)
 @JsonIgnoreProperties(ignoreUnknown = true)
@@ -55,6 +54,7 @@ public abstract class Registration {
     public abstract Optional<ServiceWeights> getServiceWeights();
 
     @Value.Immutable
+@Value.Style(jdkOnly = true)
     @JsonSerialize(as = ImmutableRegCheck.class)
     @JsonDeserialize(as = ImmutableRegCheck.class)
     @JsonInclude(JsonInclude.Include.NON_NULL)

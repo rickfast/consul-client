@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Map;
 
 @Value.Immutable
+@Value.Style(jdkOnly = true)
 @JsonSerialize(as = ImmutableCatalogService.class)
 @JsonDeserialize(as = ImmutableCatalogService.class)
 @JsonIgnoreProperties(ignoreUnknown = true)
