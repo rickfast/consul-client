@@ -5,9 +5,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import java.nio.charset.Charset;
 import java.util.Optional;
 
-import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.primitives.UnsignedLongs;
 import ru.hh.consul.async.ConsulResponseCallback;
 import ru.hh.consul.config.ClientConfig;
 import ru.hh.consul.model.ConsulResponse;
@@ -45,8 +42,7 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 import ru.hh.consul.util.Strings;
-
-import static com.google.common.base.Preconditions.checkArgument;
+import static ru.hh.consul.util.Checks.checkArgument;
 
 /**
  * HTTP Client for /v1/kv/ endpoints.
@@ -494,7 +490,7 @@ public class KeyValueClient extends BaseClient {
         Map<String, Object> query = putOptions.toQuery();
 
         if (flags != 0) {
-            query.put("flags", UnsignedLongs.toString(flags));
+            query.put("flags", Long.toUnsignedString(flags));
         }
 
         if (value == null) {
@@ -520,7 +516,7 @@ public class KeyValueClient extends BaseClient {
         Map<String, Object> query = putOptions.toQuery();
 
         if (flags != 0) {
-            query.put("flags", UnsignedLongs.toString(flags));
+            query.put("flags", Long.toUnsignedString(flags));
         }
 
         if (value == null) {
@@ -711,9 +707,7 @@ public class KeyValueClient extends BaseClient {
     @Deprecated
     public ConsulResponse<TxResponse> performTransaction(ConsistencyMode consistency, Operation... operations) {
 
-        Map<String, Object> query = consistency == ConsistencyMode.DEFAULT
-                ? ImmutableMap.of()
-                : ImmutableMap.of(consistency.toParam().get(), "true");
+        Map<String, Object> query = consistency == ConsistencyMode.DEFAULT ? Map.of() : Map.of(consistency.toParam().get(), "true");
 
         try {
             return http.extractConsulResponse(api.performTransaction(RequestBody.create(MediaType.parse("application/json"),
@@ -761,7 +755,6 @@ public class KeyValueClient extends BaseClient {
     /**
      * Retrofit API interface.
      */
-    @VisibleForTesting
     public interface Api {
 
         @GET("kv/{key}")

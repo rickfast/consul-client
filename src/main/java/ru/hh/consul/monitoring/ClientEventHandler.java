@@ -1,17 +1,17 @@
 package ru.hh.consul.monitoring;
 
-import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import ru.hh.consul.cache.CacheDescriptor;
 import okhttp3.Request;
 
 import java.time.Duration;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import ru.hh.consul.util.ThreadFactoryBuilder;
 
 public class ClientEventHandler {
 
     private static final ScheduledExecutorService EVENT_EXECUTOR = Executors.newSingleThreadScheduledExecutor(
-            new ThreadFactoryBuilder().setNameFormat("event-executor-%s").setDaemon(true).build());
+      new ThreadFactoryBuilder().setDaemon(true).setNameTemplate("event-executor-").setNeedSequence(true).build());
 
     private final String clientName;
     private final ClientEventCallback callback;

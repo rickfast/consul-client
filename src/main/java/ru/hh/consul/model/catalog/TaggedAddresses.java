@@ -10,6 +10,7 @@ import org.immutables.value.Value;
 import java.util.Optional;
 
 @Value.Immutable
+@Value.Style(jdkOnly = true)
 @JsonSerialize(as = ImmutableTaggedAddresses.class)
 @JsonDeserialize(as = ImmutableTaggedAddresses.class)
 @JsonIgnoreProperties(ignoreUnknown = true)

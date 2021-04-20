@@ -1,6 +1,5 @@
 package ru.hh.consul.util.failover.strategy;
 
-import com.google.common.net.HostAndPort;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Collection;
@@ -11,6 +10,7 @@ import java.util.Optional;
 import okhttp3.HttpUrl;
 import okhttp3.Request;
 import okhttp3.Response;
+import ru.hh.consul.util.Address;
 
 /**
  * @author Troy Heanssgen
@@ -18,10 +18,10 @@ import okhttp3.Response;
 public class BlacklistingConsulFailoverStrategy implements ConsulFailoverStrategy {
 
  // The map of blacklisted addresses
-  private Map<HostAndPort, Instant> blacklist = Collections.synchronizedMap(new HashMap<>());
+  private Map<Address, Instant> blacklist = Collections.synchronizedMap(new HashMap<>());
 
   // The map of viable targets
-  private Collection<HostAndPort> targets;
+  private Collection<Address> targets;
 
   // The blacklist timeout
   private long timeout;
@@ -31,7 +31,7 @@ public class BlacklistingConsulFailoverStrategy implements ConsulFailoverStrateg
    * @param targets
    *        A set of viable hosts
    */
-  public BlacklistingConsulFailoverStrategy(Collection<HostAndPort> targets, long timeout) {
+  public BlacklistingConsulFailoverStrategy(Collection<Address> targets, long timeout) {
     this.targets = targets;
     this.timeout = timeout;
   }
@@ -40,7 +40,7 @@ public class BlacklistingConsulFailoverStrategy implements ConsulFailoverStrateg
   public Optional<Request> computeNextStage(Request previousRequest, Response previousResponse) {
 
     // Create a host and port
-    final HostAndPort initialTarget = fromRequest(previousRequest);
+    final Address initialTarget = fromRequest(previousRequest);
 
     // If the previous response failed, disallow this request from going through.
     // A 404 does NOT indicate a failure in this case, so it should never blacklist the previous target.
@@ -52,7 +52,7 @@ public class BlacklistingConsulFailoverStrategy implements ConsulFailoverStrateg
     if (blacklist.containsKey(initialTarget)) {
 
       // Find the first entity that doesnt exist in the blacklist
-      Optional<HostAndPort> optionalNext = targets.stream().filter(target -> {
+      Optional<Address> optionalNext = targets.stream().filter(target -> {
 
         // If we have blacklisted this key
         if (blacklist.containsKey(target)) {
@@ -77,7 +77,7 @@ public class BlacklistingConsulFailoverStrategy implements ConsulFailoverStrateg
       if (!optionalNext.isPresent()) {
         return Optional.empty();
       }
-      HostAndPort next = optionalNext.get();
+      Address next = optionalNext.get();
 
       // Construct the next URL using the old parameters (ensures we don't have to do
       // a copy-on-write
@@ -108,12 +108,12 @@ public class BlacklistingConsulFailoverStrategy implements ConsulFailoverStrateg
   }
 
   /**
-   * Reconstructs a HostAndPort instance from the request object
+   * Reconstructs a Address instance from the request object
    * @param request
    * @return
    */
-  private HostAndPort fromRequest(Request request) {
-    return HostAndPort.fromParts(request.url().host(), request.url().port());
+  private Address fromRequest(Request request) {
+    return new Address(request.url().host(), request.url().port());
   }
 
 }

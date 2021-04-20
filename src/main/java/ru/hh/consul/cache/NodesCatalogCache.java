@@ -1,6 +1,5 @@
 package ru.hh.consul.cache;
 
-import com.google.common.primitives.Ints;
 import ru.hh.consul.CatalogClient;
 import ru.hh.consul.config.CacheConfig;
 import ru.hh.consul.model.health.Node;
@@ -41,7 +40,7 @@ public class NodesCatalogCache extends ConsulCache<String, Node> {
 
     public static NodesCatalogCache newCache(final CatalogClient catalogClient) {
         CacheConfig cacheConfig = catalogClient.getConfig().getCacheConfig();
-        int watchSeconds = Ints.checkedCast(cacheConfig.getWatchDuration().getSeconds());
+        int watchSeconds = Math.toIntExact(cacheConfig.getWatchDuration().getSeconds());
         return newCache(catalogClient, QueryOptions.BLANK, watchSeconds);
     }
 

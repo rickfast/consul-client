@@ -1,6 +1,5 @@
 package ru.hh.consul;
 
-import com.google.common.collect.ImmutableMap;
 import retrofit2.http.Body;
 import retrofit2.http.GET;
 import retrofit2.http.POST;
@@ -64,7 +63,7 @@ public class PreparedQueryClient extends BaseClient {
     }
 
     private Map<String, String> dcQuery(String dc) {
-        return dc != null ? ImmutableMap.of("dc", dc): Collections.emptyMap();
+        return dc != null ? Map.of("dc", dc): Map.of();
     }
     
     /**

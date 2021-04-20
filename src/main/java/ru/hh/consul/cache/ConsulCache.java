@@ -1,9 +1,6 @@
 package ru.hh.consul.cache;
 
-import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.Stopwatch;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import java.util.HashMap;
 import ru.hh.consul.ConsulException;
 import ru.hh.consul.async.ConsulResponseCallback;
 import ru.hh.consul.config.CacheConfig;
@@ -34,9 +31,11 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Function;
-
-import static com.google.common.base.Preconditions.checkArgument;
-import static com.google.common.base.Preconditions.checkState;
+import ru.hh.consul.util.Stopwatch;
+import ru.hh.consul.util.ThreadFactoryBuilder;
+import static java.lang.String.format;
+import static ru.hh.consul.util.Checks.checkArgument;
+import static ru.hh.consul.util.Checks.checkState;
 
 /**
  * A cache structure that can provide an up-to-date read-only
@@ -53,13 +52,13 @@ public class ConsulCache<K, V> implements AutoCloseable {
     private final AtomicLong lastContact = new AtomicLong();
     private final AtomicBoolean isKnownLeader = new AtomicBoolean();
     private final AtomicReference<ConsulResponse.CacheResponseInfo> lastCacheInfo = new AtomicReference<>(null);
-    private final AtomicReference<ImmutableMap<K, V>> lastResponse = new AtomicReference<>(null);
+    private final AtomicReference<Map<K, V>> lastResponse = new AtomicReference<>(null);
     private final AtomicReference<State> state = new AtomicReference<>(State.latent);
     private final CountDownLatch initLatch = new CountDownLatch(1);
     private final Scheduler scheduler;
     private final CopyOnWriteArrayList<Listener<K, V>> listeners = new CopyOnWriteArrayList<>();
     private final ReentrantLock listenersStartingLock = new ReentrantLock();
-    private final Stopwatch stopWatch = Stopwatch.createUnstarted();
+    private final Stopwatch stopWatch = new Stopwatch();
 
     private final Function<V, K> keyConversion;
     private final CallbackConsumer<V> callBackConsumer;
@@ -128,7 +127,7 @@ public class ConsulCache<K, V> implements AutoCloseable {
                             cacheDescriptor, latestIndex, elapsedTime);
                     LOGGER.debug("Consul response {}", consulResponse);
 
-                    ImmutableMap<K, V> full = convertToMap(consulResponse);
+                    Map<K, V> full = convertToMap(consulResponse);
 
                     boolean changed = !full.equals(lastResponse.get());
                     eventHandler.cachePollingSuccess(cacheDescriptor, changed, elapsedTime);
@@ -148,9 +147,9 @@ public class ConsulCache<K, V> implements AutoCloseable {
                             locked = true;
                         }
                         try {
-                            for (Listener<K, V> l : listeners) {
+                            for (Listener<K, V> listener : listeners) {
                                 try {
-                                    l.notify(full);
+                                    listener.notify(full);
                                 } catch (RuntimeException e) {
                                     LOGGER.warn("ConsulCache Listener's notify method threw an exception.", e);
                                 }
@@ -189,7 +188,7 @@ public class ConsulCache<K, V> implements AutoCloseable {
                 }
                 eventHandler.cachePollingError(cacheDescriptor, throwable);
                 long delayMs = computeBackOffDelayMs(cacheConfig);
-                String message = String.format("Error getting response from consul for %s, will retry in %d %s",
+                String message = format("Error getting response from consul for %s, will retry in %d %s",
                         cacheDescriptor, delayMs, TimeUnit.MILLISECONDS);
 
                 cacheConfig.getRefreshErrorLoggingConsumer().accept(LOGGER, message, throwable);
@@ -200,8 +199,8 @@ public class ConsulCache<K, V> implements AutoCloseable {
     }
 
     static long computeBackOffDelayMs(CacheConfig cacheConfig) {
-        return cacheConfig.getMinimumBackOffDelay().toMillis() +
-                Math.round(Math.random() * (cacheConfig.getMaximumBackOffDelay().minus(cacheConfig.getMinimumBackOffDelay()).toMillis()));
+        return cacheConfig.getMinimumBackOffDelay().toMillis()
+            + Math.round(Math.random() * cacheConfig.getMaximumBackOffDelay().minus(cacheConfig.getMinimumBackOffDelay()).toMillis());
     }
 
     public void start() {
@@ -246,35 +245,34 @@ public class ConsulCache<K, V> implements AutoCloseable {
         return initLatch.await(timeout, unit);
     }
 
-    public ImmutableMap<K, V> getMap() {
+    public Map<K, V> getMap() {
         return lastResponse.get();
     }
 
-    public ConsulResponse<ImmutableMap<K, V>> getMapWithMetadata() {
+    public ConsulResponse<Map<K, V>> getMapWithMetadata() {
         return new ConsulResponse<>(lastResponse.get(), lastContact.get(), isKnownLeader.get(),
           latestIndex.get(), Optional.ofNullable(lastCacheInfo.get())
         );
     }
 
-    @VisibleForTesting
-    ImmutableMap<K, V> convertToMap(final ConsulResponse<List<V>> response) {
+    Map<K, V> convertToMap(final ConsulResponse<List<V>> response) {
         if (response == null || response.getResponse() == null || response.getResponse().isEmpty()) {
-            return ImmutableMap.of();
+            return Map.of();
         }
-        final ImmutableMap.Builder<K, V> builder = ImmutableMap.builder();
+        var result = new HashMap<K, V>();
         final Set<K> keySet = new HashSet<>();
         for (final V v : response.getResponse()) {
             final K key = keyConversion.apply(v);
             if (key != null) {
                 if (!keySet.contains(key)) {
-                    builder.put(key, v);
+                    result.put(key, v);
                 } else {
-                    LOGGER.warn("Duplicate service encountered. May differ by tags. Try using more specific tags? " + key.toString());
+                    LOGGER.warn("Duplicate service encountered. May differ by tags. Try using more specific tags? {}", key);
                 }
             }
             keySet.add(key);
         }
-        return builder.build();
+        return Map.copyOf(result);
     }
 
     private void updateIndex(ConsulResponse<List<V>> consulResponse) {
@@ -285,8 +283,7 @@ public class ConsulCache<K, V> implements AutoCloseable {
 
     protected static QueryOptions watchParams(final BigInteger index, final int blockSeconds,
                                               QueryOptions queryOptions) {
-        checkArgument(!queryOptions.getIndex().isPresent() && !queryOptions.getWait().isPresent(),
-                "Index and wait cannot be overridden");
+        checkArgument(queryOptions.getIndex().isEmpty() && queryOptions.getWait().isEmpty(), "Index and wait cannot be overridden");
 
         ImmutableQueryOptions.Builder builder =  ImmutableQueryOptions.builder()
                 .from(watchDefaultParams(index, blockSeconds))
@@ -369,7 +366,6 @@ public class ConsulCache<K, V> implements AutoCloseable {
         return listeners.remove(listener);
     }
 
-    @VisibleForTesting
     protected State getState() {
         return state.get();
     }
@@ -390,13 +386,11 @@ public class ConsulCache<K, V> implements AutoCloseable {
         private final ScheduledExecutorService executor;
     }
 
-    private static class DefaultScheduler extends Scheduler {
-        public DefaultScheduler() {
+    private static final class DefaultScheduler extends Scheduler {
+        private DefaultScheduler() {
             super(Executors.newSingleThreadScheduledExecutor(
-                new ThreadFactoryBuilder()
-                    .setNameFormat("consulCacheScheduledCallback-%d")
-                    .setDaemon(true)
-                    .build()));
+                new ThreadFactoryBuilder().setDaemon(true).setNameTemplate("consulCacheScheduledCallback-").setNeedSequence(true).build()
+            ));
         }
     }
 

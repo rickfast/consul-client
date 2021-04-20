@@ -8,6 +8,7 @@ import java.util.Optional;
 import org.immutables.value.Value;
 
 @Value.Immutable
+@Value.Style(jdkOnly = true)
 @JsonSerialize(as = ImmutableAclToken.class)
 @JsonDeserialize(as = ImmutableAclToken.class)
 @JsonIgnoreProperties(ignoreUnknown = true)

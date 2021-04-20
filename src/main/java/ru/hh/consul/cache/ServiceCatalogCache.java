@@ -1,6 +1,5 @@
 package ru.hh.consul.cache;
 
-import com.google.common.primitives.Ints;
 import ru.hh.consul.CatalogClient;
 import ru.hh.consul.config.CacheConfig;
 import ru.hh.consul.model.catalog.CatalogService;
@@ -45,7 +44,7 @@ public class ServiceCatalogCache extends ConsulCache<String, CatalogService> {
 
     public static ServiceCatalogCache newCache(final CatalogClient catalogClient, final String serviceName) {
         CacheConfig cacheConfig = catalogClient.getConfig().getCacheConfig();
-        int watchSeconds = Ints.checkedCast(cacheConfig.getWatchDuration().getSeconds());
+        int watchSeconds = Math.toIntExact(cacheConfig.getWatchDuration().getSeconds());
         return newCache(catalogClient, serviceName, QueryOptions.BLANK, watchSeconds);
     }
 }

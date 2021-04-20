@@ -1,6 +1,5 @@
 package ru.hh.consul.util;
 
-import com.google.common.annotations.VisibleForTesting;
 import ru.hh.consul.ConsulException;
 import ru.hh.consul.async.Callback;
 import ru.hh.consul.async.ConsulResponseCallback;
@@ -87,7 +86,6 @@ public class Http {
         call.enqueue(createCallback(call, callback, okCodes));
     }
 
-    @VisibleForTesting
     <T> retrofit2.Callback<T> createCallback(Call<T> call, final ConsulResponseCallback<T> callback,
                                              final Integer... okCodes) {
         return new retrofit2.Callback<>() {
@@ -130,7 +128,6 @@ public class Http {
         };
     }
 
-    @VisibleForTesting
     static <T> ConsulResponse<T> consulResponse(Response<T> response) {
         Headers headers = response.headers();
         String indexHeaderValue = headers.get("X-Consul-Index");

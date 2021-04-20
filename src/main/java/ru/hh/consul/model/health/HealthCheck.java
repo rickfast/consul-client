@@ -5,12 +5,13 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import java.util.Optional;
-import com.google.common.collect.ImmutableList;
+
 import org.immutables.value.Value;
 
 import java.util.List;
 
 @Value.Immutable
+@Value.Style(jdkOnly = true)
 @JsonSerialize(as = ImmutableHealthCheck.class)
 @JsonDeserialize(as = ImmutableHealthCheck.class)
 @JsonIgnoreProperties(ignoreUnknown = true)
@@ -41,7 +42,7 @@ public abstract class HealthCheck {
     public abstract Optional<String> getServiceName();
 
     @JsonProperty("ServiceTags")
-    @JsonDeserialize(as = ImmutableList.class, contentAs = String.class)
+    @JsonDeserialize(as = List.class, contentAs = String.class)
     public abstract List<String> getServiceTags();
 
 }

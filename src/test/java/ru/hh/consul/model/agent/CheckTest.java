@@ -1,6 +1,6 @@
 package ru.hh.consul.model.agent;
 
-import com.google.common.collect.Lists;
+import java.util.List;
 import org.junit.Test;
 
 import java.util.Collections;
@@ -50,7 +50,7 @@ public class CheckTest {
     public void severalArgsCanBeAddedToCheck() {
         Check check = ImmutableCheck.builder()
                 .id("id")
-                .args(Lists.newArrayList("/bin/echo \"hi\"", "/bin/echo \"hello\""))
+                .args(List.of("/bin/echo \"hi\"", "/bin/echo \"hello\""))
                 .interval("1s")
                 .name("name")
                 .build();

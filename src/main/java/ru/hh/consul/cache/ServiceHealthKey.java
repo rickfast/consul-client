@@ -8,6 +8,7 @@ import org.immutables.value.Value;
  * Provides a unique key for a {@link ServiceHealth} entry in a {@link ServiceHealthCache}
  */
 @Value.Immutable
+@Value.Style(jdkOnly = true)
 @JsonIgnoreProperties(ignoreUnknown = true)
 public abstract class ServiceHealthKey {
 

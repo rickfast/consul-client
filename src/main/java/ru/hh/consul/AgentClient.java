@@ -1,7 +1,5 @@
 package ru.hh.consul;
 
-import com.google.common.collect.ImmutableMap;
-import com.google.common.net.HostAndPort;
 import retrofit2.http.Body;
 import retrofit2.http.GET;
 import retrofit2.http.PUT;
@@ -30,6 +28,7 @@ import ru.hh.consul.model.agent.ImmutableCheck;
 import ru.hh.consul.model.agent.ImmutableRegistration;
 import ru.hh.consul.model.agent.Member;
 import ru.hh.consul.model.agent.Registration;
+import ru.hh.consul.util.Address;
 
 /**
  * HTTP Client for /v1/agent/ endpoints.
@@ -157,7 +156,7 @@ public class AgentClient extends BaseClient {
      * @param tags     Tags to register with.
      * @param meta     Meta to register with.
      */
-    public void register(int port, HostAndPort tcp, long interval, String name, String id,
+    public void register(int port, Address tcp, long interval, String name, String id,
                          List<String> tags, Map<String, String> meta) {
         Registration.RegCheck check = Registration.RegCheck.tcp(tcp.toString(), interval);
         register(port, check, name, id, tags, meta);
@@ -275,7 +274,7 @@ public class AgentClient extends BaseClient {
      * @param tcp      Health check TCP host and port.
      * @param interval Health script run interval in seconds.
      */
-    public void registerCheck(String checkId, String name, HostAndPort tcp, long interval) {
+    public void registerCheck(String checkId, String name, Address tcp, long interval) {
         registerCheck(checkId, name, tcp, interval, null);
     }
 
@@ -352,7 +351,7 @@ public class AgentClient extends BaseClient {
      * @param interval Health script run interval in seconds.
      * @param notes    Human readable notes.  Not used by Consul.
      */
-    public void registerCheck(String checkId, String name, HostAndPort tcp, long interval, String notes) {
+    public void registerCheck(String checkId, String name, Address tcp, long interval, String notes) {
 
         Check check = ImmutableCheck.builder()
                 .id(checkId)
@@ -509,7 +508,7 @@ public class AgentClient extends BaseClient {
      */
     public void check(String checkId, State state, String note) throws NotRegisteredException {
         try {
-            Map<String, String> query = note == null ? Collections.emptyMap() : ImmutableMap.of("note", note);
+            Map<String, String> query = note == null ? Collections.emptyMap() : Map.of("note", note);
 
             http.handle(api.check(state.getPath(), checkId, query));
         } catch (Exception ex) {
@@ -633,7 +632,7 @@ public class AgentClient extends BaseClient {
      * @return <code>true</code> if successful, otherwise <code>false</code>.
      */
     public boolean join(String address, boolean wan) {
-        Map<String, String> query = wan ? ImmutableMap.of("wan", "1") : Collections.emptyMap();
+        Map<String, String> query = wan ? Map.of("wan", "1") : Collections.emptyMap();
         boolean result = true;
 
         try {
@@ -653,8 +652,7 @@ public class AgentClient extends BaseClient {
      *               maintenance mode, otherwise <code>false</code>.
      */
     public void toggleMaintenanceMode(String serviceId, boolean enable) {
-        http.handle(api.toggleMaintenanceMode(serviceId,
-                ImmutableMap.of("enable", Boolean.toString(enable))));
+        http.handle(api.toggleMaintenanceMode(serviceId, Map.of("enable", Boolean.toString(enable))));
     }
 
     /**
@@ -668,9 +666,7 @@ public class AgentClient extends BaseClient {
     public void toggleMaintenanceMode(String serviceId,
                                       boolean enable,
                                       String reason) {
-        http.handle(api.toggleMaintenanceMode(serviceId,
-                ImmutableMap.of("enable", Boolean.toString(enable),
-                                "reason", reason)));
+        http.handle(api.toggleMaintenanceMode(serviceId, Map.of("enable", Boolean.toString(enable), "reason", reason)));
     }
 
     /**

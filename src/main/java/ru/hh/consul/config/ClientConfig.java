@@ -1,6 +1,6 @@
 package ru.hh.consul.config;
 
-import com.google.common.base.Preconditions;
+import java.util.Objects;
 
 public class ClientConfig {
 
@@ -11,7 +11,7 @@ public class ClientConfig {
     }
 
     public ClientConfig(CacheConfig cacheConfig) {
-        this.cacheConfig = Preconditions.checkNotNull(cacheConfig, "Cache configuration is mandatory");
+        this.cacheConfig = Objects.requireNonNull(cacheConfig, "Cache configuration is mandatory");
     }
 
     public CacheConfig getCacheConfig() {

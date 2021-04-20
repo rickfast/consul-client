@@ -1,7 +1,5 @@
 package ru.hh.consul.cache;
 
-import com.google.common.collect.ImmutableMap;
-import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -27,6 +25,7 @@ import org.junit.runner.RunWith;
 
 import java.time.Duration;
 import java.util.concurrent.atomic.AtomicBoolean;
+import ru.hh.consul.util.ThreadFactoryBuilder;
 
 import static org.hamcrest.CoreMatchers.anyOf;
 import static org.hamcrest.CoreMatchers.is;
@@ -42,7 +41,7 @@ public class KVCacheITest extends BaseIntegrationTest {
     @Before
     public void before() {
         consulClient = Consul.builder()
-                .withHostAndPort(defaultClientHostAndPort)
+                .withAddress(defaultClientAddress)
                 .withClientConfiguration(new ClientConfig(CacheConfig.builder().withWatchDuration(Duration.ofSeconds(1)).build()))
                 .withReadTimeoutMillis(Duration.ofSeconds(11).toMillis())
                 .withConnectTimeoutMillis(Duration.ofMillis(500).toMillis())
@@ -69,7 +68,7 @@ public class KVCacheITest extends BaseIntegrationTest {
             fail("cache initialization failed");
         }
 
-        ImmutableMap<String, Value> map = nc.getMap();
+        Map<String, Value> map = nc.getMap();
         for (int i = 0; i < 5; i++) {
             String keyStr = String.format("%s/%s", root, i);
             String valStr = String.valueOf(i);
@@ -280,7 +279,7 @@ public class KVCacheITest extends BaseIntegrationTest {
     @TestCaseName("queries of {0} seconds")
     public void checkUpdateNotifications(int queryDurationSec) throws InterruptedException {
         ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor(
-                new ThreadFactoryBuilder().setDaemon(true).setNameFormat("kvcache-itest-%d").build()
+            new ThreadFactoryBuilder().setDaemon(true).setNameTemplate("kvcache-itest-").setNeedSequence(true).build()
         );
 
         KeyValueClient keyValueClient = consulClient.keyValueClient();

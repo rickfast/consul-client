@@ -1,9 +1,7 @@
 package ru.hh.consul.model;
 
-import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.Objects;
-
 import java.math.BigInteger;
+import java.util.Objects;
 import java.util.Optional;
 
 public class ConsulResponse<T> {
@@ -53,7 +51,6 @@ public class ConsulResponse<T> {
     private final BigInteger index;
     private final Optional<CacheResponseInfo> cacheResponseInfo;
 
-    @VisibleForTesting
     static CacheResponseInfo buildCacheReponseInfo(String headerHitMiss, String headerAge) throws NumberFormatException {
         ConsulResponse.CacheResponseInfo cacheInfo = null;
         if (headerHitMiss != null) {
@@ -120,14 +117,14 @@ public class ConsulResponse<T> {
 
         ConsulResponse that = (ConsulResponse) o;
 
-        return Objects.equal(this.response, that.response) &&
-                Objects.equal(this.lastContact, that.lastContact) &&
-                Objects.equal(this.knownLeader, that.knownLeader) &&
-                Objects.equal(this.index, that.index);
+        return Objects.equals(this.response, that.response) &&
+                Objects.equals(this.lastContact, that.lastContact) &&
+                Objects.equals(this.knownLeader, that.knownLeader) &&
+                Objects.equals(this.index, that.index);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hashCode(response, lastContact, knownLeader, index);
+        return Objects.hash(response, lastContact, knownLeader, index);
     }
 }

@@ -1,6 +1,5 @@
 package ru.hh.consul.cache;
 
-import com.google.common.util.concurrent.Uninterruptibles;
 import ru.hh.consul.BaseIntegrationTest;
 import ru.hh.consul.model.catalog.CatalogService;
 import ru.hh.consul.Synchroniser;
@@ -45,8 +44,7 @@ public class ServiceCatalogCacheITest extends BaseIntegrationTest {
         client.agentClient().register(20001, 20, name, serviceId1, NO_TAGS, NO_META);
         Synchroniser.pause(Duration.ofMillis(100));
         client.agentClient().register(20002, 20, name, serviceId2, NO_TAGS, NO_META);
-
-        Uninterruptibles.awaitUninterruptibly(finish, 1, TimeUnit.SECONDS);
+        finish.await(1, TimeUnit.SECONDS);
 
         assertEquals(0, result.get(0).size());
         assertEquals(1, result.get(1).size());

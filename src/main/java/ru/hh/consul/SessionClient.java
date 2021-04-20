@@ -1,6 +1,5 @@
 package ru.hh.consul;
 
-import com.google.common.collect.ImmutableMap;
 import retrofit2.http.Body;
 import retrofit2.http.GET;
 import retrofit2.http.PUT;
@@ -14,7 +13,6 @@ import ru.hh.consul.monitoring.ClientEventCallback;
 import retrofit2.Call;
 import retrofit2.Retrofit;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -66,7 +64,7 @@ public class SessionClient extends BaseClient {
     }
 
     private Map<String, String> dcQuery(String dc) {
-        return dc != null ? ImmutableMap.of("dc", dc) : Collections.emptyMap();
+        return dc != null ? Map.of("dc", dc) : Map.of();
     }
 
     public Optional<SessionInfo> renewSession(final String sessionId) {
@@ -81,8 +79,7 @@ public class SessionClient extends BaseClient {
      * @return The {@link SessionInfo} object for the renewed session.
      */
     public Optional<SessionInfo> renewSession(final String dc, final String sessionId) {
-        List<SessionInfo> sessionInfo = http.extract(api.renewSession(sessionId,
-                ImmutableMap.of(), dcQuery(dc)));
+        List<SessionInfo> sessionInfo = http.extract(api.renewSession(sessionId, Map.of(), dcQuery(dc)));
 
         return sessionInfo == null || sessionInfo.isEmpty() ? Optional.empty() :
                 Optional.of(sessionInfo.get(0));

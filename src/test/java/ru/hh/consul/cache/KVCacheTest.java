@@ -1,6 +1,5 @@
 package ru.hh.consul.cache;
 
-import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import java.util.Optional;
 import ru.hh.consul.KeyValueClient;
 import ru.hh.consul.KeyValueClientFactory;
@@ -26,6 +25,7 @@ import java.time.Duration;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
+import ru.hh.consul.util.ThreadFactoryBuilder;
 
 @RunWith(JUnitParamsRunner.class)
 public class KVCacheTest {
@@ -43,59 +43,59 @@ public class KVCacheTest {
 
     public Object getKeyValueTestValues() {
         return new Object[]{
-                new Object[]{"", "a/b", "a/b"},
-                new Object[]{"/", "a/b", "a/b"},
-                new Object[]{"a", "a/b", "a/b"},
-                new Object[]{"a/", "a/b", "b"},
-                new Object[]{"a/b", "a/b", ""},
-                new Object[]{"a/b", "a/b/", "b/"},
-                new Object[]{"a/b", "a/b/c", "b/c"},
-                new Object[]{"a/b", "a/bc", "bc"},
-                new Object[]{"a/b/", "a/b/", ""},
-                new Object[]{"a/b/", "a/b/c", "c"},
-                new Object[]{"/a/b", "a/b", ""}
+            new Object[]{"", "a/b", "a/b"},
+            new Object[]{"/", "a/b", "a/b"},
+            new Object[]{"a", "a/b", "a/b"},
+            new Object[]{"a/", "a/b", "b"},
+            new Object[]{"a/b", "a/b", ""},
+            new Object[]{"a/b", "a/b/", "b/"},
+            new Object[]{"a/b", "a/b/c", "b/c"},
+            new Object[]{"a/b", "a/bc", "bc"},
+            new Object[]{"a/b/", "a/b/", ""},
+            new Object[]{"a/b/", "a/b/c", "c"},
+            new Object[]{"/a/b", "a/b", ""}
         };
     }
 
     private Value createValue(final String key) {
         return ImmutableValue.builder()
-                .createIndex(1234567890)
-                .modifyIndex(1234567890)
-                .lockIndex(1234567890)
-                .flags(1234567890)
-                .key(key)
-                .value(Optional.empty())
-                .build();
+            .createIndex(1234567890)
+            .modifyIndex(1234567890)
+            .lockIndex(1234567890)
+            .flags(1234567890)
+            .key(key)
+            .value(Optional.empty())
+            .build();
     }
 
     @Test
     public void testListenerWithMockRetrofit() throws InterruptedException {
         final Retrofit retrofit = new Retrofit.Builder()
-                // For safety, this is a black hole IP: see RFC 6666
-                .baseUrl("http://[100:0:0:0:0:0:0:0]/")
-                .build();
+            // For safety, this is a black hole IP: see RFC 6666
+            .baseUrl("http://[100:0:0:0:0:0:0:0]/")
+            .build();
         final NetworkBehavior networkBehavior = NetworkBehavior.create();
         networkBehavior.setDelay(0, TimeUnit.MILLISECONDS);
         networkBehavior.setErrorPercent(0);
         networkBehavior.setFailurePercent(0);
         final MockRetrofit mockRetrofit = new MockRetrofit.Builder(retrofit)
-                .networkBehavior(networkBehavior)
-                .backgroundExecutor(Executors.newFixedThreadPool(1,
-                        new ThreadFactoryBuilder()
-                                .setNameFormat("mockRetrofitBackground-%d")
-                                .build()))
-                .build();
+            .networkBehavior(networkBehavior)
+            .backgroundExecutor(Executors.newFixedThreadPool(
+                1,
+                new ThreadFactoryBuilder().setDaemon(false).setNameTemplate("mockRetrofitBackground-").setNeedSequence(true).build()
+            ))
+            .build();
 
         final BehaviorDelegate<KeyValueClient.Api> delegate = mockRetrofit.create(KeyValueClient.Api.class);
         final MockApiService mockApiService = new MockApiService(delegate);
 
 
         final CacheConfig cacheConfig = CacheConfig.builder()
-                .withMinDelayBetweenRequests(Duration.ofSeconds(10))
-                .build();
+            .withMinDelayBetweenRequests(Duration.ofSeconds(10))
+            .build();
 
         final KeyValueClient kvClient = KeyValueClientFactory.create(mockApiService, new ClientConfig(cacheConfig),
-                new ClientEventCallback() {
+            new ClientEventCallback() {
         });
 
 

@@ -21,7 +21,7 @@ public class LifecycleITest extends BaseIntegrationTest {
     @Test
     public void shouldBeDestroyable() {
         ConnectionPool connectionPool = new ConnectionPool();
-        Consul client = Consul.builder().withHostAndPort(defaultClientHostAndPort).build();
+        Consul client = Consul.builder().withAddress(defaultClientAddress).build();
         client.destroy();
     }
 
@@ -34,7 +34,7 @@ public class LifecycleITest extends BaseIntegrationTest {
 
         doReturn(new ArrayList<>()).when(executorService).shutdownNow();
 
-        Consul client = Consul.builder().withHostAndPort(defaultClientHostAndPort)
+        Consul client = Consul.builder().withAddress(defaultClientAddress)
             .withExecutorService(executorService).withConnectionPool(connectionPool).build();
         client.destroy();
 
@@ -51,7 +51,7 @@ public class LifecycleITest extends BaseIntegrationTest {
             Thread currentThread = Thread.currentThread();
             System.out.println("This is a Task printing a message in Thread " + currentThread);
         });
-        Consul client = Consul.builder().withHostAndPort(defaultClientHostAndPort)
+        Consul client = Consul.builder().withAddress(defaultClientAddress)
             .withExecutorService(executorService).withConnectionPool(connectionPool).build();
         client.destroy();
     }
@@ -67,7 +67,7 @@ public class LifecycleITest extends BaseIntegrationTest {
             System.out.println("This is a Task printing a message in Thread " + currentThread);
         });
 
-        Consul client = Consul.builder().withHostAndPort(defaultClientHostAndPort)
+        Consul client = Consul.builder().withAddress(defaultClientAddress)
             .withExecutorService(executorService).withConnectionPool(connectionPool).build();
 
         // do not destroy the Consul client

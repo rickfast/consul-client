@@ -9,6 +9,7 @@ import java.math.BigInteger;
 import java.util.List;
 
 @Value.Immutable
+@Value.Style(jdkOnly = true)
 @JsonSerialize(as = ImmutableEventResponse.class)
 @JsonDeserialize(as = ImmutableEventResponse.class)
 public abstract class EventResponse {

@@ -8,6 +8,7 @@ import ru.hh.consul.util.Base64EncodingDeserializer;
 import org.immutables.value.Value;
 
 @Value.Immutable
+@Value.Style(jdkOnly = true)
 @JsonSerialize(as = ImmutableEvent.class)
 @JsonDeserialize(as = ImmutableEvent.class)
 public abstract class Event {

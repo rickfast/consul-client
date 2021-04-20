@@ -1,7 +1,5 @@
 package ru.hh.consul.cache;
 
-import com.google.common.net.HostAndPort;
-import com.google.common.primitives.Ints;
 import ru.hh.consul.HealthClient;
 import ru.hh.consul.config.CacheConfig;
 import ru.hh.consul.model.health.ServiceHealth;
@@ -9,6 +7,7 @@ import ru.hh.consul.option.QueryOptions;
 
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.function.Function;
+import ru.hh.consul.util.Address;
 
 public class ServiceHealthCache extends ConsulCache<ServiceHealthKey, ServiceHealth> {
 
@@ -37,7 +36,7 @@ public class ServiceHealthCache extends ConsulCache<ServiceHealthKey, ServiceHea
     /**
      * Factory method to construct a string/{@link ServiceHealth} map for a particular service.
      * <p/>
-     * Keys will be a {@link HostAndPort} object made up of the service's address/port combo
+     * Keys will be a {@link Address} object made up of the service's address/port combo
      *
      * @param healthClient the {@link HealthClient}
      * @param serviceName  the name of the service
@@ -90,7 +89,7 @@ public class ServiceHealthCache extends ConsulCache<ServiceHealthKey, ServiceHea
 
     public static ServiceHealthCache newCache(final HealthClient healthClient, final String serviceName) {
         CacheConfig cacheConfig = healthClient.getConfig().getCacheConfig();
-        int watchSeconds = Ints.checkedCast(cacheConfig.getWatchDuration().getSeconds());
+        int watchSeconds = Math.toIntExact(cacheConfig.getWatchDuration().getSeconds());
         return newCache(healthClient, serviceName, true, QueryOptions.BLANK, watchSeconds);
     }
 }
