@@ -3,7 +3,7 @@
     <parent>
         <groupId>ru.hh.public-pom</groupId>
         <artifactId>public-pom</artifactId>
-        <version>1.47</version>
+        <version>1.48</version>
     </parent>
 
     <groupId>ru.hh.consul</groupId>
