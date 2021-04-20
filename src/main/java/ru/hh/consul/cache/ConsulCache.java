@@ -1,9 +1,6 @@
 package ru.hh.consul.cache;
 
 import java.util.HashMap;
-import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.atomic.AtomicInteger;
-import org.jetbrains.annotations.NotNull;
 import ru.hh.consul.ConsulException;
 import ru.hh.consul.async.ConsulResponseCallback;
 import ru.hh.consul.config.CacheConfig;
@@ -35,6 +32,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Function;
 import ru.hh.consul.util.Stopwatch;
+import ru.hh.consul.util.ThreadFactoryBuilder;
 import static java.lang.String.format;
 import static ru.hh.consul.util.Checks.checkArgument;
 import static ru.hh.consul.util.Checks.checkState;
@@ -390,15 +388,9 @@ public class ConsulCache<K, V> implements AutoCloseable {
 
     private static final class DefaultScheduler extends Scheduler {
         private DefaultScheduler() {
-            super(Executors.newSingleThreadScheduledExecutor(new ThreadFactory() {
-                final AtomicInteger counter = new AtomicInteger();
-                @Override
-                public Thread newThread(@NotNull Runnable r) {
-                  Thread thread = new Thread(r, "consulCacheScheduledCallback-" + counter.getAndIncrement());
-                  thread.setDaemon(true);
-                  return thread;
-                }
-              }));
+            super(Executors.newSingleThreadScheduledExecutor(
+                new ThreadFactoryBuilder().setDaemon(true).setNameTemplate("consulCacheScheduledCallback-").setNeedSequence(true).build()
+            ));
         }
     }
 

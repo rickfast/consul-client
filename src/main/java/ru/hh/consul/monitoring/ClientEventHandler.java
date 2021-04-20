@@ -1,27 +1,17 @@
 package ru.hh.consul.monitoring;
 
-import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.atomic.AtomicInteger;
-import org.jetbrains.annotations.NotNull;
 import ru.hh.consul.cache.CacheDescriptor;
 import okhttp3.Request;
 
 import java.time.Duration;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import ru.hh.consul.util.ThreadFactoryBuilder;
 
 public class ClientEventHandler {
 
     private static final ScheduledExecutorService EVENT_EXECUTOR = Executors.newSingleThreadScheduledExecutor(
-      new ThreadFactory() {
-        final AtomicInteger counter = new AtomicInteger();
-        @Override
-        public Thread newThread(@NotNull Runnable r) {
-          Thread thread = new Thread(r, "event-executor-" + counter.getAndIncrement());
-          thread.setDaemon(true);
-          return thread;
-        }
-      });
+      new ThreadFactoryBuilder().setDaemon(true).setNameTemplate("event-executor-").setNeedSequence(true).build());
 
     private final String clientName;
     private final ClientEventCallback callback;

@@ -8,10 +8,7 @@ import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
-import org.jetbrains.annotations.NotNull;
 import ru.hh.consul.BaseIntegrationTest;
 import ru.hh.consul.Consul;
 import ru.hh.consul.KeyValueClient;
@@ -28,6 +25,7 @@ import org.junit.runner.RunWith;
 
 import java.time.Duration;
 import java.util.concurrent.atomic.AtomicBoolean;
+import ru.hh.consul.util.ThreadFactoryBuilder;
 
 import static org.hamcrest.CoreMatchers.anyOf;
 import static org.hamcrest.CoreMatchers.is;
@@ -280,15 +278,9 @@ public class KVCacheITest extends BaseIntegrationTest {
     @Parameters(method = "getBlockingQueriesDuration")
     @TestCaseName("queries of {0} seconds")
     public void checkUpdateNotifications(int queryDurationSec) throws InterruptedException {
-        ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor(new ThreadFactory() {
-          AtomicInteger counter = new AtomicInteger();
-          @Override
-          public Thread newThread(@NotNull Runnable r) {
-            Thread thread = new Thread(r, "kvcache-itest-" + counter.getAndIncrement());
-            thread.setDaemon(true);
-            return thread;
-          }
-        });
+        ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor(
+            new ThreadFactoryBuilder().setDaemon(true).setNameTemplate("kvcache-itest-").setNeedSequence(true).build()
+        );
 
         KeyValueClient keyValueClient = consulClient.keyValueClient();
         String key = UUID.randomUUID().toString();
