@@ -1,6 +1,8 @@
 package ru.hh.consul.cache;
 
 import java.util.HashMap;
+import java.util.function.Supplier;
+import javax.annotation.Nullable;
 import ru.hh.consul.ConsulException;
 import ru.hh.consul.async.ConsulResponseCallback;
 import ru.hh.consul.config.CacheConfig;
@@ -48,7 +50,7 @@ public class ConsulCache<K, V> implements AutoCloseable {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ConsulCache.class);
 
-    private final AtomicReference<BigInteger> latestIndex = new AtomicReference<>(null);
+    private final AtomicReference<BigInteger> latestIndex;
     private final AtomicLong lastContact = new AtomicLong();
     private final AtomicBoolean isKnownLeader = new AtomicBoolean();
     private final AtomicReference<ConsulResponse.CacheResponseInfo> lastCacheInfo = new AtomicReference<>(null);
@@ -71,9 +73,10 @@ public class ConsulCache<K, V> implements AutoCloseable {
             CallbackConsumer<V> callbackConsumer,
             CacheConfig cacheConfig,
             ClientEventHandler eventHandler,
-            CacheDescriptor cacheDescriptor) {
+            CacheDescriptor cacheDescriptor,
+            @Nullable BigInteger initialIndex) {
 
-        this(keyConversion, callbackConsumer, cacheConfig, eventHandler, cacheDescriptor, createDefault());
+        this(keyConversion, callbackConsumer, cacheConfig, eventHandler, cacheDescriptor, createDefault(), initialIndex);
     }
 
     protected ConsulCache(
@@ -82,9 +85,12 @@ public class ConsulCache<K, V> implements AutoCloseable {
             CacheConfig cacheConfig,
             ClientEventHandler eventHandler,
             CacheDescriptor cacheDescriptor,
-            ScheduledExecutorService callbackScheduleExecutorService) {
+            ScheduledExecutorService callbackScheduleExecutorService,
+            @Nullable BigInteger initialIndex) {
 
-        this(keyConversion, callbackConsumer, cacheConfig, eventHandler, cacheDescriptor, new ExternalScheduler(callbackScheduleExecutorService));
+        this(keyConversion, callbackConsumer, cacheConfig, eventHandler, cacheDescriptor,
+          new ExternalScheduler(callbackScheduleExecutorService), initialIndex
+        );
     }
 
     protected ConsulCache(
@@ -93,27 +99,21 @@ public class ConsulCache<K, V> implements AutoCloseable {
             CacheConfig cacheConfig,
             ClientEventHandler eventHandler,
             CacheDescriptor cacheDescriptor,
-            Scheduler callbackScheduler) {
-        if (keyConversion == null) {
-            Validate.notNull(keyConversion, "keyConversion must not be null");
-        }
-        if (callbackConsumer == null) {
-            Validate.notNull(callbackConsumer, "callbackConsumer must not be null");
-        }
-        if (cacheConfig == null) {
-            Validate.notNull(cacheConfig, "cacheConfig must not be null");
-        }
-        if (eventHandler == null) {
-            Validate.notNull(eventHandler, "eventHandler must not be null");
-        }
+            Scheduler callbackScheduler,
+            @Nullable BigInteger initialIndex) {
+        Validate.notNull(keyConversion, "keyConversion must not be null");
+        Validate.notNull(callbackConsumer, "callbackConsumer must not be null");
+        Validate.notNull(cacheConfig, "cacheConfig must not be null");
+        Validate.notNull(eventHandler, "eventHandler must not be null");
 
+        latestIndex = new AtomicReference<>(initialIndex);
         this.keyConversion = keyConversion;
         this.callBackConsumer = callbackConsumer;
         this.eventHandler = eventHandler;
         this.cacheDescriptor = cacheDescriptor;
         this.scheduler = callbackScheduler;
 
-        this.responseCallback = new ConsulResponseCallback<List<V>>() {
+        this.responseCallback = new ConsulResponseCallback<>() {
             @Override
             public void onComplete(ConsulResponse<List<V>> consulResponse) {
 
@@ -138,15 +138,8 @@ public class ConsulCache<K, V> implements AutoCloseable {
                         // metadata changes
                         lastContact.set(consulResponse.getLastContact());
                         isKnownLeader.set(consulResponse.isKnownLeader());
-                    }
 
-                    if (changed) {
-                        Boolean locked = false;
-                        if (state.get() == State.starting) {
-                            listenersStartingLock.lock();
-                            locked = true;
-                        }
-                        try {
+                        withStartingLock(() -> {
                             for (Listener<K, V> listener : listeners) {
                                 try {
                                     listener.notify(full);
@@ -154,12 +147,8 @@ public class ConsulCache<K, V> implements AutoCloseable {
                                     LOGGER.warn("ConsulCache Listener's notify method threw an exception.", e);
                                 }
                             }
-                        }
-                        finally {
-                            if (locked) {
-                                listenersStartingLock.unlock();
-                            }
-                        }
+                            return null;
+                        });
                     }
 
                     if (state.compareAndSet(State.starting, State.started)) {
@@ -173,8 +162,7 @@ public class ConsulCache<K, V> implements AutoCloseable {
                     }
                     timeToWait = timeToWait.minus(elapsedTime);
 
-                    scheduler.schedule(ConsulCache.this::runCallback,
-                            timeToWait.toMillis(), TimeUnit.MILLISECONDS);
+                    scheduler.schedule(ConsulCache.this::runCallback, timeToWait.toMillis(), TimeUnit.MILLISECONDS);
 
                 } else {
                     onFailure(new ConsulException("Consul cluster has no elected leader"));
@@ -196,6 +184,21 @@ public class ConsulCache<K, V> implements AutoCloseable {
                 scheduler.schedule(ConsulCache.this::runCallback, delayMs, TimeUnit.MILLISECONDS);
             }
         };
+    }
+
+    private <T> T withStartingLock(Supplier<T> action) {
+      boolean wasInStartingState = state.get() == State.starting;
+      if (wasInStartingState) {
+        listenersStartingLock.lock();
+      }
+      try {
+        return action.get();
+      }
+      finally {
+        if (wasInStartingState) {
+          listenersStartingLock.unlock();
+        }
+      }
     }
 
     static long computeBackOffDelayMs(CacheConfig cacheConfig) {
@@ -238,7 +241,8 @@ public class ConsulCache<K, V> implements AutoCloseable {
     }
 
     private boolean isRunning() {
-        return state.get() == State.started || state.get() == State.starting;
+      State currentState = this.state.get();
+      return currentState == State.started || currentState == State.starting;
     }
 
     public boolean awaitInitialized(long timeout, TimeUnit unit) throws InterruptedException {
@@ -277,7 +281,8 @@ public class ConsulCache<K, V> implements AutoCloseable {
 
     private void updateIndex(ConsulResponse<List<V>> consulResponse) {
         if (consulResponse != null && consulResponse.getIndex() != null) {
-            this.latestIndex.set(consulResponse.getIndex());
+          BigInteger previousIndex = this.latestIndex.getAndSet(consulResponse.getIndex());
+          LOGGER.trace("Updated cache index from {} to {}", previousIndex, latestIndex.get());
         }
     }
 
@@ -319,6 +324,7 @@ public class ConsulCache<K, V> implements AutoCloseable {
      *
      * @param <V>
      */
+    @FunctionalInterface
     protected interface CallbackConsumer<V> {
         void consume(BigInteger index, ConsulResponseCallback<List<V>> callback);
     }
@@ -329,33 +335,23 @@ public class ConsulCache<K, V> implements AutoCloseable {
      *
      * @param <V>
      */
+    @FunctionalInterface
     public interface Listener<K, V> {
         void notify(Map<K, V> newValues);
     }
 
     public boolean addListener(Listener<K, V> listener) {
-        Boolean locked = false;
-        boolean added;
-        if (state.get() == State.starting) {
-            listenersStartingLock.lock();
-            locked = true;
-        }
-        try {
-            added = listeners.add(listener);
-            if (state.get() == State.started) {
+        return withStartingLock(() -> {
+            boolean added = listeners.add(listener);
+            if (this.state.get() == State.started) {
                 try {
                     listener.notify(lastResponse.get());
                 } catch (RuntimeException e) {
                     LOGGER.warn("ConsulCache Listener's notify method threw an exception.", e);
                 }
             }
-        }
-        finally {
-            if (locked) {
-                listenersStartingLock.unlock();
-            }
-        }
-        return added;
+            return added;
+          });
     }
 
     public List<Listener<K, V>> getListeners() {
@@ -394,9 +390,9 @@ public class ConsulCache<K, V> implements AutoCloseable {
         }
     }
 
-    private static class ExternalScheduler extends Scheduler {
+    private static final class ExternalScheduler extends Scheduler {
 
-        public ExternalScheduler(ScheduledExecutorService executor) {
+        private ExternalScheduler(ScheduledExecutorService executor) {
             super(executor);
         }
 

@@ -1,5 +1,6 @@
 package ru.hh.consul.cache;
 
+import java.math.BigInteger;
 import java.util.Objects;
 import ru.hh.consul.KeyValueClient;
 import ru.hh.consul.config.CacheConfig;
@@ -16,7 +17,8 @@ public class KVCache extends ConsulCache<String, Value> {
                     String keyPath,
                     int watchSeconds,
                     QueryOptions queryOptions,
-                    Scheduler callbackScheduler) {
+                    Scheduler callbackScheduler,
+                    BigInteger initialIndex) {
         super(getKeyExtractorFunction(keyPath),
             (index, callback) -> {
                 QueryOptions params = watchParams(index, watchSeconds, queryOptions);
@@ -25,7 +27,8 @@ public class KVCache extends ConsulCache<String, Value> {
             kvClient.getConfig().getCacheConfig(),
             kvClient.getEventHandler(),
             new CacheDescriptor("keyvalue", rootPath),
-            callbackScheduler);
+            callbackScheduler,
+            initialIndex);
     }
 
     static Function<Value, String> getKeyExtractorFunction(final String rootPath) {
@@ -52,7 +55,19 @@ public class KVCache extends ConsulCache<String, Value> {
             final ScheduledExecutorService callbackExecutorService) {
 
         Scheduler scheduler = createExternal(callbackExecutorService);
-        return new KVCache(kvClient, rootPath, prepareRootPath(rootPath), watchSeconds, queryOptions, scheduler);
+        return new KVCache(kvClient, rootPath, prepareRootPath(rootPath), watchSeconds, queryOptions, scheduler, null);
+    }
+
+    public static KVCache newCache(
+            KeyValueClient kvClient,
+            String rootPath,
+            int watchSeconds,
+            QueryOptions queryOptions,
+            BigInteger initialIndex,
+            ScheduledExecutorService callbackExecutorService) {
+
+      Scheduler scheduler = createExternal(callbackExecutorService);
+      return new KVCache(kvClient, rootPath, prepareRootPath(rootPath), watchSeconds, queryOptions, scheduler, initialIndex);
     }
 
     public static KVCache newCache(
@@ -60,7 +75,16 @@ public class KVCache extends ConsulCache<String, Value> {
             final String rootPath,
             final int watchSeconds,
             final QueryOptions queryOptions) {
-        return new KVCache(kvClient, rootPath, prepareRootPath(rootPath), watchSeconds, queryOptions, createDefault());
+        return new KVCache(kvClient, rootPath, prepareRootPath(rootPath), watchSeconds, queryOptions, createDefault(), null);
+    }
+
+    public static KVCache newCache(
+            KeyValueClient kvClient,
+            String rootPath,
+            int watchSeconds,
+            BigInteger initialIndex,
+            QueryOptions queryOptions) {
+      return new KVCache(kvClient, rootPath, prepareRootPath(rootPath), watchSeconds, queryOptions, createDefault(), initialIndex);
     }
 
     static String prepareRootPath(String rootPath) {
@@ -77,6 +101,7 @@ public class KVCache extends ConsulCache<String, Value> {
      *                     to be increased as well)
      * @return the cache object
      */
+    @Deprecated
     public static KVCache newCache(
             final KeyValueClient kvClient,
             final String rootPath,
@@ -92,6 +117,7 @@ public class KVCache extends ConsulCache<String, Value> {
      * @param rootPath the root path
      * @return the cache object
      */
+    @Deprecated
     public static KVCache newCache(final KeyValueClient kvClient, final String rootPath) {
         CacheConfig cacheConfig = kvClient.getConfig().getCacheConfig();
         int watchSeconds = Math.toIntExact(cacheConfig.getWatchDuration().getSeconds());

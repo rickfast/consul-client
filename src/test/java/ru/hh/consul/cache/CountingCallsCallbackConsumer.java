@@ -11,12 +11,12 @@ import java.util.List;
 /**
  *
  */
-public class StubCallbackConsumer implements ConsulCache.CallbackConsumer<Value> {
+public class CountingCallsCallbackConsumer implements ConsulCache.CallbackConsumer<Value> {
 
     private final List<Value> result;
     private int callCount;
 
-    public StubCallbackConsumer(List<Value> result) {
+    public CountingCallsCallbackConsumer(List<Value> result) {
         this.result = Collections.unmodifiableList(result);
     }
 

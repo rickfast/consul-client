@@ -1,5 +1,6 @@
 package ru.hh.consul.cache;
 
+import java.math.BigInteger;
 import ru.hh.consul.HealthClient;
 import ru.hh.consul.config.CacheConfig;
 import ru.hh.consul.model.health.HealthCheck;
@@ -15,7 +16,8 @@ public class HealthCheckCache extends ConsulCache<String, HealthCheck> {
                              int watchSeconds,
                              QueryOptions queryOptions,
                              Function<HealthCheck, String> keyExtractor,
-                             Scheduler callbackScheduler) {
+                             Scheduler callbackScheduler,
+                             BigInteger initialIndex) {
         super(keyExtractor,
             (index, callback) -> {
                 QueryOptions params = watchParams(index, watchSeconds, queryOptions);
@@ -24,7 +26,8 @@ public class HealthCheckCache extends ConsulCache<String, HealthCheck> {
             healthClient.getConfig().getCacheConfig(),
             healthClient.getEventHandler(),
             new CacheDescriptor("health.state", state.getName()),
-            callbackScheduler);
+            callbackScheduler, 
+            initialIndex);
     }
 
     /**
@@ -45,7 +48,20 @@ public class HealthCheckCache extends ConsulCache<String, HealthCheck> {
             final ScheduledExecutorService callbackExecutorService) {
 
         Scheduler callbackScheduler = createExternal(callbackExecutorService);
-        return new HealthCheckCache(healthClient, state, watchSeconds, queryOptions, keyExtractor, callbackScheduler);
+        return new HealthCheckCache(healthClient, state, watchSeconds, queryOptions, keyExtractor, callbackScheduler, null);
+    }
+
+    public static HealthCheckCache newCache(
+           HealthClient healthClient,
+           ru.hh.consul.model.State state,
+           int watchSeconds,
+           QueryOptions queryOptions,
+           BigInteger initialIndex,
+           Function<HealthCheck, String> keyExtractor,
+           ScheduledExecutorService callbackExecutorService) {
+
+      Scheduler callbackScheduler = createExternal(callbackExecutorService);
+      return new HealthCheckCache(healthClient, state, watchSeconds, queryOptions, keyExtractor, callbackScheduler, initialIndex);
     }
 
     public static HealthCheckCache newCache(
@@ -55,7 +71,7 @@ public class HealthCheckCache extends ConsulCache<String, HealthCheck> {
             final QueryOptions queryOptions,
             final Function<HealthCheck, String> keyExtractor) {
 
-        return new HealthCheckCache(healthClient, state, watchSeconds, queryOptions, keyExtractor, createDefault());
+        return new HealthCheckCache(healthClient, state, watchSeconds, queryOptions, keyExtractor, createDefault(), null);
     }
     public static HealthCheckCache newCache(
             final HealthClient healthClient,
@@ -67,6 +83,15 @@ public class HealthCheckCache extends ConsulCache<String, HealthCheck> {
     }
 
     public static HealthCheckCache newCache(
+            HealthClient healthClient,
+            ru.hh.consul.model.State state,
+            int watchSeconds,
+            QueryOptions queryOptions, BigInteger initialIndex) {
+
+      return new HealthCheckCache(healthClient, state, watchSeconds, queryOptions, HealthCheck::getCheckId, createDefault(), initialIndex);
+    }
+
+    public static HealthCheckCache newCache(
             final HealthClient healthClient,
             final ru.hh.consul.model.State state,
             final int watchSeconds) {
@@ -74,6 +99,7 @@ public class HealthCheckCache extends ConsulCache<String, HealthCheck> {
         return newCache(healthClient, state, watchSeconds, QueryOptions.BLANK);
     }
 
+    @Deprecated
     public static HealthCheckCache newCache(final HealthClient healthClient, final ru.hh.consul.model.State state) {
         CacheConfig cacheConfig = healthClient.getConfig().getCacheConfig();
         int watchSeconds = Math.toIntExact(cacheConfig.getWatchDuration().getSeconds());
