@@ -681,7 +681,7 @@ public class AgentClient extends BaseClient {
         @PUT("agent/check/deregister/{checkId}")
         Call<Void> deregisterCheck(@Path("checkId") String checkId);
 
-        @GET("agent/self")
+        @GET("status/leader")
         Call<Void> ping();
 
         @GET("agent/self")
