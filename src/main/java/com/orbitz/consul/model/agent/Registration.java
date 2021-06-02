@@ -60,6 +60,12 @@ public abstract class Registration {
     @JsonInclude(JsonInclude.Include.NON_NULL)
     public abstract static class RegCheck {
 
+        @JsonProperty("CheckID")
+        public abstract Optional<String> getId();
+
+        @JsonProperty("Name")
+        public abstract Optional<String> getName();
+
         @JsonProperty("Args")
         public abstract Optional<List<String>> getArgs();
 
