@@ -27,6 +27,7 @@ public abstract class QueryOptions implements ParamAdder {
     public abstract Optional<BigInteger> getIndex();
     public abstract Optional<String> getNear();
     public abstract Optional<String> getDatacenter();
+    public abstract Optional<String> getFilter();
     public abstract List<String> getNodeMeta();
     public abstract List<String> getTag();
 
@@ -113,6 +114,7 @@ public abstract class QueryOptions implements ParamAdder {
         optionallyAdd(result, "token", getToken());
         optionallyAdd(result, "near", getNear());
         optionallyAdd(result, "dc", getDatacenter());
+        optionallyAdd(result, "filter", getFilter());
 
         return result;
     }
