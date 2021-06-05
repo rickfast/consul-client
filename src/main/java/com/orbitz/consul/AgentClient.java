@@ -434,7 +434,19 @@ public class AgentClient extends BaseClient {
      * @return Map of Service ID to Services.
      */
     public Map<String, Service> getServices() {
-        return http.extract(api.getServices());
+        return getServices(QueryOptions.BLANK);
+    }
+
+    /**
+     * Retrieves all services registered with the Agent.
+     * <p/>
+     * GET /v1/agent/services
+     *
+     * @param queryOptions The Query Options to use.
+     * @return Map of Service ID to Services.
+     */
+    public Map<String, Service> getServices(QueryOptions queryOptions) {
+        return http.extract(api.getServices(queryOptions.toQuery()));
     }
 
     /**
@@ -691,7 +703,7 @@ public class AgentClient extends BaseClient {
         Call<Map<String, HealthCheck>> getChecks();
 
         @GET("agent/services")
-        Call<Map<String, Service>> getServices();
+        Call<Map<String, Service>> getServices(@QueryMap Map<String, Object> query);
 
         @GET("agent/service/{id}")
         Call<FullService> getService(@Path("id") String id, @QueryMap Map<String, Object> query);

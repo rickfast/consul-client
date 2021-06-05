@@ -13,6 +13,7 @@ import com.orbitz.consul.model.health.HealthCheck;
 import com.orbitz.consul.model.health.ImmutableService;
 import com.orbitz.consul.model.health.Service;
 import com.orbitz.consul.model.health.ServiceHealth;
+import com.orbitz.consul.option.ImmutableQueryOptions;
 import com.orbitz.consul.option.QueryOptions;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -245,6 +246,43 @@ public class AgentITest extends BaseIntegrationTest {
                 .build();
         Service registeredService = null;
         for (Map.Entry<String, Service> service : client.agentClient().getServices().entrySet()) {
+            if (service.getValue().getId().equals(id)) {
+                registeredService = service.getValue();
+            }
+        }
+
+        assertNotNull(String.format("Service \"%s\" not found", name), registeredService);
+        assertEquals(expectedService, registeredService);
+    }
+
+    @Test
+    public void shouldGetServicesFiltered() {
+        String id = UUID.randomUUID().toString();
+        String name = UUID.randomUUID().toString();
+        List<String> tags = Collections.singletonList(UUID.randomUUID().toString());
+        String metaKey = "MetaKey";
+        String metaValue = UUID.randomUUID().toString();
+        Map<String, String> meta = Collections.singletonMap(metaKey, metaValue);
+        client.agentClient().register(8080, 20L, name, id, tags, meta);
+        Synchroniser.pause(Duration.ofMillis(100));
+
+        Service expectedService = ImmutableService.builder()
+                .id(id)
+                .service(name)
+                .address("")
+                .port(8080)
+                .tags(tags)
+                .meta(meta)
+                .enableTagOverride(false)
+                .weights(ImmutableServiceWeights.builder().warning(1).passing(1).build())
+                .build();
+        Service registeredService = null;
+        Map<String, Service> services = client.agentClient().getServices(
+                ImmutableQueryOptions.builder()
+                        .filter(String.format("Meta.%s == `%s`", metaKey, metaValue))
+                        .build()
+        );
+        for (Map.Entry<String, Service> service : services.entrySet()) {
             if (service.getValue().getId().equals(id)) {
                 registeredService = service.getValue();
             }
