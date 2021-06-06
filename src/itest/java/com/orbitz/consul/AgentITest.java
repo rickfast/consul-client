@@ -127,6 +127,72 @@ public class AgentITest extends BaseIntegrationTest {
 
     @Test
     @Ignore
+    public void shouldRegisterCheckWithId() throws UnknownHostException, InterruptedException {
+        String serviceName = UUID.randomUUID().toString();
+        String serviceId = UUID.randomUUID().toString();
+        String checkId = UUID.randomUUID().toString();
+
+        Registration registration = ImmutableRegistration.builder()
+                .name(serviceName)
+                .id(serviceId)
+                .addChecks(ImmutableRegCheck.builder()
+                        .id(checkId)
+                        .ttl("10s")
+                        .build())
+                .build();
+
+        client.agentClient().register(registration);
+
+        Synchroniser.pause(Duration.ofMillis(100));
+
+        boolean found = false;
+
+        for (ServiceHealth health : client.healthClient().getAllServiceInstances(serviceName).getResponse()) {
+            if (health.getService().getId().equals(serviceId)) {
+                found = true;
+                assertThat(health.getChecks().size(), is(2));
+                assertTrue(health.getChecks().stream().anyMatch(check -> check.getCheckId().equals(checkId)));
+            }
+        }
+
+        assertTrue(found);
+    }
+
+    @Test
+    @Ignore
+    public void shouldRegisterCheckWithName() throws UnknownHostException, InterruptedException {
+        String serviceName = UUID.randomUUID().toString();
+        String serviceId = UUID.randomUUID().toString();
+        String checkName = UUID.randomUUID().toString();
+
+        Registration registration = ImmutableRegistration.builder()
+                .name(serviceName)
+                .id(serviceId)
+                .addChecks(ImmutableRegCheck.builder()
+                        .name(checkName)
+                        .ttl("10s")
+                        .build())
+                .build();
+
+        client.agentClient().register(registration);
+
+        Synchroniser.pause(Duration.ofMillis(100));
+
+        boolean found = false;
+
+        for (ServiceHealth health : client.healthClient().getAllServiceInstances(serviceName).getResponse()) {
+            if (health.getService().getId().equals(serviceId)) {
+                found = true;
+                assertThat(health.getChecks().size(), is(2));
+                assertTrue(health.getChecks().stream().anyMatch(check -> check.getName().equals(checkName)));
+            }
+        }
+
+        assertTrue(found);
+    }
+
+    @Test
+    @Ignore
     public void shouldRegisterMultipleChecks() throws UnknownHostException, InterruptedException, MalformedURLException {
         String serviceName = UUID.randomUUID().toString();
         String serviceId = UUID.randomUUID().toString();
