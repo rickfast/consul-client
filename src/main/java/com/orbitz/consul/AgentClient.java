@@ -693,7 +693,7 @@ public class AgentClient extends BaseClient {
         @PUT("agent/check/deregister/{checkId}")
         Call<Void> deregisterCheck(@Path("checkId") String checkId);
 
-        @GET("agent/self")
+        @GET("status/leader")
         Call<Void> ping();
 
         @GET("agent/self")
@@ -712,7 +712,7 @@ public class AgentClient extends BaseClient {
         Call<List<Member>> getMembers();
 
         @PUT("agent/force-leave/{node}")
-        Call<Void> forceLeave(@Path("string") String node);
+        Call<Void> forceLeave(@Path("node") String node);
 
         @PUT("agent/check/{state}/{checkId}")
         Call<Void> check(@Path("state") String state,
