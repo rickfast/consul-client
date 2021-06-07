@@ -29,6 +29,11 @@ public abstract class QueryOptions implements ParamAdder {
     public abstract Optional<String> getDatacenter();
     public abstract Optional<String> getFilter();
     public abstract Optional<String> getNamespace();
+    public abstract Optional<Boolean> getWan();
+    public abstract Optional<String> getSegment();
+    public abstract Optional<String> getNote();
+    public abstract Optional<Boolean> getEnable();
+    public abstract Optional<String> getReason();
     public abstract List<String> getNodeMeta();
     public abstract List<String> getTag();
 
@@ -117,6 +122,11 @@ public abstract class QueryOptions implements ParamAdder {
         optionallyAdd(result, "dc", getDatacenter());
         optionallyAdd(result, "filter", getFilter());
         optionallyAdd(result, "ns", getNamespace());
+        optionallyAdd(result, "wan", getWan());
+        optionallyAdd(result, "segment", getSegment());
+        optionallyAdd(result, "note", getNote());
+        optionallyAdd(result, "enable", getEnable());
+        optionallyAdd(result, "reason", getReason());
 
         return result;
     }

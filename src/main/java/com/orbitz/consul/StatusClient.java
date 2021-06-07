@@ -2,11 +2,14 @@ package com.orbitz.consul;
 
 import com.orbitz.consul.config.ClientConfig;
 import com.orbitz.consul.monitoring.ClientEventCallback;
+import com.orbitz.consul.option.QueryOptions;
 import retrofit2.Call;
 import retrofit2.Retrofit;
 import retrofit2.http.GET;
+import retrofit2.http.QueryMap;
 
 import java.util.List;
+import java.util.Map;
 
 public class StatusClient extends BaseClient {
 
@@ -32,7 +35,19 @@ public class StatusClient extends BaseClient {
      * @return The host/port of the leader.
      */
     public String getLeader() {
-        return http.extract(api.getLeader()).replace("\"", "").trim();
+        return getLeader(QueryOptions.BLANK);
+    }
+
+    /**
+     * Retrieves the host/port of the Consul leader.
+     *
+     * GET /v1/status/leader
+     *
+     * @param queryOptions The Query Options to use.
+     * @return The host/port of the leader.
+     */
+    public String getLeader(QueryOptions queryOptions) {
+        return http.extract(api.getLeader(queryOptions.toQuery())).replace("\"", "").trim();
     }
 
     /**
@@ -43,7 +58,19 @@ public class StatusClient extends BaseClient {
      * @return List of host/ports for raft peers.
      */
     public List<String> getPeers() {
-        return http.extract(api.getPeers());
+        return getPeers(QueryOptions.BLANK);
+    }
+
+    /**
+     * Retrieves a list of host/ports for raft peers.
+     *
+     * GET /v1/status/peers
+     *
+     * @param queryOptions The Query Options to use.
+     * @return List of host/ports for raft peers.
+     */
+    public List<String> getPeers(QueryOptions queryOptions) {
+        return http.extract(api.getPeers(queryOptions.toQuery()));
     }
 
     /**
@@ -52,9 +79,9 @@ public class StatusClient extends BaseClient {
     interface Api {
 
         @GET("status/leader")
-        Call<String> getLeader();
+        Call<String> getLeader(@QueryMap Map<String, Object> options);
 
         @GET("status/peers")
-        Call<List<String>> getPeers();
+        Call<List<String>> getPeers(@QueryMap Map<String, Object> options);
     }
 }
