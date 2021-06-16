@@ -80,6 +80,10 @@ public class AclClient extends BaseClient {
         return http.extract(api.createToken(token));
     }
 
+    public TokenResponse cloneToken(String id, Token token) {
+        return http.extract(api.cloneToken(id, token));
+    }
+
     public TokenResponse readToken(String id) {
         return http.extract(api.readToken(id));
     }
@@ -150,6 +154,9 @@ public class AclClient extends BaseClient {
 
         @PUT("acl/token")
         Call<TokenResponse> createToken(@Body Token token);
+
+        @PUT("acl/token/{id}/clone")
+        Call<TokenResponse> cloneToken(@Path("id") String id, @Body Token token);
 
         @GET("acl/token/{id}")
         Call<TokenResponse> readToken(@Path("id") String id);

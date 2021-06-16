@@ -9,6 +9,7 @@ import java.time.Duration;
 import java.util.*;
 
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.core.IsNot.not;
 import static org.junit.Assert.*;
 import org.testcontainers.containers.GenericContainer;
 
@@ -118,6 +119,38 @@ public class AclTestIgnore {
 
         assertThat(readToken.description(), is(tokenDescription));
         assertThat(readToken.policies().get(0).name().get(), is(policyName));
+    }
+
+    @Test
+    public void testCreateAndCloneTokenWithNewDescription() {
+        AclClient aclClient = client.aclClient();
+
+        String policyName = UUID.randomUUID().toString();
+        PolicyResponse createdPolicy = aclClient.createPolicy(ImmutablePolicy.builder().name(policyName).build());
+
+        String tokenDescription = UUID.randomUUID().toString();
+        TokenResponse createdToken = aclClient.createToken(
+                ImmutableToken.builder()
+                        .description(tokenDescription)
+                        .local(false)
+                        .addPolicies(
+                                ImmutablePolicyLink.builder()
+                                        .id(createdPolicy.id())
+                                        .build()
+                        ).build());
+
+        String updatedTokenDescription = UUID.randomUUID().toString();
+        Token updateToken =
+                ImmutableToken.builder()
+                        .id(createdToken.accessorId())
+                        .local(false)
+                        .description(updatedTokenDescription)
+                        .build();
+
+        TokenResponse readToken = aclClient.cloneToken(createdToken.accessorId(), updateToken);
+
+        assertThat(readToken.accessorId(), not(createdToken.accessorId()));
+        assertThat(readToken.description(), is(updatedTokenDescription));
     }
 
     @Test
