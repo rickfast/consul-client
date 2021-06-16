@@ -109,6 +109,32 @@ public class AclTestIgnore {
     }
 
     @Test
+    public void testCreateAndReadTokenWithCustomIds() {
+        AclClient aclClient = client.aclClient();
+
+        String policyName = UUID.randomUUID().toString();
+        PolicyResponse createdPolicy = aclClient.createPolicy(ImmutablePolicy.builder().name(policyName).build());
+
+        String tokenId = UUID.randomUUID().toString();
+        String tokenSecretId = UUID.randomUUID().toString();
+        Token token = ImmutableToken.builder()
+                .id(tokenId)
+                .secretId(tokenSecretId)
+                .local(false)
+                .addPolicies(
+                        ImmutablePolicyLink.builder()
+                                .id(createdPolicy.id())
+                                .build()
+                ).build();
+        TokenResponse createdToken = aclClient.createToken(token);
+
+        TokenResponse readToken = aclClient.readToken(createdToken.accessorId());
+
+        assertThat(readToken.accessorId(), is(tokenId));
+        assertThat(readToken.secretId(), is(tokenSecretId));
+    }
+
+    @Test
     public void testReadSelfToken() {
         AclClient aclClient = client.aclClient();
 
