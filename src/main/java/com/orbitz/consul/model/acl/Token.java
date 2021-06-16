@@ -20,15 +20,39 @@ public abstract class Token {
     @JsonProperty("AccessorID")
     public abstract Optional<String> id();
 
+    @JsonProperty("SecretID")
+    public abstract Optional<String> secretId();
+
     @JsonProperty("Description")
     public abstract Optional<String> description();
-
-    @JsonProperty("Local")
-    public abstract boolean local();
 
     @JsonProperty("Policies")
     @JsonDeserialize(as = ImmutableList.class, contentAs = PolicyLink.class)
     public abstract List<PolicyLink> policies();
+
+    @JsonProperty("Roles")
+    @JsonDeserialize(as = ImmutableList.class, contentAs = RoleLink.class)
+    public abstract List<RoleLink> roles();
+
+    @JsonProperty("ServiceIdentities")
+    @JsonDeserialize(as = ImmutableList.class, contentAs = ServiceIdentity.class)
+    public abstract List<ServiceIdentity> serviceIdentities();
+
+    @JsonProperty("NodeIdentities")
+    @JsonDeserialize(as = ImmutableList.class, contentAs = NodeIdentity.class)
+    public abstract List<NodeIdentity> nodeIdentities();
+
+    @JsonProperty("Local")
+    public abstract boolean local();
+
+    @JsonProperty("ExpirationTime")
+    public abstract Optional<String> expirationTime();
+
+    @JsonProperty("ExpirationTTL")
+    public abstract Optional<String> expirationTTL();
+
+    @JsonProperty("Namespace")
+    public abstract Optional<String> namespace();
 
     @Value.Immutable
     @JsonSerialize(as = ImmutablePolicyLink.class)
@@ -41,5 +65,45 @@ public abstract class Token {
 
         @JsonProperty("Name")
         public abstract Optional<String> name();
+    }
+
+    @Value.Immutable
+    @JsonSerialize(as = ImmutableRoleLink.class)
+    @JsonDeserialize(as = ImmutableRoleLink.class)
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    public abstract static class RoleLink {
+
+        @JsonProperty("ID")
+        public abstract Optional<String> id();
+
+        @JsonProperty("Name")
+        public abstract Optional<String> name();
+    }
+
+    @Value.Immutable
+    @JsonSerialize(as = ImmutableServiceIdentity.class)
+    @JsonDeserialize(as = ImmutableServiceIdentity.class)
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    public abstract static class ServiceIdentity {
+
+        @JsonProperty("ServiceName")
+        public abstract String name();
+
+        @JsonProperty("Datacenters")
+        @JsonDeserialize(as = ImmutableList.class, contentAs = String.class)
+        public abstract List<String> datacenters();
+    }
+
+    @Value.Immutable
+    @JsonSerialize(as = ImmutableNodeIdentity.class)
+    @JsonDeserialize(as = ImmutableNodeIdentity.class)
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    public abstract static class NodeIdentity {
+
+        @JsonProperty("NodeName")
+        public abstract String name();
+
+        @JsonProperty("Datacenter")
+        public abstract String datacenter();
     }
 }
