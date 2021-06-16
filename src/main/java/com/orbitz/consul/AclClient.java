@@ -60,6 +60,10 @@ public class AclClient extends BaseClient {
         return http.extract(api.readPolicy(id));
     }
 
+    public PolicyResponse readPolicyByName(String name) {
+        return http.extract(api.readPolicyByName(name));
+    }
+
     public PolicyResponse updatePolicy(String id, Policy policy) {
         return http.extract(api.updatePolicy(id, policy));
     }
@@ -131,6 +135,9 @@ public class AclClient extends BaseClient {
 
         @GET("acl/policy/{id}")
         Call<PolicyResponse> readPolicy(@Path("id") String id);
+
+        @GET("acl/policy/name/{name}")
+        Call<PolicyResponse> readPolicyByName(@Path("name") String name);
 
         @PUT("acl/policy/{id}")
         Call<PolicyResponse> updatePolicy(@Path("id") String id, @Body Policy policy);

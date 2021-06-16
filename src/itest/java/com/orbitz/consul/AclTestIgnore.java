@@ -65,6 +65,18 @@ public class AclTestIgnore {
     }
 
     @Test
+    public void testCreateAndReadPolicyByName() {
+        AclClient aclClient = client.aclClient();
+
+        String policyName = UUID.randomUUID().toString();
+        PolicyResponse policy = aclClient.createPolicy(ImmutablePolicy.builder().name(policyName).build());
+        assertThat(policy.name(), is(policyName));
+
+        policy = aclClient.readPolicyByName(policy.name());
+        assertThat(policy.name(), is(policyName));
+    }
+
+    @Test
     public void testUpdatePolicy() {
         AclClient aclClient = client.aclClient();
 
