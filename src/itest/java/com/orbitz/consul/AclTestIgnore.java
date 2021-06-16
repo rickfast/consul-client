@@ -143,7 +143,6 @@ public class AclTestIgnore {
         Token updateToken =
                 ImmutableToken.builder()
                         .id(createdToken.accessorId())
-                        .local(false)
                         .description(updatedTokenDescription)
                         .build();
 

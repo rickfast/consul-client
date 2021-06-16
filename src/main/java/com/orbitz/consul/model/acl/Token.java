@@ -43,7 +43,7 @@ public abstract class Token {
     public abstract List<NodeIdentity> nodeIdentities();
 
     @JsonProperty("Local")
-    public abstract boolean local();
+    public abstract Optional<Boolean> local();
 
     @JsonProperty("ExpirationTime")
     public abstract Optional<String> expirationTime();
