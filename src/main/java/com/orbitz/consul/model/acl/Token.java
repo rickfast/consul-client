@@ -17,7 +17,7 @@ import java.util.Optional;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public abstract class Token {
 
-    @JsonProperty("ID")
+    @JsonProperty("AccessorID")
     public abstract Optional<String> id();
 
     @JsonProperty("Description")
