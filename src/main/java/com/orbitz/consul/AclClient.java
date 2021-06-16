@@ -3,11 +3,13 @@ package com.orbitz.consul;
 import com.orbitz.consul.config.ClientConfig;
 import com.orbitz.consul.model.acl.*;
 import com.orbitz.consul.monitoring.ClientEventCallback;
+import com.orbitz.consul.option.TokenQueryOptions;
 import retrofit2.Call;
 import retrofit2.Retrofit;
 import retrofit2.http.*;
 
 import java.util.List;
+import java.util.Map;
 
 public class AclClient extends BaseClient {
 
@@ -81,7 +83,11 @@ public class AclClient extends BaseClient {
     }
 
     public List<TokenListResponse> listTokens() {
-        return http.extract(api.listTokens());
+        return listTokens(TokenQueryOptions.BLANK);
+    }
+
+    public List<TokenListResponse> listTokens(TokenQueryOptions queryOptions) {
+        return http.extract(api.listTokens(queryOptions.toQuery()));
     }
 
     public void deleteToken(String id) {
@@ -133,7 +139,7 @@ public class AclClient extends BaseClient {
         Call<TokenResponse> updateToken(@Path("id") String id, @Body Token token);
 
         @GET("acl/tokens")
-        Call<List<TokenListResponse>> listTokens();
+        Call<List<TokenListResponse>> listTokens(@QueryMap Map<String, Object> query);
 
         @DELETE("acl/token/{id}")
         Call<Void> deleteToken(@Path("id") String id);
