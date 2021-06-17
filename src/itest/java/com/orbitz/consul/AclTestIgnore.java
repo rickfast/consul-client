@@ -154,4 +154,107 @@ public class AclTestIgnore {
         assertThat(newTokenCount, is(oldTokenCount - 1));
     }
 
+    @Test
+    public void testListRoles() {
+        AclClient aclClient = client.aclClient();
+
+        String roleName1 = UUID.randomUUID().toString();
+        String roleName2 = UUID.randomUUID().toString();
+        aclClient.createRole(ImmutableRole.builder().name(roleName1).build());
+        aclClient.createRole(ImmutableRole.builder().name(roleName2).build());
+
+        assertTrue(aclClient.listRoles().stream().anyMatch(p -> Objects.equals(p.name(), roleName1)));
+        assertTrue(aclClient.listRoles().stream().anyMatch(p -> Objects.equals(p.name(), roleName2)));
+    }
+
+    @Test
+    public void testCreateAndReadRole() {
+        AclClient aclClient = client.aclClient();
+
+        String roleName = UUID.randomUUID().toString();
+        RoleResponse role = aclClient.createRole(ImmutableRole.builder().name(roleName).build());
+
+        RoleResponse roleResponse = aclClient.readRole(role.id());
+        assertEquals(role.id(), roleResponse.id());
+    }
+
+    @Test
+    public void testCreateAndReadRoleByName() {
+        AclClient aclClient = client.aclClient();
+
+        String roleName = UUID.randomUUID().toString();
+        RoleResponse role = aclClient.createRole(ImmutableRole.builder().name(roleName).build());
+
+        RoleResponse roleResponse = aclClient.readRoleByName(role.name());
+        assertEquals(role.name(), roleResponse.name());
+    }
+
+    @Test
+    public void testCreateAndReadRoleWithPolicy() {
+        AclClient aclClient = client.aclClient();
+
+        String policyName = UUID.randomUUID().toString();
+        PolicyResponse createdPolicy = aclClient.createPolicy(ImmutablePolicy.builder().name(policyName).build());
+
+        String roleName = UUID.randomUUID().toString();
+        RoleResponse role = aclClient.createRole(
+                ImmutableRole.builder()
+                        .name(roleName)
+                        .addPolicies(
+                                ImmutableRolePolicyLink.builder()
+                                .id(createdPolicy.id())
+                                .build()
+                        )
+                        .build());
+
+        RoleResponse roleResponse = aclClient.readRole(role.id());
+        assertEquals(role.id(), roleResponse.id());
+        assertEquals(1, roleResponse.policies().size());
+        assertTrue(roleResponse.policies().get(0).id().isPresent());
+        assertEquals(createdPolicy.id(), roleResponse.policies().get(0).id().get());
+    }
+
+    @Test
+    public void testUpdateRole() {
+        AclClient aclClient = client.aclClient();
+
+        String roleName = UUID.randomUUID().toString();
+        String roleDescription = UUID.randomUUID().toString();
+        RoleResponse role = aclClient.createRole(
+                ImmutableRole.builder()
+                        .name(roleName)
+                        .description(roleDescription)
+                        .build());
+
+        RoleResponse roleResponse = aclClient.readRole(role.id());
+        assertEquals(roleDescription, roleResponse.description());
+
+        String roleNewDescription = UUID.randomUUID().toString();
+        RoleResponse updatedRoleResponse = aclClient.updateRole(roleResponse.id(),
+                ImmutableRole.builder()
+                        .name(roleName)
+                        .description(roleNewDescription)
+                        .build());
+
+        assertEquals(roleNewDescription, updatedRoleResponse.description());
+    }
+
+    @Test
+    public void testDeleteRole() {
+        AclClient aclClient = client.aclClient();
+
+        String roleName = UUID.randomUUID().toString();
+        RoleResponse role = aclClient.createRole(
+                ImmutableRole.builder()
+                        .name(roleName)
+                        .build());
+
+        RoleResponse roleResponse = aclClient.readRole(role.id());
+        assertEquals(roleName, roleResponse.name());
+
+        aclClient.deleteRole(roleResponse.id());
+
+        assertThrows(ConsulException.class, () -> aclClient.readRole(roleResponse.id()));
+    }
+
 }
