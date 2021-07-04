@@ -14,6 +14,7 @@ import com.orbitz.consul.model.health.ImmutableService;
 import com.orbitz.consul.model.health.Service;
 import com.orbitz.consul.model.health.ServiceHealth;
 import com.orbitz.consul.option.ImmutableQueryOptions;
+import com.orbitz.consul.option.ImmutableQueryParameterOptions;
 import com.orbitz.consul.option.QueryOptions;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -250,6 +251,58 @@ public class AgentITest extends BaseIntegrationTest {
             if (health.getService().getId().equals(serviceId)) {
                 found = true;
                 assertThat(health.getChecks().size(), is(3));
+            }
+        }
+
+        assertTrue(found);
+    }
+
+    @Test
+    public void shouldRegisterChecksFromCleanState() {
+        String serviceName = UUID.randomUUID().toString();
+        String serviceId = UUID.randomUUID().toString();
+
+        List<Registration.RegCheck> regChecks = ImmutableList.of(
+                Registration.RegCheck.args(Collections.singletonList("/usr/bin/echo \"sup\""), 10, 1, "Custom description."),
+                Registration.RegCheck.http("http://localhost:8080/health", 10, 1, "Custom description."));
+
+        Registration reg = ImmutableRegistration.builder()
+                .checks(regChecks)
+                .address("localhost")
+                .port(8080)
+                .name(serviceName)
+                .id(serviceId)
+                .build();
+
+        client.agentClient().register(reg, QueryOptions.BLANK);
+
+        Synchroniser.pause(Duration.ofMillis(100));
+
+        List<Registration.RegCheck> regCheck = ImmutableList.of(
+                Registration.RegCheck.args(Collections.singletonList("/usr/bin/echo \"sup\""), 10, 1, "Custom description."));
+
+        Registration secondRegistration = ImmutableRegistration.builder()
+                .checks(regCheck)
+                .address("localhost")
+                .port(8080)
+                .name(serviceName)
+                .id(serviceId)
+                .build();
+
+        ImmutableQueryParameterOptions queryParameterOptions = ImmutableQueryParameterOptions.builder()
+                .replaceExistingChecks(true)
+                .build();
+
+        client.agentClient().register(secondRegistration, QueryOptions.BLANK, queryParameterOptions);
+
+        Synchroniser.pause(Duration.ofMillis(100));
+
+        boolean found = false;
+
+        for (ServiceHealth health : client.healthClient().getAllServiceInstances(serviceName).getResponse()) {
+            if (health.getService().getId().equals(serviceId)) {
+                found = true;
+                assertThat(health.getChecks().size(), is(2));
             }
         }
 
