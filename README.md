@@ -20,9 +20,19 @@ In 0.11.X and 0.12.x, the Consul JAR is a shaded JAR, with most dependencies inc
 
 ### Gradle:
 
+#### Groovy:
+
 ```groovy
 dependencies {
-    compile 'com.orbitz.consul:consul-client:1.5.3'
+    implementation 'com.orbitz.consul:consul-client:1.5.3'
+}
+```
+
+#### Kotlin:
+
+```kotlin
+dependencies {
+    implementation("com.orbitz.consul:consul-client:1.5.3")
 }
 ```
 
