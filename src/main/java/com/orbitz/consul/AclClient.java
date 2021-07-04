@@ -3,6 +3,7 @@ package com.orbitz.consul;
 import com.orbitz.consul.config.ClientConfig;
 import com.orbitz.consul.model.acl.*;
 import com.orbitz.consul.monitoring.ClientEventCallback;
+import com.orbitz.consul.option.RoleOptions;
 import com.orbitz.consul.option.TokenQueryOptions;
 import retrofit2.Call;
 import retrofit2.Retrofit;
@@ -108,6 +109,34 @@ public class AclClient extends BaseClient {
         http.extract(api.deleteToken(id));
     }
 
+    public RoleResponse createRole(Role token) {
+        return http.extract(api.createRole(token));
+    }
+
+    public RoleResponse readRole(String id) {
+        return http.extract(api.readRole(id));
+    }
+
+    public RoleResponse readRoleByName(String name) {
+        return http.extract(api.readRoleByName(name));
+    }
+
+    public RoleResponse updateRole(String id, Role role) {
+        return http.extract(api.updateRole(id, role));
+    }
+
+    public List<RoleListResponse> listRoles() {
+        return listRoles(RoleOptions.BLANK);
+    }
+
+    public List<RoleListResponse> listRoles(RoleOptions roleOptions) {
+        return http.extract(api.listRoles(roleOptions.toQuery()));
+    }
+
+    public void deleteRole(String id) {
+        http.extract(api.deleteRole(id));
+    }
+
     interface Api {
 
         @Deprecated
@@ -169,6 +198,24 @@ public class AclClient extends BaseClient {
 
         @DELETE("acl/token/{id}")
         Call<Void> deleteToken(@Path("id") String id);
+
+        @PUT("acl/role")
+        Call<RoleResponse> createRole(@Body Role role);
+
+        @GET("acl/role/{id}")
+        Call<RoleResponse> readRole(@Path("id") String id);
+
+        @GET("acl/role/name/{name}")
+        Call<RoleResponse> readRoleByName(@Path("name") String name);
+
+        @PUT("acl/role/{id}")
+        Call<RoleResponse> updateRole(@Path("id") String id, @Body Role role);
+
+        @DELETE("acl/role/{id}")
+        Call<Void> deleteRole(@Path("id") String id);
+
+        @GET("acl/roles")
+        Call<List<RoleListResponse>> listRoles(@QueryMap Map<String, Object> query);
     }
 
 }
