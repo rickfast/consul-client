@@ -7,8 +7,10 @@ import com.orbitz.consul.config.CacheConfig;
 import com.orbitz.consul.model.health.ServiceHealth;
 import com.orbitz.consul.option.QueryOptions;
 
+import java.math.BigInteger;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.function.Function;
+import javax.annotation.Nullable;
 
 public class ServiceHealthCache extends ConsulCache<ServiceHealthKey, ServiceHealth> {
 
@@ -18,7 +20,7 @@ public class ServiceHealthCache extends ConsulCache<ServiceHealthKey, ServiceHea
                                int watchSeconds,
                                QueryOptions queryOptions,
                                Function<ServiceHealth, ServiceHealthKey> keyExtractor,
-                               Scheduler callbackScheduler) {
+                               Scheduler callbackScheduler, @Nullable BigInteger initialIndex) {
         super(keyExtractor,
               (index, callback) -> {
                   checkWatch(healthClient.getNetworkTimeoutConfig().getClientReadTimeoutMillis(), watchSeconds);
@@ -32,7 +34,8 @@ public class ServiceHealthCache extends ConsulCache<ServiceHealthKey, ServiceHea
               healthClient.getConfig().getCacheConfig(),
               healthClient.getEventHandler(),
               new CacheDescriptor("health.service", serviceName),
-              callbackScheduler);
+              callbackScheduler,
+              initialIndex);
     }
 
     /**
@@ -55,8 +58,22 @@ public class ServiceHealthCache extends ConsulCache<ServiceHealthKey, ServiceHea
             final ScheduledExecutorService callbackExecutorService) {
 
         Scheduler scheduler = createExternal(callbackExecutorService);
-        return new ServiceHealthCache(healthClient, serviceName, passing, watchSeconds, queryOptions, keyExtractor, scheduler);
+        return new ServiceHealthCache(healthClient, serviceName, passing, watchSeconds, queryOptions, keyExtractor, scheduler, null);
     }
+
+  public static ServiceHealthCache newCache(
+            HealthClient healthClient,
+            String serviceName,
+            boolean passing,
+            int watchSeconds,
+            QueryOptions queryOptions,
+            BigInteger initialIndex,
+            Function<ServiceHealth, ServiceHealthKey> keyExtractor,
+            ScheduledExecutorService callbackExecutorService) {
+
+    Scheduler scheduler = createExternal(callbackExecutorService);
+    return new ServiceHealthCache(healthClient, serviceName, passing, watchSeconds, queryOptions, keyExtractor, scheduler, initialIndex);
+  }
 
     public static ServiceHealthCache newCache(
             final HealthClient healthClient,
@@ -66,7 +83,7 @@ public class ServiceHealthCache extends ConsulCache<ServiceHealthKey, ServiceHea
             final QueryOptions queryOptions,
             final Function<ServiceHealth, ServiceHealthKey> keyExtractor) {
 
-        return new ServiceHealthCache(healthClient, serviceName, passing, watchSeconds, queryOptions, keyExtractor, createDefault());
+        return new ServiceHealthCache(healthClient, serviceName, passing, watchSeconds, queryOptions, keyExtractor, createDefault(), null);
     }
 
     public static ServiceHealthCache newCache(
@@ -78,7 +95,19 @@ public class ServiceHealthCache extends ConsulCache<ServiceHealthKey, ServiceHea
 
         return newCache(healthClient, serviceName, passing, watchSeconds, queryOptions, ServiceHealthKey::fromServiceHealth);
     }
-    
+
+  public static ServiceHealthCache newCache(
+            HealthClient healthClient,
+            String serviceName,
+            boolean passing,
+            int watchSeconds,
+            BigInteger initialIndex,
+            QueryOptions queryOptions) {
+    return new ServiceHealthCache(healthClient, serviceName, passing, watchSeconds, queryOptions, ServiceHealthKey::fromServiceHealth,
+      createDefault(), initialIndex
+    );
+  }
+
     public static ServiceHealthCache newCache(
             final HealthClient healthClient,
             final String serviceName,

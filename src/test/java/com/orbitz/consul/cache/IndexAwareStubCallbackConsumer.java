@@ -11,22 +11,22 @@ import java.util.List;
 /**
  *
  */
-public class StubCallbackConsumer implements ConsulCache.CallbackConsumer<Value> {
+public class IndexAwareStubCallbackConsumer implements ConsulCache.CallbackConsumer<Value> {
 
     private final List<Value> result;
-    private int callCount;
+    private BigInteger index;
 
-    public StubCallbackConsumer(List<Value> result) {
+    public IndexAwareStubCallbackConsumer(List<Value> result) {
         this.result = Collections.unmodifiableList(result);
     }
 
     @Override
     public void consume(BigInteger index, ConsulResponseCallback<List<Value>> callback) {
-        callCount++;
+        this.index = index;
         callback.onComplete(new ConsulResponse<>(result, 0, true, BigInteger.ZERO, null, null));
     }
 
-    public int getCallCount() {
-        return callCount;
+    public BigInteger getIndex() {
+        return index;
     }
 }

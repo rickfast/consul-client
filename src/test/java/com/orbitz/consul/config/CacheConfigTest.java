@@ -206,7 +206,7 @@ public class CacheConfigTest {
 
     static class TestCache extends ConsulCache<Integer, Integer> {
         private TestCache(Function<Integer, Integer> keyConversion, CallbackConsumer<Integer> callbackConsumer, CacheConfig cacheConfig, ClientEventHandler eventHandler, CacheDescriptor cacheDescriptor) {
-            super(keyConversion, callbackConsumer, cacheConfig, eventHandler, cacheDescriptor);
+            super(keyConversion, callbackConsumer, cacheConfig, eventHandler, cacheDescriptor, null);
         }
 
         static TestCache createCache(CacheConfig config, Supplier<List<Integer>> res) {
