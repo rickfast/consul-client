@@ -501,7 +501,7 @@ public class KeyValueITest extends BaseIntegrationTest {
 
         ConsulResponse<TxResponse> response = keyValueClient.performTransaction(operation);
 
-        assertEquals(response.getIndex(), keyValueClient.getValue(key).get().getModifyIndex());
+        assertEquals(value, keyValueClient.getValueAsString(key).get());
         assertEquals(response.getIndex(), keyValueClient.getValue(key).get().getModifyIndex());
     }
 
