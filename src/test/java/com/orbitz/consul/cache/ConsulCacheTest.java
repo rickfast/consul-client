@@ -49,9 +49,11 @@ public class ConsulCacheTest {
         CacheConfig cacheConfig = mock(CacheConfig.class);
         ClientEventHandler eventHandler = mock(ClientEventHandler.class);
 
-        final StubCallbackConsumer callbackConsumer = new StubCallbackConsumer(Collections.emptyList());
+        final CountingCallsCallbackConsumer callbackConsumer = new CountingCallsCallbackConsumer(Collections.emptyList());
 
-        final ConsulCache<String, Value> consulCache = new ConsulCache<>(keyExtractor, callbackConsumer, cacheConfig, eventHandler, new CacheDescriptor(""));
+        final ConsulCache<String, Value> consulCache = new ConsulCache<>(keyExtractor, callbackConsumer, cacheConfig, eventHandler,
+            new CacheDescriptor(""), null
+        );
         final ConsulResponse<List<Value>> consulResponse = new ConsulResponse<>(response, 0, false, BigInteger.ONE, null, null);
         final ImmutableMap<String, Value> map = consulCache.convertToMap(consulResponse);
         assertNotNull(map);
@@ -143,11 +145,11 @@ public class ConsulCacheTest {
                 .flags(0)
                 .build();
         final List<Value> result = Collections.singletonList(value);
-        final StubCallbackConsumer callbackConsumer = new StubCallbackConsumer(
+        final CountingCallsCallbackConsumer callbackConsumer = new CountingCallsCallbackConsumer(
                 result);
 
         final ConsulCache<String, Value> cache = new ConsulCache<>(keyExtractor, callbackConsumer, cacheConfig,
-                eventHandler, new CacheDescriptor(""));
+                eventHandler, new CacheDescriptor(""), null);
         try {
             final StubListener listener = new StubListener();
 
@@ -166,6 +168,35 @@ public class ConsulCacheTest {
             cache.stop();
         }
     }
+
+  @Test
+  public void testCacheStartsWithInitialIndex() {
+    final Function<Value, String> keyExtractor = Value::getKey;
+    final CacheConfig cacheConfig = CacheConfig.builder().build();
+    ClientEventHandler eventHandler = mock(ClientEventHandler.class);
+
+    final String key = "foo";
+    final ImmutableValue value = ImmutableValue.builder()
+      .createIndex(1)
+      .modifyIndex(2)
+      .lockIndex(2)
+      .key(key)
+      .flags(0)
+      .build();
+    final List<Value> result = Collections.singletonList(value);
+    final IndexAwareStubCallbackConsumer callbackConsumer = new IndexAwareStubCallbackConsumer(result);
+
+    BigInteger expectedIndex = BigInteger.valueOf(23);
+    final ConsulCache<String, Value> cache = new ConsulCache<>(keyExtractor, callbackConsumer, cacheConfig,
+      eventHandler, new CacheDescriptor(""), expectedIndex
+    );
+    try {
+      cache.start();
+      assertEquals(expectedIndex, callbackConsumer.getIndex());
+    } finally {
+      cache.stop();
+    }
+  }
 
     @Test
     public void testListenerThrowingExceptionIsIsolated() throws InterruptedException {
@@ -186,7 +217,7 @@ public class ConsulCacheTest {
         final List<Value> result = Collections.singletonList(value);
         try (final AsyncCallbackConsumer callbackConsumer = new AsyncCallbackConsumer(result)) {
             try (final ConsulCache<String, Value> cache = new ConsulCache<>(keyExtractor, callbackConsumer, cacheConfig,
-                        eventHandler, new CacheDescriptor(""))) {
+                        eventHandler, new CacheDescriptor(""), null)) {
 
                 final StubListener goodListener = new StubListener();
                 final AlwaysThrowsListener badListener1 = new AlwaysThrowsListener();
@@ -232,11 +263,11 @@ public class ConsulCacheTest {
                 .flags(0)
                 .build();
         final List<Value> result = Collections.singletonList(value);
-        final StubCallbackConsumer callbackConsumer = new StubCallbackConsumer(
+        final CountingCallsCallbackConsumer callbackConsumer = new CountingCallsCallbackConsumer(
                 result);
 
         try (final ConsulCache<String, Value> cache = new ConsulCache<>(keyExtractor, callbackConsumer, cacheConfig,
-                eventHandler, new CacheDescriptor(""))) {
+                eventHandler, new CacheDescriptor(""), null)) {
 
             final AlwaysThrowsListener badListener = new AlwaysThrowsListener();
 
