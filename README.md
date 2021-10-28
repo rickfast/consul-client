@@ -4,6 +4,11 @@
 Consul Client for Java
 ======================
 
+__This is a local fork of this client.  Newer versions of consul do not return ```X-Consul-Knownleader: true``` when steaming.  This breaks the current behavior of this client.  This fork removes the check for that.  Hopefully this can be PR'd into the rickfast version and we can move back to it at some point.
+
+See https://github.com/hashicorp/consul/issues/9776 for more information.
+
+
 Simple client for the Consul HTTP API.  For more information about the Consul HTTP API, go [here](http://www.consul.io/docs/agent/http.html).
 
 Notes from the maintainer
