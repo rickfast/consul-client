@@ -15,10 +15,7 @@ public class NodesCatalogCache extends ConsulCache<String, Node> {
                               int watchSeconds,
                               Scheduler callbackScheduler) {
         super(Node::getNode,
-              (index, callback) -> {
-                  checkWatch(catalogClient.getNetworkTimeoutConfig().getClientReadTimeoutMillis(), watchSeconds);
-                  catalogClient.getNodes(watchParams(index, watchSeconds, queryOptions), callback);
-              },
+              (index, callback) -> catalogClient.getNodes(watchParams(index, watchSeconds, queryOptions), callback),
               catalogClient.getConfig().getCacheConfig(),
               catalogClient.getEventHandler(),
               new CacheDescriptor("catalog.nodes"),

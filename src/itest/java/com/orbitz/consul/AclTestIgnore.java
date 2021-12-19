@@ -10,6 +10,7 @@ import java.util.*;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.core.IsNot.not;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.*;
 import org.testcontainers.containers.GenericContainer;
 
@@ -36,7 +37,7 @@ public class AclTestIgnore {
 
     protected static Consul client;
 
-    protected static HostAndPort aclClientHostAndPort = HostAndPort.fromParts("localhost", consulContainerAcl.getFirstMappedPort());
+    protected static HostAndPort aclClientHostAndPort = HostAndPort.fromParts(consulContainerAcl.getHost(), consulContainerAcl.getFirstMappedPort());
 
     @BeforeClass
     public static void beforeClass() {

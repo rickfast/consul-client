@@ -87,7 +87,7 @@ public class HealthITest extends BaseIntegrationTest {
         client.agentClient().pass(serviceId);
 
         ConsulResponse<List<ServiceHealth>> response = client.healthClient().getAllServiceInstances(serviceName,
-                QueryOptions.blockSeconds(2, new BigInteger("0")).datacenter("dc1").build());
+                QueryOptions.blockSeconds(2, BigInteger.ZERO).datacenter("dc1").build());
         assertHealth(serviceId, response);
         client.agentClient().deregister(serviceId);
     }
@@ -111,7 +111,7 @@ public class HealthITest extends BaseIntegrationTest {
 
         boolean found = false;
         ConsulResponse<List<HealthCheck>> response = client.healthClient().getServiceChecks(serviceName,
-                QueryOptions.blockSeconds(20, new BigInteger("0")).datacenter("dc1").build());
+                QueryOptions.blockSeconds(20, BigInteger.ZERO).datacenter("dc1").build());
 
         List<HealthCheck> checks = response.getResponse();
         assertEquals(1, checks.size());
