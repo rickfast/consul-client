@@ -33,12 +33,12 @@ jobs:
         with:
           java-version: 13.0
 
+      - name: Build with Maven
+        run: mvn -B package -DskipTests --file pom.xml
+
       - name: Debug output
         shell: bash
         run: |
           echo environment from context = ${{ environment }}
           echo inputs.some_input = ${{ inputs.some_input }}
           echo secrets.SOME_SECRET = ${{ inputs.some_input }}
-
-      - name: Build with Maven
-        run: mvn -B package -DskipTests --file pom.xml

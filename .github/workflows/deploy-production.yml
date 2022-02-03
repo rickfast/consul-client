@@ -7,7 +7,7 @@ on:
 
 jobs:
   deploy:
-    uses: alekkol/consul-client/.github/workflows/deploy.yml
+    uses: alekkol/consul-client/.github/workflows/deploy.yml@test-github-ci
     with:
       some_input: 'custom input to use in workflow'
       environment: production
