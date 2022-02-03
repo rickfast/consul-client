@@ -42,4 +42,4 @@ jobs:
         shell: bash
         run: |
           echo inputs.some_input = ${{ inputs.some_input }}
-          echo secrets.SOME_SECRET = "$NOT_A_SECRET"
+          echo secrets.SOME_SECRET length = "$#NOT_A_SECRET"
