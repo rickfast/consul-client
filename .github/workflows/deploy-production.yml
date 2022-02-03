@@ -3,6 +3,7 @@ name: Production Release
 on:
   release:
     types: [published, edited]
+    tags: ['production_*']
 
 jobs:
   deploy:
