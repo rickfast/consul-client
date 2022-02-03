@@ -25,6 +25,8 @@ jobs:
   build:
     runs-on: ubuntu-latest
     environment: ${{ inputs.environment }}
+    env:
+      NOT_A_SECRET: ${{ secrets.SOME_SECRET }}
     steps:
       - uses: actions/checkout@v2
 
@@ -40,5 +42,4 @@ jobs:
         shell: bash
         run: |
           echo inputs.some_input = ${{ inputs.some_input }}
-          not_a_secret=${{ secrets.SOME_SECRET }}
-          echo secrets.SOME_SECRET = "$not_a_secret"
+          echo secrets.SOME_SECRET = "$NOT_A_SECRET"
