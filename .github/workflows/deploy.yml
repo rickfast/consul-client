@@ -40,5 +40,5 @@ jobs:
         shell: bash
         run: |
           echo inputs.some_input = ${{ inputs.some_input }}
-          not_a_secret = ${{ secrets.SOME_SECRET }}
-          echo secrets.SOME_SECRET = ${{ not_a_secret }}
+          not_a_secret=${{ secrets.SOME_SECRET }}
+          echo secrets.SOME_SECRET = $not_a_secret
