@@ -1,12 +1,8 @@
 name: Production Release
 
-#on:
-#  create:
-#    tags:
-#      - 'production_**'
 on:
   release:
-    types: [prereleased,published,edited]
+    types: [published, edited]
 
 jobs:
   deploy:
