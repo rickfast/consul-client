@@ -17,3 +17,15 @@ jobs:
 
       - name: Build with Maven
         run: mvn -B package -DskipTests --file pom.xml
+
+      - uses: pmd/pmd-github-action@v1
+        id: pmd
+        with:
+          sourcePath: 'src/main/java'
+          rulesets: 'ruleset.xml'
+          analyzeModifiedFilesOnly: false
+
+      - name: Upload SARIF file
+        uses: github/codeql-action/upload-sarif@v1
+        with:
+          sarif_file: pmd-report.sarif
