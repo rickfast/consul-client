@@ -319,4 +319,13 @@ public class HttpTest {
 
         assertEquals(true, consulResponse.isKnownLeader());
     }
+
+    @Test
+    public void testToString() {
+        String responseMessage = "success";
+        ConsulResponse<String> expectedConsulResponse = new ConsulResponse<>(responseMessage, 0, false, BigInteger.ZERO, null, null);
+        Response<String> response = Response.success(responseMessage);
+        ConsulResponse<String> consulResponse = Http.consulResponse(response);
+        assertEquals("ConsulResponse{response=success, lastContact=0, knownLeader=false, index=0, cache=Optional.empty}", consulResponse.toString());
+    }
 }
