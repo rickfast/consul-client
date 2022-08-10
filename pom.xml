@@ -4,7 +4,7 @@
     <groupId>com.orbitz.consul</groupId>
     <artifactId>consul-client</artifactId>
     <packaging>jar</packaging>
-    <version>1.5.3</version>
+    <version>1.5.4</version>
     <name>consul-client</name>
     <url>http://maven.apache.org</url>
     <description>Consul Client for Java</description>
@@ -34,16 +34,16 @@
         <apache.commons.version>3.11</apache.commons.version>
         <commonscodec.version>1.15</commonscodec.version>
         <findbugs.version>1.3.9</findbugs.version>
-        <guava.version>29.0-jre</guava.version>
+        <guava.version>31.1-jre</guava.version>
         <immutables.version>2.8.8</immutables.version>
-        <jackson.version>2.12.0</jackson.version>
+        <jackson.version>2.13.3</jackson.version>
         <junit.version>4.13.1</junit.version>
         <junitparams.version>1.1.1</junitparams.version>
         <mockito.version>1.10.19</mockito.version>
         <retrofit.version>2.9.0</retrofit.version>
-        <okhttp.version>4.9.0</okhttp.version>
+        <okhttp.version>4.9.3</okhttp.version>
         <slf4j.version>1.7.30</slf4j.version>
-        <logback.version>1.2.3</logback.version>
+        <logback.version>1.2.11</logback.version>
         <testcontainers.version>1.15.1</testcontainers.version>
     </properties>
     <distributionManagement>
