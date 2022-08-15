@@ -1,20 +1,18 @@
 package com.orbitz.consul.util;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.Optional;
 import com.google.common.collect.Sets;
 import com.orbitz.consul.ConsulException;
 import com.orbitz.consul.async.Callback;
 import com.orbitz.consul.async.ConsulResponseCallback;
 import com.orbitz.consul.model.ConsulResponse;
 import com.orbitz.consul.monitoring.ClientEventHandler;
+import java.io.IOException;
+import java.math.BigInteger;
 import okhttp3.Headers;
 import org.apache.commons.lang3.math.NumberUtils;
 import retrofit2.Call;
 import retrofit2.Response;
-
-import java.io.IOException;
-import java.math.BigInteger;
 
 public class Http {
 
@@ -56,10 +54,10 @@ public class Http {
 
     private <T> void ensureResponseSuccessful(Call<T> call, Response<T> response, Integer... okCodes) {
         if(isSuccessful(response, okCodes)) {
-            eventHandler.httpRequestSuccess(call.request());
+            eventHandler.httpRequestSuccess(call.request(), response);
         } else {
             ConsulException exception = new ConsulException(response.code(), response);
-            eventHandler.httpRequestInvalid(call.request(), exception);
+            eventHandler.httpRequestInvalid(call.request(), response, exception);
             throw exception;
         }
     }
@@ -76,11 +74,11 @@ public class Http {
             @Override
             public void onResponse(Call<T> call, Response<T> response) {
                 if (isSuccessful(response, okCodes)) {
-                    eventHandler.httpRequestSuccess(call.request());
+                    eventHandler.httpRequestSuccess(call.request(), response);
                     callback.onComplete(consulResponse(response));
                 } else {
                     ConsulException exception = new ConsulException(response.code(), response);
-                    eventHandler.httpRequestInvalid(call.request(), exception);
+                    eventHandler.httpRequestInvalid(call.request(), response, exception);
                     callback.onFailure(exception);
                 }
             }
