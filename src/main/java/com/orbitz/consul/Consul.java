@@ -7,6 +7,7 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.SynchronousQueue;
+import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.function.IntSupplier;
@@ -34,7 +35,6 @@ import okhttp3.HttpUrl;
 import okhttp3.Interceptor;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
-import okhttp3.internal.Util;
 import retrofit2.Retrofit;
 import retrofit2.converter.jackson.JacksonConverterFactory;
 
@@ -81,7 +81,7 @@ public class Consul {
                 StatusClient statusClient, SessionClient sessionClient,
                 EventClient eventClient, PreparedQueryClient preparedQueryClient,
                 CoordinateClient coordinateClient, OperatorClient operatorClient,
-                ExecutorService executorService, ConnectionPool connectionPool, 
+                ExecutorService executorService, ConnectionPool connectionPool,
                 AclClient aclClient, SnapshotClient snapshotClient,
                 OkHttpClient okHttpClient) {
         this.agentClient = agentClient;
@@ -469,12 +469,12 @@ public class Consul {
 
             return this;
         }
-        
+
         /**
         * Sets the list of hosts to contact if the current request target is
         * unavailable. When the call to a particular URL fails for any reason, the next {@link HostAndPort} specified
         * is used to retry the request. This will continue until all urls are exhuasted.
-        * 
+        *
         * @param hostAndPort A collection of {@link HostAndPort} that define the list of Consul agent addresses to use.
         * @param blacklistTimeInMillis The timeout (in milliseconds) to blacklist a particular {@link HostAndPort} before trying to use it again.
         * @return The builder.
@@ -485,10 +485,10 @@ public class Consul {
 
             consulFailoverInterceptor = new ConsulFailoverInterceptor(hostAndPort, blacklistTimeInMillis);
             withHostAndPort(hostAndPort.stream().findFirst().get());
-            
+
             return this;
         }
-        
+
         /**
          * Constructs a failover interceptor with the given {@link ConsulFailoverStrategy}.
          * @param strategy The strategy to use.
@@ -496,7 +496,7 @@ public class Consul {
          */
         public Builder withFailoverInterceptor(ConsulFailoverStrategy strategy) {
         	Preconditions.checkArgument(strategy != null, "Must not provide a null strategy");
-        	
+
         	consulFailoverInterceptor = new ConsulFailoverInterceptor(strategy);
         	return this;
         }
@@ -681,7 +681,7 @@ public class Consul {
                 * using daemon thread so shutdown is not blocked (issue #133)
                 */
                 executorService = new ThreadPoolExecutor(0, Integer.MAX_VALUE, 60, TimeUnit.SECONDS,
-                        new SynchronousQueue<>(), Util.threadFactory("OkHttp Dispatcher", true));
+                        new SynchronousQueue<>(), threadFactory("OkHttp Dispatcher", true));
             }
 
             if (connectionPool == null) {
@@ -819,6 +819,15 @@ public class Consul {
                     .build();
         }
 
+    }
+
+
+    private static ThreadFactory threadFactory(String name, boolean daemon) {
+        return runnable -> {
+            Thread result = new Thread(runnable, name);
+            result.setDaemon(daemon);
+            return result;
+        };
     }
 
     public static class NetworkTimeoutConfig {
