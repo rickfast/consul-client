@@ -1,0 +1,54 @@
+name: For each push except master
+
+on:
+  push:
+    branches-ignore: [master]
+
+jobs:
+  build:
+    runs-on: ubuntu-22.04
+    environment: ${{ inputs.github_environment }}
+    steps:
+      - uses: actions/checkout@v2
+      - name: Prepare runner and directory layout
+        run: |
+          set -eu
+          # Debian package is called "createrepo_c", but in Ubuntu the name`s "createrepo-c"
+          sudo apt-get update
+          sudo apt-get install --yes dpkg-dev createrepo-c
+          # Prepare GPG
+          echo "${{ secrets.LINUX_PACKAGING_KEY }}" | gpg --no-default-keyring --keyring ./workato.kbx --import --batch --yes
+          # Export archive public key
+          gpg --no-default-keyring --keyring ./workato.kbx --export --armor ${{ secrets.LINUX_PACKAGING_KEY_ID }} >repo/archive.key
+      - name: Update DEB repo
+        run: |
+          set -eu
+          
+          echo "content to sign" >./Release
+          
+          ps aux
+          killall gpg-agent
+          
+          echo "Exporting secret to check passphrase"
+          gpg --verbose --no-default-keyring --keyring=../../../../workato.kbx --export-secret-keys \
+            --batch --no-tty --pinentry-mode=loopback \
+            --yes \
+            --passphrase='${{ secrets.LINUX_PACKAGING_KEY_PASSPHRASE }}' \
+            --armor ${{ secrets.LINUX_PACKAGING_KEY_ID }} >workato.secret
+          echo "Secret has been exported successfully, passphrase is correct"
+          
+          ps aux
+          
+          gpg --no-default-keyring --keyring=../../../../workato.kbx --default-key ${{ secrets.LINUX_PACKAGING_KEY_ID }} \
+            --batch --no-tty --pinentry-mode=loopback \
+            --yes \
+            --passphrase='${{ secrets.LINUX_PACKAGING_KEY_PASSPHRASE }}' \
+            --output Release.gpg \
+            -abs ./Release
+          gpg --no-default-keyring --keyring=../../../../workato.kbx --default-key ${{ secrets.LINUX_PACKAGING_KEY_ID }} \
+            --batch --no-tty --pinentry-mode=loopback \
+            --yes \
+            --passphrase='${{ secrets.LINUX_PACKAGING_KEY_PASSPHRASE }}' \
+            --output ./InRelease \
+            -abs \
+            --clearsign ./Release
