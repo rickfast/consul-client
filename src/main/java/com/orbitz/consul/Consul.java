@@ -21,6 +21,7 @@ import com.google.common.net.HostAndPort;
 import com.orbitz.consul.cache.TimeoutInterceptor;
 import com.orbitz.consul.config.ClientConfig;
 import com.orbitz.consul.monitoring.ClientEventCallback;
+import com.orbitz.consul.util.AuthTokenProducer;
 import com.orbitz.consul.util.Jackson;
 import com.orbitz.consul.util.TrustManagerUtils;
 import com.orbitz.consul.util.bookend.ConsulBookend;
@@ -383,6 +384,28 @@ public class Consul {
 
                 Request.Builder requestBuilder = original.newBuilder()
                         .header("X-Consul-Token", token)
+                        .method(original.method(), original.body());
+
+                Request request = requestBuilder.build();
+                return chain.proceed(request);
+            };
+
+            return this;
+        }
+
+
+        /**
+         * Sets the token used for authentication
+         *
+         * @param authTokenProducer the producer of the authentication token
+         * @return The builder.
+         */
+        public Builder withTokenAuth(AuthTokenProducer authTokenProducer) {
+            authInterceptor = chain -> {
+                Request original = chain.request();
+
+                Request.Builder requestBuilder = original.newBuilder()
+                        .header("X-Consul-Token", authTokenProducer.getToken())
                         .method(original.method(), original.body());
 
                 Request request = requestBuilder.build();
