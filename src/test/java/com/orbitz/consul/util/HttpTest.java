@@ -152,7 +152,7 @@ public class HttpTest {
 
         httpCall.apply(call);
 
-        verify(clientEventHandler, only()).httpRequestSuccess(any(Request.class));
+        verify(clientEventHandler, only()).httpRequestSuccess(any(Request.class), any(Response.class));
     }
 
     @Test
@@ -209,7 +209,7 @@ public class HttpTest {
             //ignore
         }
 
-        verify(clientEventHandler, only()).httpRequestInvalid(any(Request.class), any(Throwable.class));
+        verify(clientEventHandler, only()).httpRequestInvalid(any(Request.class), any(Response.class), any(Throwable.class));
     }
 
     @Test
@@ -237,7 +237,7 @@ public class HttpTest {
         latch.await(1, TimeUnit.SECONDS);
 
         assertEquals(expectedBody, result.get().getResponse());
-        verify(clientEventHandler, only()).httpRequestSuccess(any(Request.class));
+        verify(clientEventHandler, only()).httpRequestSuccess(any(Request.class), any(Response.class));
     }
 
     @Test
@@ -261,7 +261,7 @@ public class HttpTest {
         callCallback.onResponse(call, response);
         latch.await(1, TimeUnit.SECONDS);
 
-        verify(clientEventHandler, only()).httpRequestInvalid(any(Request.class), any(Throwable.class));
+        verify(clientEventHandler, only()).httpRequestInvalid(any(Request.class), any(Response.class), any(Throwable.class));
     }
 
     @Test

@@ -2,14 +2,12 @@ package com.orbitz.consul.monitoring;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.orbitz.consul.cache.CacheDescriptor;
-import okhttp3.Request;
-
 import java.time.Duration;
 import java.time.temporal.ChronoUnit;
-import java.time.temporal.TemporalUnit;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
+import okhttp3.Request;
+import retrofit2.Response;
 
 public class ClientEventHandler {
 
@@ -24,18 +22,23 @@ public class ClientEventHandler {
         this.callback = callback;
     }
 
-    public void httpRequestSuccess(Request request) {
-        EVENT_EXECUTOR.submit(() -> callback.onHttpRequestSuccess(clientName, request.method(), request.url().query()));
+    public void httpRequestSuccess(Request request, Response<?> response) {
+        EVENT_EXECUTOR.submit(() ->
+            callback.onHttpRequestSuccess(clientName, request.method(), request.url().encodedPath(), request.url().query(), response.code())
+        );
     }
 
-    public void httpRequestInvalid(Request request, Throwable throwable) {
+    public void httpRequestInvalid(Request request, Response<?> response, Throwable throwable) {
         EVENT_EXECUTOR.submit(() ->
-                callback.onHttpRequestInvalid(clientName, request.method(), request.url().query(), throwable));
+            callback.onHttpRequestInvalid(clientName, request.method(), request.url().encodedPath(), request.url().query(), response.code(),
+                throwable)
+        );
     }
 
     public void httpRequestFailure(Request request, Throwable throwable) {
         EVENT_EXECUTOR.submit(() ->
-                callback.onHttpRequestFailure(clientName, request.method(), request.url().query(), throwable));
+            callback.onHttpRequestFailure(clientName, request.method(), request.url().encodedPath(), request.url().query(), throwable)
+        );
     }
 
     public void cacheStart(CacheDescriptor cacheDescriptor) {
