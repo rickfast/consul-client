@@ -23,25 +23,22 @@ public class ClientEventHandler {
     }
 
     public void httpRequestSuccess(Request request, Response<?> response) {
-        EVENT_EXECUTOR.submit(() -> {
-            callback.onHttpRequestSuccess(clientName, request.method(), request.url().query());
-            callback.onHttpRequestSuccess(clientName, request.method(), request.url().encodedPath(), request.url().query(), response.code());
-        });
+        EVENT_EXECUTOR.submit(() ->
+            callback.onHttpRequestSuccess(clientName, request.method(), request.url().encodedPath(), request.url().query(), response.code())
+        );
     }
 
     public void httpRequestInvalid(Request request, Response<?> response, Throwable throwable) {
-        EVENT_EXECUTOR.submit(() -> {
-            callback.onHttpRequestInvalid(clientName, request.method(), request.url().query(), throwable);
+        EVENT_EXECUTOR.submit(() ->
             callback.onHttpRequestInvalid(clientName, request.method(), request.url().encodedPath(), request.url().query(), response.code(),
-                throwable);
-        });
+                throwable)
+        );
     }
 
     public void httpRequestFailure(Request request, Throwable throwable) {
-        EVENT_EXECUTOR.submit(() -> {
-            callback.onHttpRequestFailure(clientName, request.method(), request.url().query(), throwable);
-            callback.onHttpRequestFailure(clientName, request.method(), request.url().encodedPath(), request.url().query(), throwable);
-        });
+        EVENT_EXECUTOR.submit(() ->
+            callback.onHttpRequestFailure(clientName, request.method(), request.url().encodedPath(), request.url().query(), throwable)
+        );
     }
 
     public void cacheStart(CacheDescriptor cacheDescriptor) {
