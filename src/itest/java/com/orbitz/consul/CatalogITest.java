@@ -1,16 +1,9 @@
 package com.orbitz.consul;
 
-import com.orbitz.consul.async.ConsulResponseCallback;
-import com.orbitz.consul.model.ConsulResponse;
-import com.orbitz.consul.model.catalog.*;
-import com.orbitz.consul.model.health.ImmutableService;
-import com.orbitz.consul.model.health.Node;
-import com.orbitz.consul.model.health.Service;
-import com.orbitz.consul.model.health.ServiceHealth;
-import com.orbitz.consul.option.ImmutableQueryOptions;
-import com.orbitz.consul.option.QueryOptions;
-import org.junit.Ignore;
-import org.junit.Test;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 import java.math.BigInteger;
 import java.net.UnknownHostException;
@@ -24,7 +17,25 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-import static org.junit.Assert.*;
+import org.junit.Ignore;
+import org.junit.Test;
+
+import com.orbitz.consul.async.ConsulResponseCallback;
+import com.orbitz.consul.model.ConsulResponse;
+import com.orbitz.consul.model.catalog.CatalogDeregistration;
+import com.orbitz.consul.model.catalog.CatalogNode;
+import com.orbitz.consul.model.catalog.CatalogRegistration;
+import com.orbitz.consul.model.catalog.CatalogService;
+import com.orbitz.consul.model.catalog.ImmutableCatalogDeregistration;
+import com.orbitz.consul.model.catalog.ImmutableCatalogRegistration;
+import com.orbitz.consul.model.catalog.ImmutableCatalogService;
+import com.orbitz.consul.model.catalog.ImmutableServiceWeights;
+import com.orbitz.consul.model.health.ImmutableService;
+import com.orbitz.consul.model.health.Node;
+import com.orbitz.consul.model.health.Service;
+import com.orbitz.consul.model.health.ServiceHealth;
+import com.orbitz.consul.option.ImmutableQueryOptions;
+import com.orbitz.consul.option.QueryOptions;
 
 public class CatalogITest extends BaseIntegrationTest {
 
@@ -284,7 +295,7 @@ public class CatalogITest extends BaseIntegrationTest {
 
         String nodeName = "node";
         String serviceName = UUID.randomUUID().toString();
-        String serviceId = createAutoDeregisterServiceId();
+        String serviceId = UUID.randomUUID().toString();
         String catalogId = UUID.randomUUID().toString();
 
         CatalogRegistration registration = ImmutableCatalogRegistration.builder()
